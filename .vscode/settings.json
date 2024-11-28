@@ -1,0 +1,13 @@
+{
+  "cmake.sourceDirectory": "/mnt/Shared/repos/school/cs-fy-project-practice/frontends/mobile/linux/flutter",
+
+  "editor.formatOnSave": false,
+
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
