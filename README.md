@@ -13,7 +13,7 @@ During development run in the `/frontends/admin` and `/backend` directories run 
 
 Before pushing the project always run the following if you made changes to
 
-1. The `/frontends/admin` and `/backend` directory
+1. The `/frontends/admin` and `/backend` directories
 
    - `npm run build`
    - `npm run format`
@@ -21,17 +21,13 @@ Before pushing the project always run the following if you made changes to
 
 2. The `/frontends/mobile` directory
 
-   - ``
+   - `dart format .`
+   - `flutter analyze`
+   - `flutter build apk`
 
 # Dependency versions
 
 The following dependencies' versions are not specified in a file (like package.json). Therefore, their versions are fixed to the following versions.
-
-- `node --version`
-
-```text
-v22.11.0
-```
 
 - `flutter --version`
 
