@@ -10,7 +10,7 @@ env:
 jobs:
   # TODO: Do you want to test flutter builds on Windows and MacOS as well?
   # TODO: Start using fvm after team gets used to workflows
-   flutter-ci-tasks:
+  flutter-ci-tasks:
     runs-on: ubuntu-latest
     env:
       FLUTTER_PROJECT_PATH: ./frontends/mobile
@@ -70,7 +70,7 @@ jobs:
           node-version: ${{ env.PROJECT_NODE_VERSION }}
       - name: Install dependencies for Next.js
         run: |
-          cd p${{ env.NEXT_PROJECT_PATH }}
+          cd ${{ env.NEXT_PROJECT_PATH }}
           npm install
       - name: Format and lint Next.js code
         run: |
@@ -81,4 +81,3 @@ jobs:
         run: |
           cd ${{ env.NEXT_PROJECT_PATH }}
           npm run build
-
