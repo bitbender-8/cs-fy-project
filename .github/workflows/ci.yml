@@ -10,13 +10,18 @@ env:
 jobs:
   # TODO: Do you want to test flutter builds on Windows and MacOS as well?
   # TODO: Start using fvm after team gets used to workflows
-   flutter-ci-tasks:
+  flutter-ci-tasks:
     runs-on: ubuntu-latest
     env:
       FLUTTER_PROJECT_PATH: ./frontends/mobile
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '23.0.1'
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -29,11 +34,10 @@ jobs:
           cd ${{ env.FLUTTER_PROJECT_PATH }}
           dart format . --set-exit-if-changed
           flutter analyze
-      - name: Build Flutter APK
+      - name: Build flutter apk
         run: |
           cd ${{ env.FLUTTER_PROJECT_PATH }} 
           flutter build apk
-
   express-ci-tasks:
     runs-on: ubuntu-latest
     env:
@@ -41,7 +45,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Set up Node.js
+      - name: Set up node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.PROJECT_NODE_VERSION }}
@@ -49,16 +53,15 @@ jobs:
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
           npm install
-      - name: Format and lint Express code
+      - name: Format and lint express code
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
           npm run format
           npm run lint:fix
-      - name: Build Express code
+      - name: Build express code
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
           npm run build
-
   next-ci-tasks:
     runs-on: ubuntu-latest
     env:
@@ -72,7 +75,7 @@ jobs:
           node-version: ${{ env.PROJECT_NODE_VERSION }}
       - name: Install dependencies for Next.js
         run: |
-          cd p${{ env.NEXT_PROJECT_PATH }}
+          cd ${{ env.NEXT_PROJECT_PATH }}
           npm install
       - name: Format and lint Next.js code
         run: |
@@ -83,4 +86,3 @@ jobs:
         run: |
           cd ${{ env.NEXT_PROJECT_PATH }}
           npm run build
-
