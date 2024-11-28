@@ -33,7 +33,6 @@ jobs:
         run: |
           cd ${{ env.FLUTTER_PROJECT_PATH }} 
           flutter build apk
-
   express-ci-tasks:
     runs-on: ubuntu-latest
     env:
@@ -58,7 +57,6 @@ jobs:
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
           npm run build
-
   next-ci-tasks:
     runs-on: ubuntu-latest
     env:
