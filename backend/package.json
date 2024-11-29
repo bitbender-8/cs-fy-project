@@ -23,6 +23,7 @@
   ],
   "scripts": {
     "format": "prettier --write .",
+    "format-chk": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "tsc",
