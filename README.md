@@ -11,13 +11,13 @@ Before working on the project always run
 
 During development run in the `/frontends/admin` and `/backend` directories run `npm run dev` to run your project
 
-Before pushing the project always run the following if you made changes to
+Before pushing the project always run the following (in the order shown) if you made changes to
 
 1. The `/frontends/admin` and `/backend` directories
 
-   - `npm run build`
    - `npm run format`
-   - `npm run lint:fix`, some errors can't be fixed automatically you have to fix those yourself.
+   - `npm run lint` some errors can't be fixed automatically. You have to fix those yourself.
+   - `npm run build`
 
 2. The `/frontends/mobile` directory
 
