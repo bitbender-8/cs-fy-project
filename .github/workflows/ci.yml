@@ -56,8 +56,8 @@ jobs:
       - name: Format and lint express code
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
-          npm run format
-          npm run lint:fix
+          npm run format:chk
+          npm run lint:chk
       - name: Build express code
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
@@ -80,8 +80,8 @@ jobs:
       - name: Format and lint Next.js code
         run: |
           cd ${{ env.NEXT_PROJECT_PATH }}
-          npm run format
-          npm run lint:fix 
+          npm run format:chk
+          npm run lint:chk
       - name: Build Next.js app
         run: |
           cd ${{ env.NEXT_PROJECT_PATH }}

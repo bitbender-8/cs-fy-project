@@ -23,9 +23,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "format": "prettier . --write"
+    "lint": "next lint --fix",
+    "lint:chk": "next lint",
+    "format": "prettier . --write",
+    "format:chk": "prettier . --check"
   },
   "dependencies": {
     "next": "15.0.3",
