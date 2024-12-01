@@ -48,8 +48,9 @@ Tools • Dart 3.5.4 • DevTools 2.37.3
 
 We are using the Feature Workflow model. You can look it up for more info but here are the highlights.
 
-- We are going to have a main branch that has unbroken code.
-- When working on new features or fixes we will create new branches and merge them back to main once we fix issues.
+- Our main branch is going to have production-ready code.
+- When working on new features we will create new branches and merge them back to main once we fix issues. All feature branches must be named as `feature/*`.
+- When we want to make a fix the the main branch we will use hotfix branches that are named as `hotfix/`.
 
 ### Commit messages
 
