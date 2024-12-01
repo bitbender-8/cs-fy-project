@@ -74,7 +74,7 @@ We have three separate apps in this repo. So we will structure our commit messag
   - `mob` - for changes in `frontends/mobile` (flutter app)
   - `adm` - for changes in `frontends/admin` (nextjs admin app)
   - `bck` - for changes in `frontends/bck` and `db` (nodejs backend code)
-  - `doc` - for changes in `docs` (top-level docs folder)
+  - `doc` - for changes in `docs` or `README.md` (top-level docs folder or readme folder)
   - `ci` - for changes in `.github/workflows` (github actions)
 
 When it comes to the subject and body we will follow the guidelines outlined below. You can find out more detailed explanations [here](https://cbea.ms/git-commit/).
