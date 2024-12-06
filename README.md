@@ -46,11 +46,12 @@ Tools • Dart 3.5.4 • DevTools 2.37.3
 
 ### Branching strategy
 
-We are using the Feature Workflow model. You can look it up for more info but here are the highlights.
+We are using the Feature Workflow model. You can look it up for more info, but here are the highlights:
 
-- Our main branch is going to have production-ready code.
-- When working on new features we will create new branches and merge them back to main once we fix issues. All feature branches must be named as `feature/*`.
-- When we want to make a fix the the main branch we will use hotfix branches that are named as `hotfix/`.
+- Main Branch: This will contain production-ready code at all times. Any changes here should follow a strict review and testing process.
+  Feature Branches: For new feature development, we will create separate branches named `feature/*`. These branches will be merged back into the main branch once the features are complete, tested, and all issues resolved.
+- Hotfix Branches: For critical fixes directly impacting the production environment, we will create hotfix branches named `hotfix/*`. These should be promptly merged into the main branch after resolution and testing.
+- Documentation and Miscellaneous Updates: For changes to documentation, configuration files, or other non-feature-related updates, we will use branches named `misc/*`.
 
 ### Commit messages
 
