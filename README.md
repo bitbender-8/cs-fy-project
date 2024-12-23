@@ -74,7 +74,7 @@ We have three separate apps in this repo. So we will structure our commit messag
 - `<scope>` is the app the change affects. If it affects multiple apps It can be either of the following
   - `mob` - for changes in `frontends/mobile` (flutter app)
   - `adm` - for changes in `frontends/admin` (nextjs admin app)
-  - `bck` - for changes in `frontends/bck` and `db` (nodejs backend code)
+  - `bck` - for changes in `backend` and `db` (nodejs backend code)
   - `doc` - for changes in `docs` or `README.md` (top-level docs folder or readme folder)
   - `ci` - for changes in `.github/workflows` (github actions)
 
