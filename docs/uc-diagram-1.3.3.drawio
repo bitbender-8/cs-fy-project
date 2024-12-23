@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0" version="25.0.3">
   <diagram name="Page-1" id="mlBt718oroM3iFTO48tE">
-    <mxGraphModel dx="4003" dy="5284" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2859" dy="5284" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -128,7 +128,7 @@
         <mxCell id="RDOZD4XtGrTmduCKfG26-6" value="Deny recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
           <mxGeometry x="935" y="500" width="270" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-5" value="Publish recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-5" value="Activate recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
           <mxGeometry x="555" y="590" width="300" height="110" as="geometry" />
         </mxCell>
         <mxCell id="RDOZD4XtGrTmduCKfG26-9" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-4" target="RDOZD4XtGrTmduCKfG26-6" edge="1">
