@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0" version="25.0.3">
   <diagram name="Page-1" id="mlBt718oroM3iFTO48tE">
-    <mxGraphModel dx="5590" dy="5851" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="4904" dy="5851" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -210,7 +210,7 @@
         <mxCell id="RDOZD4XtGrTmduCKfG26-19" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="RDOZD4XtGrTmduCKfG26-18" vertex="1">
           <mxGeometry x="-0.19968118725785078" relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-5" value="Platform administrator" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=1g_wy9wUcL76;" parent="1" vertex="1">
+        <mxCell id="HiohPXEZzKrVTZNAdpPA-5" value="" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=1g_wy9wUcL76;" parent="1" vertex="1">
           <mxGeometry x="2040" y="-1310" width="125" height="281" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-6" value="End user" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=Dh_w0z_cWkao;" parent="1" vertex="1">
@@ -329,6 +329,9 @@
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-80" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;Crowdfunding system&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="846" y="-2312" width="370" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cu4BUjr6Bzw_cpkHNXrN-2" value="&lt;font style=&quot;font-size: 31px;&quot;&gt;Platform administrator&lt;/font&gt;" style="whiteSpace=wrap;html=1;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1927.5" y="-1010" width="350" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
