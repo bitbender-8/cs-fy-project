@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0" version="25.0.1">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0" version="25.0.3">
   <diagram name="Page-1" id="mlBt718oroM3iFTO48tE">
-    <mxGraphModel dx="5596" dy="5854" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="5590" dy="5851" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -8,38 +8,38 @@
           <mxGeometry x="390" y="-2250" width="1335" height="2265" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-26" value="Adjust campaign goals" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=4WexlhnXaa_o;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="560" y="1140" width="240" height="106" as="geometry" />
+          <mxGeometry x="570" y="1170" width="240" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-21" value="Apply for campaign creation" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=0UexXaVD-pW4;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="105" y="1010" width="281" height="112" as="geometry" />
+          <mxGeometry x="115" y="900" width="281" height="112" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-35" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;exitX=0.988;exitY=0.366;exitPerimeter=0;lucidId=Eqfx6OLwEmcW;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-21" target="RDOZD4XtGrTmduCKfG26-4" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="795" y="960" as="targetPoint" />
+            <mxPoint x="805" y="920" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-36" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-35" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-51" value="Create recipient account" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=fWexwEg0DC2k;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="140" y="1150" width="270" height="106" as="geometry" />
+          <mxGeometry x="140" y="1079.5" width="270" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-90" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-1" target="HiohPXEZzKrVTZNAdpPA-26" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="820" y="1294" as="sourcePoint" />
-            <mxPoint x="720" y="1170" as="targetPoint" />
+            <mxPoint x="830" y="1324" as="sourcePoint" />
+            <mxPoint x="730" y="1200" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-91" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-90" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-46" value="Change campaign status" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=~WexgQ6B5ljM;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="686" y="1501" width="270" height="106" as="geometry" />
+          <mxGeometry x="696" y="1531" width="270" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-25" value="Request campaign goal adjustment" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=JVex3coAQjmz;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="149" y="1291.5" width="266" height="117" as="geometry" />
+          <mxGeometry x="149" y="1333" width="266" height="117" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-33" value="Charge service fee" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
           <mxGeometry x="870" y="1860" width="300" height="110" as="geometry" />
@@ -57,15 +57,15 @@
         <mxCell id="HiohPXEZzKrVTZNAdpPA-100" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;exitX=0;exitY=1;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-1" target="HiohPXEZzKrVTZNAdpPA-46" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="1033.3774450952415" y="1416" as="sourcePoint" />
-            <mxPoint x="1090" y="1443" as="targetPoint" />
+            <mxPoint x="1043.3774450952415" y="1446" as="sourcePoint" />
+            <mxPoint x="1100" y="1473" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-101" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-100" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-24" value="&lt;div&gt;Request campaign end&lt;/div&gt;" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=DVextrXxHXS6;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="170" y="1450" width="270" height="106" as="geometry" />
+          <mxGeometry x="147" y="1572" width="270" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-102" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-24" target="HiohPXEZzKrVTZNAdpPA-46" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
@@ -78,16 +78,10 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-17" value="Donate to recipient" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=4Texdm8H9AnI;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="105" y="1920" width="215" height="106" as="geometry" />
-        </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-19" value="Comment on campaign posts" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=zUexXdhNdHcf;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="386" y="2010" width="268" height="112" as="geometry" />
+          <mxGeometry x="174.5" y="2080" width="215" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-23" value="Receive donation from donors" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=tVexphC~EU-E;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="170" y="1690" width="254" height="112" as="geometry" />
-        </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-18" value="Request independent review" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=.Texs.fYdxS4;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="70" y="2110" width="328" height="110" as="geometry" />
+          <mxGeometry x="170" y="1800" width="254" height="112" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-107" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-33" target="HiohPXEZzKrVTZNAdpPA-23" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
@@ -99,7 +93,7 @@
         <mxCell id="HiohPXEZzKrVTZNAdpPA-108" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-107" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rKG8uQmGzCBM0LeLfwrZ-1" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-17" edge="1" target="HiohPXEZzKrVTZNAdpPA-23">
+        <mxCell id="rKG8uQmGzCBM0LeLfwrZ-1" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-17" target="HiohPXEZzKrVTZNAdpPA-23" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
             <mxPoint x="780" y="1852" as="sourcePoint" />
@@ -109,73 +103,62 @@
         <mxCell id="rKG8uQmGzCBM0LeLfwrZ-2" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="rKG8uQmGzCBM0LeLfwrZ-1" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-20" value="Upload supporting documents" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=eVexJs67D4Do;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
-          <mxGeometry x="80" y="750" width="262" height="116" as="geometry" />
+        <mxCell id="RDOZD4XtGrTmduCKfG26-1" value="Manage recipient campaigns" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+          <mxGeometry x="990" y="1276" width="300" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-49" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=none;endArrow=open;exitX=0.5;exitY=-0.013;exitPerimeter=0;entryX=0.59;entryY=1.004;entryPerimeter=0;lucidId=FhfxlN3~v_2n;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-21" target="HiohPXEZzKrVTZNAdpPA-20" edge="1">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-3" value="Post campaign updates" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+          <mxGeometry x="1045" y="1570" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="RDOZD4XtGrTmduCKfG26-2" value="Set donation milestones" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+          <mxGeometry x="570" y="1340" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="RDOZD4XtGrTmduCKfG26-7" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-1" target="RDOZD4XtGrTmduCKfG26-2" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
+            <mxPoint x="977" y="1396" as="sourcePoint" />
+            <mxPoint x="730" y="1260" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-50" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-49" vertex="1">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-8" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="RDOZD4XtGrTmduCKfG26-7" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-1" value="Manage recipient campaigns" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" vertex="1" parent="HiohPXEZzKrVTZNAdpPA-4">
-          <mxGeometry x="980" y="1246" width="300" height="110" as="geometry" />
+        <mxCell id="RDOZD4XtGrTmduCKfG26-4" value="Verify recipient campaign " style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+          <mxGeometry x="900" y="970" width="300" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-3" value="Post campaign updates" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" vertex="1" parent="HiohPXEZzKrVTZNAdpPA-4">
-          <mxGeometry x="1035" y="1540" width="230" height="110" as="geometry" />
+        <mxCell id="RDOZD4XtGrTmduCKfG26-6" value="Deny recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+          <mxGeometry x="950" y="700" width="270" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-2" value="Set donation milestones" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" vertex="1" parent="HiohPXEZzKrVTZNAdpPA-4">
-          <mxGeometry x="560" y="1310" width="230" height="110" as="geometry" />
+        <mxCell id="RDOZD4XtGrTmduCKfG26-5" value="Create recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+          <mxGeometry x="570" y="790" width="300" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-7" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-1" target="RDOZD4XtGrTmduCKfG26-2">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-9" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-4" target="RDOZD4XtGrTmduCKfG26-6" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="967" y="1366" as="sourcePoint" />
-            <mxPoint x="720" y="1230" as="targetPoint" />
+            <mxPoint x="1273.5" y="946" as="sourcePoint" />
+            <mxPoint x="1026.5" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-8" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" vertex="1" parent="RDOZD4XtGrTmduCKfG26-7">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-10" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="RDOZD4XtGrTmduCKfG26-9" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-4" value="Verify recipient campaign " style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" vertex="1" parent="HiohPXEZzKrVTZNAdpPA-4">
-          <mxGeometry x="890" y="1010" width="300" height="110" as="geometry" />
-        </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-6" value="Deny recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" vertex="1" parent="HiohPXEZzKrVTZNAdpPA-4">
-          <mxGeometry x="940" y="740" width="270" height="110" as="geometry" />
-        </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-5" value="Create recipient campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=BXex4DfeuOG_;" vertex="1" parent="HiohPXEZzKrVTZNAdpPA-4">
-          <mxGeometry x="560" y="830" width="300" height="110" as="geometry" />
-        </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-9" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-4" target="RDOZD4XtGrTmduCKfG26-6">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-11" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-4" target="RDOZD4XtGrTmduCKfG26-5" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="1263.5" y="986" as="sourcePoint" />
-            <mxPoint x="1016.5" y="850" as="targetPoint" />
+            <mxPoint x="960" y="1000" as="sourcePoint" />
+            <mxPoint x="733" y="890" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-10" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" vertex="1" parent="RDOZD4XtGrTmduCKfG26-9">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-12" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="RDOZD4XtGrTmduCKfG26-11" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-11" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-4" target="RDOZD4XtGrTmduCKfG26-5">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-13" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-1" target="RDOZD4XtGrTmduCKfG26-3" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="950" y="1040" as="sourcePoint" />
-            <mxPoint x="723" y="930" as="targetPoint" />
+            <mxPoint x="1357" y="1576" as="sourcePoint" />
+            <mxPoint x="1110" y="1440" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-12" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" vertex="1" parent="RDOZD4XtGrTmduCKfG26-11">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-13" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=open;endArrow=none;lucidId=Eqfx6OLwEmcW;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="HiohPXEZzKrVTZNAdpPA-4" source="RDOZD4XtGrTmduCKfG26-1" target="RDOZD4XtGrTmduCKfG26-3">
-          <mxGeometry width="100" height="100" relative="1" as="geometry">
-            <Array as="points" />
-            <mxPoint x="1347" y="1546" as="sourcePoint" />
-            <mxPoint x="1100" y="1410" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-14" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" vertex="1" parent="RDOZD4XtGrTmduCKfG26-13">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-14" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="RDOZD4XtGrTmduCKfG26-13" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-15" value="Show campaign posts" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=YTexepDSHCRV;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
@@ -217,14 +200,14 @@
         <mxCell id="HiohPXEZzKrVTZNAdpPA-31" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-30" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-18" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=none;endArrow=open;exitX=0.5;exitY=1;entryX=0.5;entryY=0;lucidId=Aefx_fE5Exag;exitDx=0;exitDy=0;entryDx=0;entryDy=0;" edge="1" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-13" target="HiohPXEZzKrVTZNAdpPA-15">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-18" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;dashed=1;fixDash=1;dashPattern=6 5;strokeWidth=4.5;rounded=0;startArrow=none;endArrow=open;exitX=0.5;exitY=1;entryX=0.5;entryY=0;lucidId=Aefx_fE5Exag;exitDx=0;exitDy=0;entryDx=0;entryDy=0;" parent="HiohPXEZzKrVTZNAdpPA-4" source="HiohPXEZzKrVTZNAdpPA-13" target="HiohPXEZzKrVTZNAdpPA-15" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points" />
             <mxPoint x="630" y="442" as="sourcePoint" />
             <mxPoint x="461" y="595" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RDOZD4XtGrTmduCKfG26-19" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" vertex="1" parent="RDOZD4XtGrTmduCKfG26-18">
+        <mxCell id="RDOZD4XtGrTmduCKfG26-19" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="RDOZD4XtGrTmduCKfG26-18" vertex="1">
           <mxGeometry x="-0.19968118725785078" relative="1" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-5" value="Platform administrator" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=1g_wy9wUcL76;" parent="1" vertex="1">
@@ -323,21 +306,6 @@
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="300" y="-277" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-64" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;strokeWidth=4.5;rounded=0;startArrow=none;endArrow=none;exitX=0;exitY=0.5;lucidId=TCfx4xAd_kuP;exitDx=0;exitDy=0;" parent="1" source="HiohPXEZzKrVTZNAdpPA-19" edge="1">
-          <mxGeometry width="100" height="100" relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="300" y="-184" />
-            </Array>
-            <mxPoint x="-22" y="-479" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-65" value="" style="html=1;jettySize=18;whiteSpace=wrap;fontSize=13;strokeColor=#3a414a;strokeOpacity=100;strokeWidth=4.5;rounded=0;startArrow=none;endArrow=none;exitX=0;exitY=0.5;entryX=0.945;entryY=0.323;entryPerimeter=0;lucidId=ZCfxbnHTdRRY;exitDx=0;exitDy=0;" parent="1" source="HiohPXEZzKrVTZNAdpPA-18" target="HiohPXEZzKrVTZNAdpPA-7" edge="1">
-          <mxGeometry width="100" height="100" relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="300" y="-85" />
             </Array>
           </mxGeometry>
         </mxCell>
