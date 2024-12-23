@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0" version="25.0.3">
   <diagram name="Page-1" id="mlBt718oroM3iFTO48tE">
-    <mxGraphModel dx="3688" dy="5086" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="4904" dy="5851" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -35,7 +35,7 @@
         <mxCell id="HiohPXEZzKrVTZNAdpPA-91" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="text;html=1;resizable=0;labelBackgroundColor=default;align=center;verticalAlign=middle;fontStyle=1;fontColor=#333333;fontSize=23.3;" parent="HiohPXEZzKrVTZNAdpPA-90" vertex="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-46" value="Change campaign status" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=~WexgQ6B5ljM;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+        <mxCell id="HiohPXEZzKrVTZNAdpPA-46" value="Change campaign state" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=~WexgQ6B5ljM;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
           <mxGeometry x="659" y="1431" width="270" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-25" value="Request campaign goal adjustment" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=JVex3coAQjmz;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
