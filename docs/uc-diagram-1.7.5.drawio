@@ -30,7 +30,7 @@
         <mxCell id="HiohPXEZzKrVTZNAdpPA-51" value="Create recipient account" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=fWexwEg0DC2k;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
           <mxGeometry x="140" y="1374" width="270" height="106" as="geometry" />
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-46" value="Change campaign state" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=~WexgQ6B5ljM;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
+        <mxCell id="HiohPXEZzKrVTZNAdpPA-46" value="Change campaign status" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=~WexgQ6B5ljM;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
           <mxGeometry x="520" y="1000" width="270" height="106" as="geometry" />
         </mxCell>
         <mxCell id="HiohPXEZzKrVTZNAdpPA-17" value="Donate to campaign" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;ellipse;fontSize=26.7;spacing=3.8;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=3;lucidId=4Texdm8H9AnI;" parent="HiohPXEZzKrVTZNAdpPA-4" vertex="1">
