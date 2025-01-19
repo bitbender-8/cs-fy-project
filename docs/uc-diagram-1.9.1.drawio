@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0" version="26.0.4">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0" version="26.0.6">
   <diagram name="Page-1" id="mlBt718oroM3iFTO48tE">
-    <mxGraphModel dx="4884" dy="4889" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="4377" dy="4571" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -207,8 +207,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="HiohPXEZzKrVTZNAdpPA-80" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;Crowdfunding system&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="846" y="-2312" width="370" height="60" as="geometry" />
+        <mxCell id="HiohPXEZzKrVTZNAdpPA-80" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;The TesfaFund system&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="836" y="-2312" width="390" height="60" as="geometry" />
         </mxCell>
         <mxCell id="cu4BUjr6Bzw_cpkHNXrN-2" value="&lt;font style=&quot;font-size: 31px;&quot;&gt;Supervisor &lt;/font&gt;" style="whiteSpace=wrap;html=1;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="1900" y="-1020" width="350" height="60" as="geometry" />
@@ -276,28 +276,28 @@
             <mxPoint x="860" y="-1020" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-2" value="" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=Dh_w0z_cWkao;" vertex="1" parent="1">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-2" value="" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=Dh_w0z_cWkao;" parent="1" vertex="1">
           <mxGeometry x="2012.5" y="-400" width="125" height="281" as="geometry" />
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-3" value="" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=Dh_w0z_cWkao;" vertex="1" parent="1">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-3" value="" style="html=1;overflow=block;blockSpacing=1;shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap;fontSize=30;spacing=0;strokeColor=#3a414a;strokeOpacity=100;fillOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#ffffff;strokeWidth=6;lucidId=Dh_w0z_cWkao;" parent="1" vertex="1">
           <mxGeometry x="2020" y="-800" width="125" height="281" as="geometry" />
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-5" value="&lt;font style=&quot;font-size: 30px;&quot;&gt;Payment gateway&lt;/font&gt;" style="whiteSpace=wrap;html=1;strokeColor=none;" vertex="1" parent="1">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-5" value="&lt;font style=&quot;font-size: 30px;&quot;&gt;Payment gateway&lt;/font&gt;" style="whiteSpace=wrap;html=1;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="1890" y="-59" width="350" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-6" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=4.5;endArrow=none;endFill=0;" edge="1" parent="1" source="HiohPXEZzKrVTZNAdpPA-17" target="H5EVCb3wOr3cG2942mmx-2">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-6" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=4.5;endArrow=none;endFill=0;" parent="1" source="HiohPXEZzKrVTZNAdpPA-17" target="H5EVCb3wOr3cG2942mmx-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-7" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;strokeWidth=4;" edge="1" parent="1" source="HiohPXEZzKrVTZNAdpPA-51" target="H5EVCb3wOr3cG2942mmx-3">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-7" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;strokeWidth=4;" parent="1" source="HiohPXEZzKrVTZNAdpPA-51" target="H5EVCb3wOr3cG2942mmx-3" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="2000" y="-740" as="targetPoint" />
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-10" value="&lt;font style=&quot;font-size: 31px;&quot;&gt;Phone verification provider &lt;/font&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-10" value="&lt;font style=&quot;font-size: 31px;&quot;&gt;Phone verification provider &lt;/font&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1890" y="-500" width="390" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="H5EVCb3wOr3cG2942mmx-13" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;endArrow=none;endFill=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="SHn1qol037nMLYQCIOD2-2" target="H5EVCb3wOr3cG2942mmx-3">
+        <mxCell id="H5EVCb3wOr3cG2942mmx-13" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;endArrow=none;endFill=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="SHn1qol037nMLYQCIOD2-2" target="H5EVCb3wOr3cG2942mmx-3" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="2020" y="-710" as="targetPoint" />
           </mxGeometry>
