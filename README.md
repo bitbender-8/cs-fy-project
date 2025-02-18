@@ -1,6 +1,6 @@
-# CS final year project practice
+# CS final year project
 
-A project to practice workflows, test dependencies, and discover pain points before starting the final year project.
+A final year project for AAU's CS program.
 
 ## Working on the project
 

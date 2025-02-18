@@ -1,0 +1,24 @@
+services:
+  tesfafund-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: StrongPassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  # TODO Remove pgadmin for production
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: email@example.com
+      PGADMIN_DEFAULT_PASSWORD: StrongPassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - tesfafund-db
+volumes:
+  db_data:
