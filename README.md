@@ -48,10 +48,10 @@ Tools • Dart 3.5.4 • DevTools 2.37.3
 
 We are using the Feature Workflow model. You can look it up for more info, but here are the highlights:
 
-- Main Branch: This will contain production-ready code at all times. Any changes here should follow a strict review and testing process.
-  Feature Branches: For new feature development, we will create separate branches named `feature/*`. These branches will be merged back into the main branch once the features are complete, tested, and all issues resolved.
-- Hotfix Branches: For critical fixes directly impacting the production environment, we will create hotfix branches named `hotfix/*`. These should be promptly merged into the main branch after resolution and testing.
-- Documentation and Miscellaneous Updates: For changes to documentation, configuration files, or other non-feature-related updates, we will use branches named `misc/*`.
+- **Main Branch**: This will contain production-ready code at all times. Any changes here should follow a strict review and testing process.
+- **Feature Branches**: For new feature development, we will create separate branches named `feature/*`. These branches will be merged back into the main branch once the features are complete, tested, and all issues resolved.
+- **Hotfix Branches**: For critical fixes directly impacting the production environment, we will create hotfix branches named `hotfix/*`. These should be promptly merged into the main branch after resolution and testing.
+- **Miscellaneous Updates**: For changes to documentation, configuration files, or other non-feature-related updates, we will use branches named `misc/*`.
 
 ### Commit messages
 
