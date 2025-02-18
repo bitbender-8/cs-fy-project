@@ -1,6 +1,6 @@
-# CS final year project practice
+# CS final year project
 
-A project to practice workflows, test dependencies, and discover pain points before starting the final year project.
+A final year project for AAU's CS program.
 
 ## Working on the project
 
@@ -48,10 +48,10 @@ Tools • Dart 3.5.4 • DevTools 2.37.3
 
 We are using the Feature Workflow model. You can look it up for more info, but here are the highlights:
 
-- **Main Branch**: This will contain production-ready code at all times. Any changes here should follow a strict review and testing process.
-- **Feature Branches**: For new feature development, we will create separate branches named `feature/*`. These branches will be merged back into the main branch once the features are complete, tested, and all issues resolved.
-- **Hotfix Branches**: For critical fixes directly impacting the production environment, we will create hotfix branches named `hotfix/*`. These should be promptly merged into the main branch after resolution and testing.
-- **Miscellaneous Updates**: For changes to documentation, configuration files, or other non-feature-related updates, we will use branches named `misc/*`.
+- Main Branch (`main`): Production-ready code. Changes require review and testing.
+- Feature Branches (`feature/*`): For new feature development. Merge into main after completion, testing, and issue resolution.
+- Hotfix Branches (`hotfix/*`): For critical production fixes. Merge into main promptly after resolution and testing.
+- Miscellaneous Updates (`misc/*`): For one-off changes to documentation, configuration files, or other non-feature-related updates. <mark>You do not need to create a new branch for every miscellaneous change.</mark> Group related miscellaneous changes into a single `misc/*` branch.
 
 ### Commit messages
 
