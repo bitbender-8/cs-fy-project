@@ -58,7 +58,7 @@ We are using the Feature Workflow model. You can look it up for more info, but h
 We have three separate apps in this repo. So we will structure our commit messages to reflect where the changes were made. We will use the following format for our messages
 
 ```text
-<type>(<scope>): <subject>
+<type>: <subject>
 
 <body>
 ```
@@ -70,13 +70,6 @@ We have three separate apps in this repo. So we will structure our commit messag
   - `docs` - when making changes to the docs.
   - `revert` - when reverting to a prior commit.
   - `refactor` - when refactoring the codebase.
-
-- `<scope>` is the app the change affects. If it affects multiple apps It can be either of the following
-  - `mob` - for changes in `frontends/mobile` (flutter app)
-  - `adm` - for changes in `frontends/admin` (nextjs admin app)
-  - `bck` - for changes in `backend` and `db` (nodejs backend code)
-  - `doc` - for changes in `docs` or `README.md` (top-level docs folder or readme folder)
-  - `ci` - for changes in `.github/workflows` (github actions)
 
 When it comes to the subject and body we will follow the guidelines outlined below. You can find out more detailed explanations [here](https://cbea.ms/git-commit/).
 
