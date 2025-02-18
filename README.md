@@ -48,17 +48,17 @@ Tools • Dart 3.5.4 • DevTools 2.37.3
 
 We are using the Feature Workflow model. You can look it up for more info, but here are the highlights:
 
-- Main Branch: This will contain production-ready code at all times. Any changes here should follow a strict review and testing process.
-  Feature Branches: For new feature development, we will create separate branches named `feature/*`. These branches will be merged back into the main branch once the features are complete, tested, and all issues resolved.
-- Hotfix Branches: For critical fixes directly impacting the production environment, we will create hotfix branches named `hotfix/*`. These should be promptly merged into the main branch after resolution and testing.
-- Documentation and Miscellaneous Updates: For changes to documentation, configuration files, or other non-feature-related updates, we will use branches named `misc/*`.
+- **Main Branch**: This will contain production-ready code at all times. Any changes here should follow a strict review and testing process.
+- **Feature Branches**: For new feature development, we will create separate branches named `feature/*`. These branches will be merged back into the main branch once the features are complete, tested, and all issues resolved.
+- **Hotfix Branches**: For critical fixes directly impacting the production environment, we will create hotfix branches named `hotfix/*`. These should be promptly merged into the main branch after resolution and testing.
+- **Miscellaneous Updates**: For changes to documentation, configuration files, or other non-feature-related updates, we will use branches named `misc/*`.
 
 ### Commit messages
 
 We have three separate apps in this repo. So we will structure our commit messages to reflect where the changes were made. We will use the following format for our messages
 
 ```text
-<type>(<scope>): <subject>
+<type>: <subject>
 
 <body>
 ```
@@ -70,13 +70,6 @@ We have three separate apps in this repo. So we will structure our commit messag
   - `docs` - when making changes to the docs.
   - `revert` - when reverting to a prior commit.
   - `refactor` - when refactoring the codebase.
-
-- `<scope>` is the app the change affects. If it affects multiple apps It can be either of the following
-  - `mob` - for changes in `frontends/mobile` (flutter app)
-  - `adm` - for changes in `frontends/admin` (nextjs admin app)
-  - `bck` - for changes in `backend` and `db` (nodejs backend code)
-  - `doc` - for changes in `docs` or `README.md` (top-level docs folder or readme folder)
-  - `ci` - for changes in `.github/workflows` (github actions)
 
 When it comes to the subject and body we will follow the guidelines outlined below. You can find out more detailed explanations [here](https://cbea.ms/git-commit/).
 
