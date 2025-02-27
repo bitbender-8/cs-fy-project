@@ -1,8 +1,3 @@
-/* 
-TODO(Continue): DOC-UPDATES have not been cascaded to diagrams other than the relational schema. Apply the changes to other affected diagrams, especially the class diagrams. 
- */
-CREATE DATABASE "TesfaFundDB";
-
 -- Stores information about individuals who receive donations or participate in campaigns.
 CREATE TABLE
     "Recipient" (
@@ -37,9 +32,9 @@ CREATE TABLE
     "RecipientSocialMediaHandles" (
         -- Unique identifier for each social media handle.
         "handleId" UUID PRIMARY KEY,
-        /* DOC-UPDATE: Changed Max URL length to 2048 to comply with recommendations. */
+        /* DOC-UPDATE: Changed type to TEXT to bypass URL length limits. */
         -- The social media handle url.
-        "socialMediaHandle" VARCHAR(2048) NOT NULL,
+        "socialMediaHandle" TEXT NOT NULL,
         -- Foreign key referencing the Recipient table.
         "recipientId" UUID NOT NULL REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
@@ -109,11 +104,6 @@ CREATE TYPE "CampaignStatus" AS ENUM (
     'COMPLETED'
 );
 
-/* 
-DOC-UPDATE: The PaymentInfo table from the relational schema has been removed and its attributes have gotten merged into the Campaign table itself. It was originally placed in a separate table since it appears that way in the class diagram; however, that is not necessary and adds unnecessary complexity. 
-
-DOC-UPDATE: Removed the columns 'documentUrls' and 'redactedDocumentUrls'. This was a mistake that failed to remove these after the dedicated tables were added to respect the first normal form.
- */
 -- Stores information about campaigns.
 CREATE TABLE
     "Campaign" (
@@ -171,9 +161,6 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
 
-/* 
-DOC-UPDATE: Changed the name of Table from 'Donation' to 'CampaignDonation' to clarify intent.
- */
 -- Records a campaign's donation transactions.
 CREATE TABLE
     "CampaignDonation" (
@@ -187,31 +174,6 @@ CREATE TABLE
         "timestamp" TIMESTAMPTZ NOT NULL,
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
-        -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
-    );
-
-/*
-DOC-UPDATE: Removed 'mediaUrls' column. Even though we said so in our documentations, this is not necessary for an MVP. If we decide to continue on with this, we need to do the following:
-- Create a new Class and Table called CampaignPostMedia with attributes like id, mediaType, mediaUrl, campaignPostId.
-- Change our querying, insertion and update logic to accomodate this.
-- Figure out whether or not this affects the campaign posting workflow (with superviser approval).
-
-DOC-UPDATE: Renamed 'postDate' to 'publicPostDate' to clarify intent. 
-
-DOC-UPDATE: Removed 'postUpdateRequestId' in favor of having a 'campaignPostId' in 'PostUpdateRequest'. This was done to clarify the relationship between them. It was originally placed in this table because a post had no way of knowing whether it should be publicly available or not without using a JOIN. Now this information is encoded in the 'publicPostDate' column instead.
- */
--- Stores posts related to a campaign.
-CREATE TABLE
-    "CampaignPost" (
-        -- Unique identifier for each campaign post.
-        "id" UUID PRIMARY KEY,
-        -- Title of the post.
-        "title" VARCHAR(100) NOT NULL,
-        -- Content of the post.
-        "content" TEXT NOT NULL,
-        -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute not null, then the post is not available to the public. 
-        "publicPostDate" TIMESTAMPTZ,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
@@ -273,9 +235,21 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
 
-/*
-DOC-UPDATE: Added the 'campaignPostId' column which references the 'CampaignPost' table. Having a foreign key in this table instead of the 'CampaignPost' table makes it easier to enforce the 1-to-1 relationship between them.
- */
+-- Stores posts related to a campaign.
+CREATE TABLE
+    "CampaignPost" (
+        -- Unique identifier for each campaign post.
+        "id" UUID PRIMARY KEY,
+        -- Title of the post.
+        "title" VARCHAR(100) NOT NULL,
+        -- Content of the post.
+        "content" TEXT NOT NULL,
+        -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute not null, then the post is not available to the public. 
+        "publicPostDate" TIMESTAMPTZ,
+        -- Foreign key referencing the Campaign table.
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+    );
+
 -- Stores requests to update a campaign post.
 CREATE TABLE
     "PostUpdateRequest" (
@@ -292,5 +266,5 @@ CREATE TABLE
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id"),
         -- Foreign key referencing the CampaignPost table.
-        "campaignPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id")
+        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id")
     );
