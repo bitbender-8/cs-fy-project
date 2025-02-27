@@ -1,6 +1,3 @@
-/* 
-TODO(Continue): DOC-UPDATES have not been cascaded to diagrams other than the relational schema. Apply the changes to other affected diagrams, especially the class diagrams. 
- */
 -- Stores information about individuals who receive donations or participate in campaigns.
 CREATE TABLE
     "Recipient" (
@@ -107,11 +104,6 @@ CREATE TYPE "CampaignStatus" AS ENUM (
     'COMPLETED'
 );
 
-/* 
-DOC-UPDATE: The PaymentInfo table from the relational schema has been removed and its attributes have gotten merged into the Campaign table itself. It was originally placed in a separate table since it appears that way in the class diagram; however, that is not necessary and adds unnecessary complexity. 
-
-DOC-UPDATE: Removed the columns 'documentUrls' and 'redactedDocumentUrls'. This was a mistake. They should have been removed after the dedicated tables were added to respect the first normal form.
- */
 -- Stores information about campaigns.
 CREATE TABLE
     "Campaign" (
@@ -169,9 +161,6 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
 
-/* 
-DOC-UPDATE: Changed the name of Table from 'Donation' to 'CampaignDonation' to clarify intent.
- */
 -- Records a campaign's donation transactions.
 CREATE TABLE
     "CampaignDonation" (
@@ -246,16 +235,6 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
 
-/*
-DOC-UPDATE: Removed 'mediaUrls' column. Even though we said so in our documentations, this is not necessary for an MVP. If we decide to continue on with this, we need to do the following:
-- Create a new Class and Table called CampaignPostMedia with attributes like id, mediaType, mediaUrl, newPostId.
-- Change our querying, insertion and update logic to accomodate this.
-- Figure out whether or not this affects the campaign posting workflow (with superviser approval).
-
-DOC-UPDATE: Renamed 'postDate' to 'publicPostDate' to clarify intent. 
-
-DOC-UPDATE: Removed 'postUpdateRequestId' in favor of having a 'newPostId' in 'PostUpdateRequest'. This was done to clarify the relationship between them. 'postUpdateRequestId' was originally placed in this table because a post had no way of knowing whether it should be publicly available or not without using a JOIN. Now this information can be obtained from the 'publicPostDate' column instead. If this attribute not null, then the post is not available to the public.
- */
 -- Stores posts related to a campaign.
 CREATE TABLE
     "CampaignPost" (
@@ -271,9 +250,6 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
 
-/*
-DOC-UPDATE: Added the 'newPostId' column which references the 'CampaignPost' table. Having a foreign key in this table instead of the 'CampaignPost' table makes it easier to enforce the 1-to-1 relationship between them.
- */
 -- Stores requests to update a campaign post.
 CREATE TABLE
     "PostUpdateRequest" (
