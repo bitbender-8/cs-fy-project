@@ -5,9 +5,8 @@
     "rootDir": "src",
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": true,
-    "sourceMap": true
+    "sourceMap": true,
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/models/.ts"],
   "exclude": ["node_modules", "build"],
-  "noEmitOnError": true
 }

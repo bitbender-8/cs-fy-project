@@ -27,8 +27,8 @@
     "lint:chk": "eslint .",
     "lint": "eslint . --fix",
     "build": "tsc",
-    "prod": "tsc && node build/server.js",
-    "dev": "tsx watch src/server.ts",
+    "prod": "tsc && node --env-file=.env build/server.js",
+    "dev": "tsx watch --env-file=.env src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -41,17 +41,20 @@
   },
   "homepage": "https://github.com/bitbender-8/cs-fy-project-practice#readme",
   "dependencies": {
-    "express": "5.0.1"
+    "express": "5.0.1",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/js": "9.15.0",
     "@tsconfig/node22": "22.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "22.10.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.12.0",
     "prettier": "3.4.1",
+    "swagger-ui-express": "^5.0.1",
     "tsx": "^4.19.2",
     "typescript": "5.7.2",
     "typescript-eslint": "8.16.0"
