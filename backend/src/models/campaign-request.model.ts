@@ -4,7 +4,7 @@ import { CampaignPost, CampaignStatus } from "./campaign.model.js";
 export interface CampaignRequest {
   id: UUID;
   title: string;
-  requestDate: Date;
+  requestDate: Date | string;
   justification: string;
   isResolved: boolean;
   campaignId: UUID;
@@ -23,5 +23,5 @@ export interface PostUpdateRequest extends CampaignRequest {
 }
 
 export interface EndDateExtensionRequest extends CampaignRequest {
-  newEndDate: Date;
+  newEndDate: Date | string;
 }

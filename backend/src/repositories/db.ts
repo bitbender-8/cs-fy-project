@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Pool, QueryResult, PoolClient } from "pg";
+import pg, { PoolClient, QueryResult, QueryResultRow } from "pg";
 
-const pool = new Pool();
+const pool = new pg.Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: Number(process.env.DB_PORT),
+});
 
 /**
  * Executes a database query. Don't use this for transactions, use {@link getClient} instead.
@@ -10,12 +16,12 @@ const pool = new Pool();
  * @returns A promise resolving to the query result.
  * @throws An error if the query fails.
  */
-export const query = async (
+export const query = async <T extends QueryResultRow = any>(
   text: string,
   params?: any[]
-): Promise<QueryResult> => {
+): Promise<QueryResult<T>> => {
   try {
-    const result = await pool.query(text, params);
+    const result = await pool.query<T>(text, params);
     return result;
   } catch (error) {
     console.error("Database query error:", error);

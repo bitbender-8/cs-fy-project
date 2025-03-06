@@ -15,11 +15,11 @@ export interface Campaign {
   fundraisingGoal: string;
   status: CampaignStatus;
   category: string;
-  submissionDate: Date;
-  verificationDate: Date;
-  denialDate: Date;
-  launchDate: Date;
-  endDate: Date;
+  submissionDate: Date | string;
+  verificationDate: Date | string;
+  denialDate: Date | string;
+  launchDate: Date | string;
+  endDate: Date | string;
   documentUrls: string[];
   redactedDocumentUrls: string[];
   paymentInfo: PaymentInfo;
@@ -36,7 +36,7 @@ export interface CampaignDonation {
   id: UUID;
   grossAmount: string;
   serviceFee: string;
-  timestmap: Date;
+  timestmap: Date | string;
   transactionRef: string;
   campaignId: UUID;
 }
@@ -45,6 +45,6 @@ export interface CampaignPost {
   id: UUID;
   title: string;
   content: string;
-  publicPostDate: Date;
+  publicPostDate: Date | string;
   campaignId: UUID;
 }

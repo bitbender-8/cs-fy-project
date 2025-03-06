@@ -5,5 +5,5 @@ export interface Notification {
   subject: string;
   body: string;
   isRead: boolean;
-  timestamp: Date;
+  timestamp: Date | string;
 }

@@ -12,9 +12,12 @@ const nonEmptyString = (min: number, max: number) =>
       message: "Field cannot be empty or contain only whitespace",
     });
 
+// TDDO Update zod schema to complty with new type definitions.
 // Schemas
-export const recipientDtoSchema = z
+
+export const createRecipientDtoSchema = z
   .object({
+    id: z.string().uuid({ message: "Not a valid UUID" }).optional(),
     firstName: nonEmptyString(1, 50),
     middleName: nonEmptyString(1, 50),
     lastName: nonEmptyString(1, 50),
@@ -53,6 +56,16 @@ export const recipientDtoSchema = z
       .refine((val) => val === undefined || val.trim() !== "", {
         message: "Bio cannot contain only whitespace if provided",
       }),
+    socialMediaHandles: z
+      .array(
+        z.object({
+          id: z.string().uuid({ message: "Not a valid UUID" }).optional(),
+          socialMediaHandle: z
+            .string()
+            .url({ message: "Handle is not a valid URL" }),
+        })
+      )
+      .optional(),
   })
   .superRefine(({ password, passwordConfirmation }, ctx) => {
     if (password !== passwordConfirmation) {

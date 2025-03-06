@@ -1,28 +1,30 @@
-import { DatabaseError } from "pg";
-import { Recipient } from "../models/user.model.js";
+import pg from "pg";
 import { query } from "./db.js";
-import {
-  ConstraintViolationError,
-  UniqueKeyConstraintError,
-} from "../models/error-types.js";
+import { UUID } from "crypto";
 
-// Throws errors, validate the schema beforehand.
+import { Recipient, SocialMediaHandle } from "../models/user.model.js";
+import { UniqueKeyConstraintError } from "../models/error-types.js";
+import { RecipientDto } from "../models/dtos.js";
+
+/**
+ * Throws errors, validate the schema beforehand (except for unique and fk constrinat violations).
+ */
 export async function createRecipient(
   recipient: Recipient
-): Promise<Recipient> {
+): Promise<RecipientDto> {
   try {
-    const insertionResult = await query(
+    const insertionResult = await query<RecipientDto>(
       `INSERT INTO "Recipient" (
-        id,
-        firstName,
-        middleName,
-        lastName,
-        dateOfBirth,
-        email,
-        phoneNo,
-        passwordHash,
-        bio,
-        profilePictureUrl,
+        "id",
+        "firstName",
+        "middleName",
+        "lastName",
+        "dateOfBirth",
+        "email",
+        "phoneNo",
+        "passwordHash",
+        "bio",
+        "profilePictureUrl"
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
       RETURNING *
@@ -45,7 +47,7 @@ export async function createRecipient(
       throw new Error("Recipient insertion failed.");
     }
 
-    const createdRecipient = insertionResult.rows[0] as Recipient;
+    const createdRecipient = insertionResult.rows[0] as RecipientDto;
 
     // Insert social media handles if they exist
     if (
@@ -56,10 +58,10 @@ export async function createRecipient(
 
       for (const handle of recipient.socialMediaHandles) {
         const insertedHandle = await query(
-          `INSERT INTO "RecipientSocialMediaHandles" (
-              id,
-              socialMediaHandle,
-              recipientId
+          `INSERT INTO "RecipientSocialMediaHandle" (
+              "id",
+              "socialMediaHandle",
+              "recipientId"
            ) VALUES ($1, $2, $3) RETURNING *
           `,
           [crypto.randomUUID(), handle.socialMediaHandle, createdRecipient.id]
@@ -75,26 +77,63 @@ export async function createRecipient(
 
     return createdRecipient;
   } catch (error: unknown) {
-    if (error instanceof DatabaseError) {
-      switch (error.code) {
-        case "23505": // Unique constraint violation
-          if (error.constraint === "recipientPhoneNoUK") {
-            throw new UniqueKeyConstraintError(
-              "Phone number provided has already been used by another account.",
-              "phoneNo"
-            );
-          } else {
-            throw new Error(error.message);
-          }
-        case "23503": // Foreign key constraint violation
-          throw new Error(error.message);
-        default:
-          throw new Error(error.message);
+    if (error instanceof pg.DatabaseError) {
+      // Uses the default constraint names in postgres to detect constraint violations. These are described [here](http://stackoverflow.com/questions/4107915/ddg#4108266).
+
+      if (
+        error.code === "23505" &&
+        error.constraint === "Recipient_phoneNo_key"
+      ) {
+        throw new UniqueKeyConstraintError(
+          "Phone number provided has already been used by another account.",
+          "phoneNo"
+        );
       }
-    } else if (error instanceof ConstraintViolationError) {
       throw error;
     } else {
-      throw new Error("An unexpected error occurred.");
+      throw error;
     }
+  }
+}
+
+// throws errors, validate recipientId before hand.
+
+export async function getRecipientById(
+  recipientId: UUID
+): Promise<RecipientDto | null> {
+  try {
+    const recipientResult = await query(
+      `SELECT * FROM "Recipient" WHERE id = $1`,
+      [recipientId]
+    );
+
+    if (!recipientResult || recipientResult.rows.length === 0) {
+      return null;
+    }
+
+    const recipient = recipientResult.rows[0];
+
+    const socialMediaResult = await query<SocialMediaHandle>(
+      `SELECT * FROM "RecipientSocialMediaHandle" WHERE "recipientId" = $1`,
+      [recipientId]
+    );
+
+    const recipientDto: RecipientDto = {
+      id: recipient.id,
+      firstName: recipient.firstName,
+      middleName: recipient.middleName,
+      lastName: recipient.lastName,
+      dateOfBirth: new Date(recipient.dateOfBirth),
+      email: recipient.email,
+      phoneNo: recipient.phoneNo,
+      profilePictureUrl: recipient.profilePictureUrl,
+      bio: recipient.bio,
+      socialMediaHandles: socialMediaResult.rows,
+    };
+
+    return recipientDto;
+  } catch (error) {
+    console.error("Error getting recipient by ID:", error);
+    return null;
   }
 }

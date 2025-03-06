@@ -6,21 +6,23 @@ export interface User {
   firstName: string;
   middleName: string;
   lastName: string;
-  dateOfBirth: Date;
+  dateOfBirth: Date | string;
   phoneNo: string;
   passwordHash?: string;
   loginAttempts?: number;
-  accountLockDate?: Date;
+  accountLockDate?: Date | string;
 }
 
 export interface Recipient extends User {
   email?: string;
   bio?: string;
   profilePictureUrl?: string;
-  socialMediaHandles?: {
-    id?: UUID;
-    socialMediaHandle: string;
-  }[];
+  socialMediaHandles?: SocialMediaHandle[];
+}
+
+export interface SocialMediaHandle {
+  id?: UUID;
+  socialMediaHandle: string;
 }
 
 export interface Supervisor extends User {

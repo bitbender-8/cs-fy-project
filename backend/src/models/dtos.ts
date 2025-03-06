@@ -1,16 +1,6 @@
-import { Recipient } from "./user.model.js";
+import { Recipient, Supervisor, User } from "./user.model.js";
 
-export interface RecipientDto
-  extends Omit<
-    Recipient,
-    | "id"
-    | "passwordHash"
-    | "loginAttempts"
-    | "accountLockDate"
-    | "profilePictureUrl"
-    | "dateOfBirth"
-  > {
-  password: string;
-  passwordConfirmation: string;
-  dateOfBirth: string;
-}
+type SensitiveUserFields = "passwordHash" | "loginAttempts" | "accountLockDate";
+export type BaseUserDto<T extends User> = Omit<T, SensitiveUserFields>;
+export type RecipientDto = BaseUserDto<Recipient>;
+export type SupervisorDto = BaseUserDto<Supervisor>;

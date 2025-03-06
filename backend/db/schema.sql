@@ -14,7 +14,7 @@ CREATE TABLE
         -- Recipient's email address. This is not required.
         "email" VARCHAR(100),
         -- Recipient's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL UNIQUE CONSTRAINT recipientPhoneNoUK,
+        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
         -- Hashed password for security.
         "passwordHash" VARCHAR(255) NOT NULL,
         -- Number of failed login attempts.
@@ -29,14 +29,15 @@ CREATE TABLE
 
 -- Links recipients to their social media accounts.
 CREATE TABLE
-    "RecipientSocialMediaHandles" (
-        -- Unique identifier for each social media handle.
+    "RecipientSocialMediaHandle" (
+        /* DOC-UPDATE: Rename 'handleId' in relational schema to id. */
         "id" UUID PRIMARY KEY,
-        /* DOC-UPDATE: Changed type to TEXT to bypass URL length limits. */
+        -- Unique identifier for each social media handle.
+        "recipientId" UUID NOT NULL,
         -- The social media handle url.
         "socialMediaHandle" TEXT NOT NULL,
         -- Foreign key referencing the Recipient table.
-        CONSTRAINT recipientIdFK FOREIGN KEY ("recipientId") REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY ("recipientId") REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 -- Stores information about supervisors.
