@@ -14,13 +14,13 @@ CREATE TABLE
         -- Recipient's email address. This is not required.
         "email" VARCHAR(100),
         -- Recipient's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
+        "phoneNo" VARCHAR(20) NOT NULL UNIQUE CONSTRAINT recipientPhoneNoUK,
         -- Hashed password for security.
         "passwordHash" VARCHAR(255) NOT NULL,
         -- Number of failed login attempts.
         "loginAttempts" INTEGER DEFAULT 0,
         -- Timestamp when the account was locked due to failed attempts.
-        "accountLockDate" TIMESTAMP,
+        "accountLockDate" TIMESTAMP DEFAULT NULL,
         -- A short biography or description of the recipient.
         "bio" TEXT,
         -- URL to the recipient's profile picture.
@@ -31,12 +31,12 @@ CREATE TABLE
 CREATE TABLE
     "RecipientSocialMediaHandles" (
         -- Unique identifier for each social media handle.
-        "handleId" UUID PRIMARY KEY,
+        "id" UUID PRIMARY KEY,
         /* DOC-UPDATE: Changed type to TEXT to bypass URL length limits. */
         -- The social media handle url.
         "socialMediaHandle" TEXT NOT NULL,
         -- Foreign key referencing the Recipient table.
-        "recipientId" UUID NOT NULL REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+        CONSTRAINT recipientIdFK FOREIGN KEY ("recipientId") REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 -- Stores information about supervisors.

@@ -1,5 +1,5 @@
 import { UUID } from "crypto";
-import { CampaignPost, CampaignStatus } from "./campaign.js";
+import { CampaignPost, CampaignStatus } from "./campaign.model.js";
 
 export interface CampaignRequest {
   id: UUID;
