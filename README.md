@@ -82,3 +82,13 @@ When it comes to the subject and body we will follow the guidelines outlined bel
   - If applied, this commit will `____`.
 - Wrap the body at 72 characters (use line guides in your editor to do so).
 - If you need to have a body for details (when your diff is too large), use it to explain what and why.
+
+## Todo tags
+
+Install a VS-Code extension like todo tree then add the following tags.
+
+- `TODO (@github-handle)` - Marks a task to be completed by a member.
+- `DOC-UPDATE` - Marks changes that must be made to documentation artifacts. These will probably be made by `@bitbender-8`.
+- `FIXME` - Marks an issue to fix.
+- `REMOVE` - Marks and code that must be removed before merging to main. This includes things like debug statements.
+- `HACK` - A workaround that should probably be fixed before shipping to prod.
