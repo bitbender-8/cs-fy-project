@@ -83,7 +83,7 @@ export async function validatedFileUpload(fileFieldName: string) {
           // Filename sanitization
           req.file.originalname = req.file.originalname.replace(
             /[^a-zA-Z0-9._-]/g,
-            "_"
+            "_",
           );
 
           next();

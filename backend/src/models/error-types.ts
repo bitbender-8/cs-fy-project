@@ -13,7 +13,7 @@ export class ConstraintViolationError extends Error implements UIMessage {
   constructor(
     message: string,
     public uiMessage: string,
-    public field: string
+    public field: string,
   ) {
     super(message);
   }
@@ -24,7 +24,7 @@ export class ForeignKeyConstraintError extends ConstraintViolationError {
     super(
       `Foreign key constraint violation on field '${field}' referencing table '${relatedTable}'.`,
       uiMessage,
-      field
+      field,
     );
   }
 }
@@ -34,7 +34,7 @@ export class UniqueKeyConstraintError extends ConstraintViolationError {
     super(
       `Unique key constraint violation on field '${field}'.`,
       uiMessage,
-      field
+      field,
     );
   }
 }

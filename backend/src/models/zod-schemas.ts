@@ -63,7 +63,7 @@ export const createRecipientDtoSchema = z
           socialMediaHandle: z
             .string()
             .url({ message: "Handle is not a valid URL" }),
-        })
+        }),
       )
       .optional(),
   })
