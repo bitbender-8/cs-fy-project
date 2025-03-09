@@ -69,7 +69,7 @@ We have three separate apps in this repo. So we will structure our commit messag
   - `fix` - when fixing bugs or issues in the codebase.
   - `docs` - when making changes to the docs.
   - `revert` - when reverting to a prior commit.
-  - `refactor` - when refactoring the codebase.
+  - `refactor` - when refactoring the codebase (this includes making major changes to the directory structure).
   - `merge-pr` - for merge ommits after pull requests are accepted.
 
 When it comes to the subject and body we will follow the guidelines outlined below. You can find out more detailed explanations [here](https://cbea.ms/git-commit/).
