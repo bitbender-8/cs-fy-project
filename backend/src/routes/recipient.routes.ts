@@ -69,7 +69,7 @@ recipientRouter.post(
       const createdRecipient = await createRecipient(newRecipient);
       res.set(
         "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${createdRecipient.id}`
+        `${req.protocol}://${req.get("host")}/recipients/${createdRecipient.id}`,
       );
       res.status(201).json(createdRecipient);
     } catch (error) {
@@ -90,7 +90,7 @@ recipientRouter.post(
         res.status(500).json(errorResponse);
       }
     }
-  }
+  },
 );
 
 // TODO Hide fields conditionally based on authentication of user.
@@ -109,7 +109,7 @@ recipientRouter.get("/:id", async (req: Request, res: Response) => {
 
   try {
     const recipient: RecipientDto | null = await getRecipientById(
-      recipientId as UUID
+      recipientId as UUID,
     );
 
     if (!recipient) {
