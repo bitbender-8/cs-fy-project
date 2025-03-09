@@ -1,0 +1,136 @@
+{
+  "recipientDtos": [
+    [
+      {
+        "firstName": "Alice",
+        "middleName": "Jane",
+        "lastName": "Smith",
+        "dateOfBirth": "1985-07-22",
+        "email": "alice.smith@example.com",
+        "phoneNo": "+251911223346",
+        "password": "password123",
+        "passwordConfirmation": "password123",
+        "bio": "A software developer passionate about open-source.",
+        "socialMediaHandles": [
+          { "socialMediaHandle": "twitter.com/alicesmith" }
+        ]
+      },
+      {
+        "firstName": "Bob",
+        "middleName": "Michael",
+        "lastName": "Johnson",
+        "dateOfBirth": "1978-03-15",
+        "email": "bob.johnson@example.com",
+        "phoneNo": "+251911223344",
+        "password": "securePass",
+        "passwordConfirmation": "securePass",
+        "bio": "A freelance writer and photographer.",
+        "socialMediaHandles": [
+          { "socialMediaHandle": "instagram.com/bobjohnson" }
+        ]
+      },
+      {
+        "firstName": "Charlie",
+        "middleName": "David",
+        "lastName": "Williams",
+        "dateOfBirth": "1992-11-03",
+        "email": "charlie.williams@example.com",
+        "phoneNo": "+251911223345",
+        "password": "StrongPassword!",
+        "passwordConfirmation": "StrongPassword!",
+        "bio": "A musician and composer.",
+        "socialMediaHandles": [
+          { "socialMediaHandle": "facebook.com/charliewilliams" },
+          { "socialMediaHandle": "youtube.com/charliewilliams" }
+        ]
+      },
+      {
+        "firstName": "Diana",
+        "middleName": "Elizabeth",
+        "lastName": "Brown",
+        "dateOfBirth": "1965-09-28",
+        "email": "diana.brown@example.com",
+        "phoneNo": "111-222-3333",
+        "password": "MySecret1",
+        "passwordConfirmation": "MySecret1",
+        "bio": "A graphic designer and illustrator."
+      },
+      {
+        "firstName": "Ethan",
+        "middleName": "Christopher",
+        "lastName": "Davis",
+        "dateOfBirth": "2001-05-10",
+        "email": "ethan.davis@example.com",
+        "phoneNo": "444-555-6666",
+        "password": "secure123!",
+        "passwordConfirmation": "secure123!",
+        "bio": "A data scientist and analyst."
+      }
+    ]
+  ],
+  "recipients": [
+    {
+      "firstName": "Alice",
+      "middleName": "Jane",
+      "lastName": "Smith",
+      "dateOfBirth": "1985-07-22T00:00:00.000Z",
+      "email": "alice.smith@example.com",
+      "phoneNo": "123-456-7890",
+      "passwordHash": "hashedPassword1",
+      "bio": "A software developer passionate about open-source.",
+      "profilePictureUrl": "http://example.com/alice.jpg",
+      "socialMediaHandles": [{ "socialMediaHandle": "twitter.com/alicesmith" }]
+    },
+    {
+      "firstName": "Bob",
+      "middleName": "Michael",
+      "lastName": "Johnson",
+      "dateOfBirth": "1978-03-15T00:00:00.000Z",
+      "email": "bob.johnson@example.com",
+      "phoneNo": "987-654-3210",
+      "passwordHash": "hashedPassword2",
+      "bio": "A freelance writer and photographer.",
+      "profilePictureUrl": "http://example.com/bob.jpg",
+      "socialMediaHandles": [
+        { "socialMediaHandle": "instagram.com/bobjohnson" }
+      ]
+    },
+    {
+      "firstName": "Charlie",
+      "middleName": "David",
+      "lastName": "Williams",
+      "dateOfBirth": "1992-11-03T00:00:00.000Z",
+      "email": "charlie.williams@example.com",
+      "phoneNo": "555-123-4567",
+      "passwordHash": "hashedPassword3",
+      "bio": "A musician and composer.",
+      "profilePictureUrl": "http://example.com/charlie.jpg",
+      "socialMediaHandles": [
+        { "socialMediaHandle": "facebook.com/charliewilliams" },
+        { "socialMediaHandle": "youtube.com/charliewilliams" }
+      ]
+    },
+    {
+      "firstName": "Diana",
+      "middleName": "Elizabeth",
+      "lastName": "Brown",
+      "dateOfBirth": "1965-09-28T00:00:00.000Z",
+      "email": "diana.brown@example.com",
+      "phoneNo": "111-222-3333",
+      "passwordHash": "hashedPassword4",
+      "bio": "A graphic designer and illustrator.",
+      "profilePictureUrl": "http://example.com/diana.jpg"
+    },
+    {
+      "firstName": "Ethan",
+      "middleName": "Christopher",
+      "lastName": "Davis",
+      "dateOfBirth": "2001-05-10T00:00:00.000Z",
+      "email": "ethan.davis@example.com",
+      "phoneNo": "444-555-6666",
+      "passwordHash": "hashedPassword5",
+      "bio": "A data scientist and analyst.",
+      "profilePictureUrl": "http://example.com/ethan.jpg"
+    }
+  ]
+}

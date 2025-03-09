@@ -20,7 +20,7 @@ CREATE TABLE
         -- Number of failed login attempts.
         "loginAttempts" INTEGER DEFAULT 0,
         -- Timestamp when the account was locked due to failed attempts.
-        "accountLockDate" TIMESTAMP,
+        "accountLockDate" TIMESTAMP DEFAULT NULL,
         -- A short biography or description of the recipient.
         "bio" TEXT,
         -- URL to the recipient's profile picture.
@@ -29,14 +29,15 @@ CREATE TABLE
 
 -- Links recipients to their social media accounts.
 CREATE TABLE
-    "RecipientSocialMediaHandles" (
+    "RecipientSocialMediaHandle" (
+        /* DOC-UPDATE: Rename 'handleId' in relational schema to id. */
+        "id" UUID PRIMARY KEY,
         -- Unique identifier for each social media handle.
-        "handleId" UUID PRIMARY KEY,
-        /* DOC-UPDATE: Changed type to TEXT to bypass URL length limits. */
+        "recipientId" UUID NOT NULL,
         -- The social media handle url.
         "socialMediaHandle" TEXT NOT NULL,
         -- Foreign key referencing the Recipient table.
-        "recipientId" UUID NOT NULL REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY ("recipientId") REFERENCES "Recipient" ("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 -- Stores information about supervisors.
