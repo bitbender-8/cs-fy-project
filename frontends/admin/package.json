@@ -27,7 +27,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint --fix",
+    "lint:chk": "next lint",
+    "format": "prettier . --write",
+    "format:chk": "prettier . --check"
   },
   "dependencies": {
     "react": "^19.0.0",
