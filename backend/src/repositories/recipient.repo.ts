@@ -3,7 +3,7 @@ import { query } from "./db.js";
 import { UUID } from "crypto";
 
 import { Recipient, SocialMediaHandle } from "../models/user.model.js";
-import { UniqueKeyConstraintError } from "../models/error-types.js";
+import { UniqueKeyConstraintError } from "../errors/errors.types.js";
 import { RecipientDto } from "../models/dtos.js";
 
 /**

@@ -20,8 +20,10 @@ export interface Campaign {
   denialDate: Date | string;
   launchDate: Date | string;
   endDate: Date | string;
-  documentUrls: string[];
   redactedDocumentUrls: string[];
+
+  // Sensitive fields below
+  documentUrls: string[];
   paymentInfo: PaymentInfo;
 }
 
