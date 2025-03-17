@@ -10,9 +10,9 @@ import {
 import {
   ProblemDetails,
   UniqueKeyConstraintError,
-} from "../models/error-types.js";
+} from "../errors/errors.types.js";
 import { createRecipientDtoSchema } from "../models/zod-schemas.js";
-import { validatedFileUpload } from "../middleware.js";
+import { validatedFileUpload } from "../middleware/middleware.js";
 import z from "zod";
 import { RecipientDto } from "../models/dtos.js";
 
@@ -133,7 +133,7 @@ recipientRouter.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-// TODO Implement login route
+// CONTINUE Implement login route
 // TODO Implement logout route
 // TODO Implement update AUTHENTICATED recipient route
 // TODO Implement delete AUTHENTICATED recipient route

@@ -17,6 +17,9 @@ CREATE TABLE
         "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
         -- Hashed password for security.
         "passwordHash" VARCHAR(255) NOT NULL,
+        /* DOC-UPDATE: Update relational schema. */
+        -- Stores refresh JWT tokens.
+        "refreshToken" VARCHAR(255) NULL,
         -- Number of failed login attempts.
         "loginAttempts" INTEGER DEFAULT 0,
         -- Timestamp when the account was locked due to failed attempts.
@@ -59,6 +62,9 @@ CREATE TABLE
         "phoneNo" VARCHAR(20) NOT NULL,
         -- Hashed password for security.
         "passwordHash" VARCHAR(255) NOT NULL,
+        /* DOC-UPDATE: Update relational schema. */
+        -- Stores refresh JWT tokens.
+        "refreshToken" VARCHAR(255) NULL,
         -- Number of failed login attempts.
         "loginAttempts" INTEGER DEFAULT 0,
         -- Timestamp when the account was locked with time zone.
@@ -190,8 +196,8 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Justification for the extension request.
         "justification" TEXT NOT NULL,
-        -- Indicates whether the request has been resolved.
-        "isResolved" BOOLEAN NOT NULL DEFAULT FALSE,
+        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- The new proposed end date with time zone.
         "newEndDate" TIMESTAMPTZ NOT NULL,
         -- Foreign key referencing the Campaign table.
@@ -209,8 +215,8 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Justification for the goal adjustment.
         "justification" TEXT NOT NULL,
-        -- Indicates whether the request has been resolved.
-        "isResolved" BOOLEAN NOT NULL DEFAULT FALSE,
+        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- The new proposed fundraising goal.
         "newGoal" BIGINT NOT NULL,
         -- Foreign key referencing the Campaign table.
@@ -228,8 +234,8 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Justification for the status change.
         "justification" TEXT NOT NULL,
-        -- Indicates whether the request has been resolved.
-        "isResolved" BOOLEAN NOT NULL DEFAULT FALSE,
+        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- The new proposed status.
         "newStatus" "CampaignStatus" NOT NULL,
         -- Foreign key referencing the Campaign table.
@@ -262,8 +268,8 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Justification for the post update.
         "justification" TEXT NOT NULL,
-        -- Indicates whether the request has been resolved.
-        "isResolved" BOOLEAN NOT NULL DEFAULT FALSE,
+        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id"),
         -- Foreign key referencing the CampaignPost table.

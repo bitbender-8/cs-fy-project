@@ -3,14 +3,14 @@ import { query } from "./db.js";
 import { UUID } from "crypto";
 
 import { Recipient, SocialMediaHandle } from "../models/user.model.js";
-import { UniqueKeyConstraintError } from "../models/error-types.js";
+import { UniqueKeyConstraintError } from "../errors/errors.types.js";
 import { RecipientDto } from "../models/dtos.js";
 
 /**
  * Throws errors, validate the schema beforehand (except for unique and fk constrinat violations).
  */
 export async function createRecipient(
-  recipient: Recipient,
+  recipient: Recipient
 ): Promise<RecipientDto> {
   try {
     const insertionResult = await query<RecipientDto>(
@@ -40,7 +40,7 @@ export async function createRecipient(
         recipient.passwordHash,
         recipient.bio,
         recipient.profilePictureUrl,
-      ],
+      ]
     );
 
     if (!insertionResult || insertionResult.rows.length === 0) {
@@ -64,7 +64,7 @@ export async function createRecipient(
               "recipientId"
            ) VALUES ($1, $2, $3) RETURNING *
           `,
-          [crypto.randomUUID(), handle.socialMediaHandle, createdRecipient.id],
+          [crypto.randomUUID(), handle.socialMediaHandle, createdRecipient.id]
         );
 
         if (!insertedHandle || insertedHandle.rows.length === 0) {
@@ -86,7 +86,7 @@ export async function createRecipient(
       ) {
         throw new UniqueKeyConstraintError(
           "Phone number provided has already been used by another account.",
-          "phoneNo",
+          "phoneNo"
         );
       }
       throw error;
@@ -99,12 +99,12 @@ export async function createRecipient(
 // throws errors, validate recipientId before hand.
 
 export async function getRecipientById(
-  recipientId: UUID,
+  recipientId: UUID
 ): Promise<RecipientDto | null> {
   try {
     const recipientResult = await query(
       `SELECT * FROM "Recipient" WHERE id = $1`,
-      [recipientId],
+      [recipientId]
     );
 
     if (!recipientResult || recipientResult.rows.length === 0) {
@@ -115,7 +115,7 @@ export async function getRecipientById(
 
     const socialMediaResult = await query<SocialMediaHandle>(
       `SELECT * FROM "RecipientSocialMediaHandle" WHERE "recipientId" = $1`,
-      [recipientId],
+      [recipientId]
     );
 
     const recipientDto: RecipientDto = {

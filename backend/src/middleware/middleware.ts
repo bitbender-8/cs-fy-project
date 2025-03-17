@@ -4,7 +4,7 @@ import * as fileType from "file-type";
 import multer from "multer";
 
 import { NextFunction, Request, Response } from "express";
-import { ProblemDetails } from "./models/error-types.js";
+import { ProblemDetails } from "../errors/errors.types.js";
 
 const upload = multer({ dest: process.env.UPLOAD_DIR });
 

@@ -13,6 +13,11 @@ export interface User {
   accountLockDate?: Date | string;
 }
 
+export type SensitiveUserFields =
+  | "passwordHash"
+  | "loginAttempts"
+  | "accountLockDate";
+
 export interface Recipient extends User {
   email?: string;
   bio?: string;
@@ -20,11 +25,11 @@ export interface Recipient extends User {
   socialMediaHandles?: SocialMediaHandle[];
 }
 
+export interface Supervisor extends User {
+  email: string;
+}
+
 export interface SocialMediaHandle {
   id?: UUID;
   socialMediaHandle: string;
-}
-
-export interface Supervisor extends User {
-  email: string;
 }
