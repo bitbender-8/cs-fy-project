@@ -6,4 +6,5 @@ export interface Notification {
   body: string;
   isRead: boolean;
   timestamp: Date | string;
+  userId: UUID;
 }

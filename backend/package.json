@@ -33,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/bitbender-8/cs-fy-project-practice.git"
+    "url": "git+ssh://git@github.com/bitbender-8/cs-fy-project.git"
   },
   "license": "GPL-3.0",
   "bugs": {

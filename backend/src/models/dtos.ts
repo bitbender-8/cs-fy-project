@@ -1,6 +1,10 @@
-import { Recipient, Supervisor, User } from "./user.model.js";
+import {
+  Recipient,
+  Supervisor,
+  User,
+  SensitiveUserFields,
+} from "./user.model.js";
 
-type SensitiveUserFields = "passwordHash" | "loginAttempts" | "accountLockDate";
-export type BaseUserDto<T extends User> = Omit<T, SensitiveUserFields>;
-export type RecipientDto = BaseUserDto<Recipient>;
-export type SupervisorDto = BaseUserDto<Supervisor>;
+export type UserDto<T extends User> = Omit<T, SensitiveUserFields>;
+export type RecipientDto = UserDto<Recipient>;
+export type SupervisorDto = UserDto<Supervisor>;

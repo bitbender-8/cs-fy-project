@@ -1,5 +1,5 @@
 name: CI jobs for flutter, NextJS, and Express apps
-run-name: ${{ github.actor }} is testing out GitHub Actions
+run-name: ${{ github.actor }} is testing project builds.
 on:
   push:
     branches: [main]
@@ -61,4 +61,28 @@ jobs:
       - name: Build express code
         run: |
           cd ${{ env.EXPRESS_PROJECT_PATH }}
+          npm run build
+  next-ci-tasks:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PROJECT_PATH: ./frontends/admin
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Set up Node.js for Next.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.PROJECT_NODE_VERSION }}
+      - name: Install dependencies for Next.js
+        run: |
+          cd ${{ env.NEXT_PROJECT_PATH }}
+          npm install
+      - name: Format and lint Next.js code
+        run: |
+          cd ${{ env.NEXT_PROJECT_PATH }}
+          npm run format:chk
+          npm run lint:chk
+      - name: Build Next.js app
+        run: |
+          cd ${{ env.NEXT_PROJECT_PATH }}
           npm run build

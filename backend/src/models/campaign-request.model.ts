@@ -6,7 +6,7 @@ export interface CampaignRequest {
   title: string;
   requestDate: Date | string;
   justification: string;
-  isResolved: boolean;
+  resolutionDate: Date | string;
   campaignId: UUID;
 }
 
