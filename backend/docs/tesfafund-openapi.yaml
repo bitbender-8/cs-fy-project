@@ -1,0 +1,1605 @@
+# INSTRUCTIONS: Open this doc in editor.swagger.io so that it is easier to read.
+
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: TesfaFund API
+  description: API specification for the TesfaFund platform.
+  license:
+    name: GPL-3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.en.html
+servers:
+  - url: http://localhost:4000
+tags:
+  - name: Supervisors
+    description: Supervisor management and authentication.
+  - name: Recipients
+    description: Recipient management and authentication
+  - name: Campaigns
+    description: Campaign management.
+  - name: Campaign Requests
+    description: Campaign workflows requiring supervisor approval.
+  - name: Notifications
+    description: Creating and managing user notifications.
+  - name: Campaign Posts
+    description: Posts that provide updates on a campaign's progress.
+paths:
+  # TODO: Add sortBy and sortOrder to routes with list returns.
+  # For all methods, no access unless:
+  # # (Role == Supervisor, Owner: Yes) => Full access
+  /supervisors/{supervisorId}:
+    get:
+      tags:
+        - Supervisors
+      summary: Retrieves the supervisor by ID, works only for authenticated supervisor.
+      parameters:
+        - name: supervisorId
+          in: path
+          required: true
+          description: The unique id of the supervisor.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Sucessful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supervisor"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    put:
+      tags:
+        - Supervisors
+      summary: Updates the supervisor's details, works only for authenticated supervisor.
+      parameters:
+        - name: supervisorId
+          in: path
+          required: true
+          description: The unique id of the supervisor.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Supervisor"
+      responses:
+        "204":
+          description: Successful update - No content to return.
+        "400":
+          description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /recipients:
+    # (Role: Anon | Recipient | Supervisor, Owner: N/A) => Full access
+    post:
+      tags:
+        - Recipients
+      summary: Creates a new recipient.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - $ref: "#/components/schemas/Recipient"
+              properties:
+                password:
+                  type: string
+                  description: The user's password.
+                passwordConfirmation:
+                  type: string
+                  description: The user's password confirmation.
+              required:
+                - password
+                - passwordConfirmation
+      responses:
+        "201":
+          description: Recipient created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recipient"
+        "400":
+          description: Bad request - Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: Conflict - Phone number already in use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /recipients/{recipientId}:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => Full access
+    get:
+      tags:
+        - Recipients
+      summary: Retrieves the recipient by ID, based on user's authorization permissions.
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          description: The unique id of the recipient.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recipient"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => No access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    put:
+      tags:
+        - Recipients
+      summary: Updates an existing recipient.
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          description: The unique id of the recipient to update.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Recipient"
+      responses:
+        "204":
+          description: Successful update - No content to return.
+        "400":
+          description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    delete:
+      tags:
+        - Recipients
+      summary: Deletes a Recipient by ID, works only for authenticated Recipient.
+      parameters:
+        - name: recipientId
+          in: path
+          required: true
+          description: The unique id of the recipient to update.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Successful update - No content to return.
+        "400":
+          description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /campaigns:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns & Sensitive fields hidden
+    get:
+      tags:
+        - Campaigns
+      summary: Retrieves a list of a campaigns, with optional filtering and pagination based on user's authorization
+      parameters:
+        - name: title
+          description: Campaign title to search by.
+          in: query
+          schema:
+            type: string
+        - name: status
+          description: Filter by campaign status.
+          in: query
+          schema:
+            type: string
+            enum: [PENDING_REVIEW, VERIFIED, DENIED, LIVE, PAUSED, COMPLETED]
+        - name: category
+          description: Filter by campaign category.
+          in: query
+          schema:
+            type: string
+        - name: minLaunchDate
+          description: Minimum launch date of campaign (inclusive).
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxLaunchDate
+          description: Maximum launch date of campaign (inclusive).
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: minSubmissionDate
+          description: Minimum submission date of campaign (inclusive). This option is available only for Supervisors and Recipients.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxSubmissionDate
+          description: Maximum submission date of campaign (inclusive). This option is available only for Supervisors and Recipients.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: minVerificationDate
+          description: Filter by minimum campaign verification date. This option is available only for Supervisors and Recipients.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxVerificationDate
+          description: Filter by maximum campaign verification date. This option is available only for Supervisors and Recipients.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: minDenialDate
+          description: Earliest denial date of campaign application (inclusive). This option is available only for Supervisors and Recipients.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxDenialDate
+          description: Latest denial date of campaign application (inclusive). This option is available only for Supervisors and Recipients.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: minEndDate
+          description: Filter by minimum campaign completion date.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxEndDate
+          description: Filter by maximum campaign completion date.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: isPublic
+          description: Filter public campaigns.
+          in: query
+          schema:
+            type: boolean
+        - name: ownerRecipientId
+          description: The ID of the recipient that owns the campaign
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          description: Page number for pagination. Must be a positive integer.
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          description: Maximum number of items per page. Must be a positive integer.
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginatedList"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Campaign"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No campaigns found matching the criteria (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => No access
+    # (Role: Recipient, Owner: Yes | No) => Full access
+    # (Role: Anon, Owner: No) => No access
+    post:
+      tags:
+        - Campaigns
+      summary: Creates a campaign application for the authenticated Recipient.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - $ref: "#/components/schemas/Campaign"
+                - type: object
+                  properties:
+                    campaignDocuments:
+                      type: array
+                      items:
+                        type: string
+                        format: binary
+                      description: Array of campaign document file names to upload.
+                  required:
+                    - campaignDocuments
+      responses:
+        "201":
+          description: Campaign application submitted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          description: Bad request - Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method.
+  /campaigns/{campaignId}:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns & Sensitive fields hidden
+    # # A campaign is no public if the `launchDate` property is falsy.
+    get:
+      tags:
+        - Campaigns
+      summary: Retrieves a campaign by ID, based on user's authorization
+      description: |
+        Retrieves a campaign by ID, respecting requester authorization: public campaign (unauthenticated), Recipient's campaign (authenticated), or all campaigns (Supervisor).
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          description: The unique id of the campaign.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => No access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    put:
+      tags:
+        - Campaigns
+      summary: Updates the campaign data. Available only for supervisors.
+      description: This is used exclusively by supervisors to update a campaign (without recipient involvement), or when they approve the campaign application.
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          description: The unique id of the campaign to update.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Campaign"
+      responses:
+        "204":
+          description: Successful update - No content to return.
+        "400":
+          description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /campaign-posts/:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => Access to public posts.
+    # # A post is not public if the `publicPostDate` property is falsy.
+    get:
+      tags:
+        - Campaign Posts
+      summary: Retrieves campaign posts while respecting the authenticated users' permissions.
+      parameters:
+        - name: title
+          description: Campagin post title to search by.
+          in: query
+          schema:
+            type: string
+        - name: campaignId
+          description: Filters posts belonging to the specified campaign's ID.
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: isPublic
+          description: Filters posts that are available for the public to view.
+          in: query
+          schema:
+            type: boolean
+        - name: minPublicPostDate
+          description: Filters for posts occuring after this date (inclusive).
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxPublicPostDate
+          description: Filters for posts occurring before this date (inclusive).
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: page
+          description: Page number for pagination
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          description: Maximum number of items per page.
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginatedList"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CampaignPost"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No campaigns found matching the criteria (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # TODO: Add the donation route with /campaigns/{campaignId}/donate
+  # Permissions differ by method
+  /campaign-requests:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    get:
+      tags:
+        - Campaign Requests
+      summary: Retrieves a list of campaign requests, with optional filtering and pagination.
+      description: |
+        Retrieves campaign requests, granting access based on Recipient or Supervisor authorization. Provides optional filtering and pagination.
+      parameters:
+        - name: campaignId
+          in: query
+          description: The ID of the campaign.
+          schema:
+            type: string
+        - name: requestType
+          in: query
+          description: Filter by request type.
+          schema:
+            type: string
+            enum:
+              [
+                GOAL_ADJUSTMENT_REQUEST,
+                STATUS_CHANGE_REQUEST,
+                POST_UPDATE_REQUEST,
+                END_EXTENSION_REQUEST,
+              ]
+        - name: isResolved
+          in: query
+          description: Filter by resolution status (true/false).
+          schema:
+            type: boolean
+        - name: minRequestDate
+          in: query
+          description: Filter requests created after this date (inclusive).
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxRequestDate
+          in: query
+          description: Filter requests created before this date (inclusive).
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: minResolutionDate
+          in: query
+          description: Filter requests resolved after this date (inclusive).
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxResolutionDate
+          in: query
+          description: Filter requests resolved before this date (inclusive).
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: title
+          description: Search for requests with this title
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of items per page.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful retrieval.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginatedList"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          oneOf:
+                            - $ref: "#/components/schemas/GoalAdjustmentRequest"
+                            - $ref: "#/components/schemas/StatusChangeRequest"
+                            - $ref: "#/components/schemas/PostUpdateRequest"
+                            - $ref: "#/components/schemas/EndDateExtensionRequest"
+        "400":
+          description: Bad request - Invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign or adjustment requests not found (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => No access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    post:
+      tags:
+        - Campaign Requests
+      summary: Creates campaign requests for the authenticated Recipient's campaign.
+      parameters:
+        - name: campaignId
+          in: query
+          required: true
+          description: The ID of the campaign.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/GoalAdjustmentRequest"
+                - $ref: "#/components/schemas/StatusChangeRequest"
+                - $ref: "#/components/schemas/PostUpdateRequest"
+                - $ref: "#/components/schemas/EndDateExtensionRequest"
+      responses:
+        "201":
+          description: Successful request submission.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GoalAdjustmentRequest"
+                  - $ref: "#/components/schemas/StatusChangeRequest"
+                  - $ref: "#/components/schemas/PostUpdateRequest"
+                  - $ref: "#/components/schemas/EndDateExtensionRequest"
+        "409":
+          description: Conflict - Request already exists, or resource in incorrect state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "400":
+          description: Bad request - Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /campaign-requests/{campaignRequestId}:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    get:
+      tags:
+        - Campaign Requests
+      summary: Retrieves a campaign request by ID. Access depends on user's role.
+      parameters:
+        - name: campaignRequestId
+          in: path
+          required: true
+          description: The ID of the campaign request
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignRequest"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign request with given Id not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    delete:
+      tags:
+        - Campaign Request
+      summary: Deletes a campaign request. Access depends on user's role.
+      parameters:
+        - name: campaignRequestId
+          in: path
+          required: true
+          description: The ID of the campaign request
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Successful deletion
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign request with given ID not found (also used inplace of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /campaign-request/{campaignRequestId}/resolve:
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => No access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    post:
+      tags:
+        - Campaign Requests
+      summary: Resolves a campaign request by approving or denying it.
+      parameters:
+        - name: campaignRequestId
+          in: path
+          required: true
+          description: The ID of the campaign request to resolve.
+          schema:
+            type: string
+            format: uuid
+        - name: resolutionType
+          in: query
+          required: true
+          description: The resolution type (approve or deny).
+          schema:
+            type: string
+            enum:
+              - approve
+              - deny
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: The updated campaign details (if applicable). An empty object may be sent if no update is needed.
+              oneOf:
+                - $ref: "#/components/schemas/GoalAdjustmentRequest"
+                - $ref: "#/components/schemas/StatusChangeRequest"
+                - $ref: "#/components/schemas/PostUpdateRequest"
+                - allOf:
+                    - $ref: "#/components/schemas/EndDateExtensionRequest"
+                    - description: The updated post is stored in the newPost property.
+      responses:
+        "201":
+          description: Campaign request resolved successfully.
+          content:
+            application/json:
+              schema:
+                description: The updated campaign details (if applicable). An empty object may be sent if no update is needed.
+                oneOf:
+                  - $ref: "#/components/schemas/GoalAdjustmentRequest"
+                  - $ref: "#/components/schemas/StatusChangeRequest"
+                  - $ref: "#/components/schemas/PostUpdateRequest"
+                  - allOf:
+                      - $ref: "#/components/schemas/EndDateExtensionRequest"
+                      - description: The updated post is stored in the newPost property.
+        "400":
+          description: Bad request - Invalid parameters or request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign request not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: Conflict - Campaign request already resolved or in an invalid state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # Permissions differ by method
+  /notifications:
+    # (Role: Supervisor, Owner: No) => No access
+    # (Role: Supervisor, Owner: Yes) => Full access
+    # (Role: Recipient, Owner: Yes) => Full access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    get:
+      tags:
+        - Notifications
+      summary: Retrieves a list of notifications, access is based on user's role.
+      parameters:
+        - name: isRead
+          in: query
+          description: Has the notification been read?
+          schema:
+            type: boolean
+        - name: minTimestamp
+          in: query
+          description: Minimum timestamp for filtering notifications (inclusive), including time.
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxTimestamp
+          in: query
+          description: Maximum timestamp for filtering notifications (inclusive), including time.
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: userId
+          in: query
+          description: Filter notifications by Supervisor or Recipient ID.
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          description: Page number for pagination
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          description: Maximum number of items per page.
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginatedList"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Notification"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No notifications found matching the criteria (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # For all methods:
+  # # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
+  # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
+  /notifications/{notificationId}:
+    get:
+      tags:
+        - Notifications
+      summary: Fetches a notification by its ID. Access depends on the user's role.
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The unique ID of the notification.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign request with given ID not found (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    patch:
+      tags:
+        - Notifications
+      summary: Updates a notification, mainly used for updating `isRead`.
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The unique ID of the notification.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isRead:
+                  type: boolean
+                  description: Whether the notification has been read.
+              required:
+                - isRead
+      responses:
+        "204":
+          description: Successful update - No content to return.
+        "400":
+          description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found (also used inplace of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    delete:
+      tags:
+        - Notifications
+      summary: Deletes a notification by its ID. Access depends on user's role.
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The unique ID of the notification.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Successful deletion
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign request with given ID not found (also used inplace of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+components:
+  schemas:
+    PaginatedList:
+      type: object
+      properties:
+        page-number:
+          type: integer
+        page-count:
+          type: integer
+      required:
+        - page-number
+        - page-count
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        phoneNo:
+          type: string
+      required:
+        - firstName
+        - middleName
+        - lastName
+        - dateOfBirth
+        - phoneNo
+    Recipient:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            email:
+              type: string
+              format: email
+            bio:
+              type: string
+            profilePictureUrl:
+              type: string
+            socialMediaHandles:
+              type: array
+              items:
+                $ref: "#/components/schemas/SocialMediaHandle"
+          required:
+            - bio
+    SocialMediaHandle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        socialMediaHandle:
+          type: string
+      required:
+        - socialMediaHandle
+    Supervisor:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            email:
+              type: string
+      required:
+        - email
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        fundraisingGoal:
+          type: string
+        status:
+          $ref: "#/components/schemas/CampaignStatus"
+        category:
+          type: string
+        paymentInfo:
+          $ref: "#/components/schemas/PaymentInfo"
+        submissionDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        verificationDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+          nullable: true
+        denialDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+          nullable: true
+        launchDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+          nullable: true
+        endDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+          nullable: true
+        documentUrls:
+          type: array
+          items:
+            type: string
+        redactedDocumentUrls:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - description
+        - fundraisingGoal
+        - paymentInfo
+        - category
+        - endDate
+    CampaignStatus:
+      type: string
+      enum:
+        - PENDING_REVIEW
+        - VERIFIED
+        - DENIED
+        - LIVE
+        - PAUSED
+        - COMPLETED
+    CampaignPost:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+        publicPostDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        campaignId:
+          type: string
+          format: uuid
+      required:
+        - title
+        - content
+        - campaignId
+    CampaignRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        requestDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        justification:
+          type: string
+        resolutionDate:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        campaignId:
+          type: string
+          format: uuid
+      required:
+        - title
+        - justification
+    GoalAdjustmentRequest:
+      allOf:
+        - $ref: "#/components/schemas/CampaignRequest"
+        - type: object
+          properties:
+            newGoal:
+              type: string
+          required:
+            - newGoal
+    StatusChangeRequest:
+      allOf:
+        - $ref: "#/components/schemas/CampaignRequest"
+        - type: object
+          properties:
+            newStatus:
+              $ref: "#/components/schemas/CampaignStatus"
+          required:
+            - newStatus
+    PostUpdateRequest:
+      allOf:
+        - $ref: "#/components/schemas/CampaignRequest"
+        - type: object
+          properties:
+            newPost:
+              $ref: "#/components/schemas/CampaignPost"
+          required:
+            - newPost
+    EndDateExtensionRequest:
+      allOf:
+        - $ref: "#/components/schemas/CampaignRequest"
+        - type: object
+          properties:
+            newEndDate:
+              oneOf:
+                - type: string
+                  format: date-time
+                - type: string
+                  format: date
+          required:
+            - newEndDate
+    PaymentInfo:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          description: The payment method used.
+        phoneNo:
+          type: string
+          description: The phone number associated with the payment.
+        bankAccountNo:
+          type: string
+          description: The bank account number for bank transfers.
+        bankName:
+          type: string
+          description: The name of the bank.
+      required:
+        - paymentMethod
+      anyOf:
+        - required:
+            - phoneNo
+        - required:
+            - bankAccountNo
+            - bankName
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        subject:
+          type: string
+        body:
+          type: string
+        isRead:
+          type: boolean
+        timestamp:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        userId:
+          type: string
+          format: uuid
+      required:
+        - id
+        - subject
+        - body
+        - isRead
+        - timestamp
+        - userId
+    ProblemDetails:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+      additionalProperties: true
+  securitySchemes:
+    bearerHttpAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token using a JWT
