@@ -36,7 +36,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
 
     const recipientIdFromParam = parsedQueryParams.data.ownerRecipientId;
     const recipientIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? ""
+      req.auth?.payload.sub ?? "",
     );
 
     if (!recipientIdFromJwt) {
@@ -46,7 +46,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
         detail: "Something went wrong.",
       };
       console.error(
-        "Fail: Something went wrong while retrieving the Recipient's ID."
+        "Fail: Something went wrong while retrieving the Recipient's ID.",
       );
       res.status(problemDetails.status).json(problemDetails);
       return;
@@ -58,7 +58,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
         await readCampaigns({
           ...parsedQueryParams.data,
           ownerRecipientId: recipientIdFromParam,
-        })
+        }),
       );
       return;
     } else {
@@ -77,7 +77,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
             isPublic: true,
             page: parsedQueryParams.data.page,
             limit: parsedQueryParams.data.limit,
-          })
+          }),
         );
 
       res.status(200).json(campaigns);
@@ -96,8 +96,8 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
           isPublic: true,
           page: parsedQueryParams.data.page,
           limit: parsedQueryParams.data.limit,
-        })
-      )
+        }),
+      ),
     );
   }
 });
@@ -107,5 +107,5 @@ campaignRouter.get(
   async (req: Request, res: Response): Promise<void> => {
     // REMOVE
     console.log(req, res);
-  }
+  },
 );

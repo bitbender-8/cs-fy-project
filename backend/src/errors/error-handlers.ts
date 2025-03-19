@@ -5,10 +5,10 @@ export function errorHandler(
   err: Error,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): void {
   void _next;
-  
+
   let errorDetails: ProblemDetails = {
     title: "Internal Server Error",
     status: 500,

@@ -6,7 +6,7 @@ import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
 
 /** Validate filter params before passing */
 export async function readCampaigns(
-  filterParams: CampaignFilterParams
+  filterParams: CampaignFilterParams,
 ): Promise<PaginatedList<Campaign>> {
   let queryString = `
         SELECT
@@ -107,7 +107,7 @@ export async function readCampaigns(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Campaign"${whereClause}`,
-    values
+    values,
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -137,7 +137,7 @@ export async function readCampaigns(
           bankName,
         },
       };
-    }
+    },
   );
 
   return {

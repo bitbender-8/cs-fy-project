@@ -22,6 +22,8 @@ const auth0SupervisorIds = [
   "auth0|67da6df15e3f387facab43fe",
 ];
 
+void auth0SupervisorIds;
+
 function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
   const recipients: Recipient[] = [];
 

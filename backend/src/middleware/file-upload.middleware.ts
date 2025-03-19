@@ -24,8 +24,8 @@ export async function validateFileUpload(fileFieldName: string) {
               new AppError(
                 "Internal Server Error",
                 500,
-                "An error occurred during file upload"
-              )
+                "An error occurred during file upload",
+              ),
             );
 
             return;
@@ -44,8 +44,8 @@ export async function validateFileUpload(fileFieldName: string) {
               new AppError(
                 "Validation Failure",
                 400,
-                "The uploaded file has an invalid MIME type. Allowed types are JPEG, PNG, and GIF."
-              )
+                "The uploaded file has an invalid MIME type. Allowed types are JPEG, PNG, and GIF.",
+              ),
             );
             return;
           }
@@ -58,15 +58,15 @@ export async function validateFileUpload(fileFieldName: string) {
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`
-              )
+                `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`,
+              ),
             );
             return;
           }
 
           // File extension validation
           const allowedExtensions = config.ALLOWED_FILE_EXTENSIONS?.split(
-            ";"
+            ";",
           ) ?? [".jpeg", ".jpg"];
           const ext = path.extname(req.file.originalname).toLowerCase();
           const formattedExtensions =
@@ -80,8 +80,8 @@ export async function validateFileUpload(fileFieldName: string) {
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${formattedExtensions}.`
-              )
+                `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${formattedExtensions}.`,
+              ),
             );
             return;
           }
@@ -96,8 +96,8 @@ export async function validateFileUpload(fileFieldName: string) {
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file has invalid content or is corrupted. Allowed file types include ${formattedExtensions}.`
-              )
+                `The uploaded file has invalid content or is corrupted. Allowed file types include ${formattedExtensions}.`,
+              ),
             );
             return;
           }
@@ -108,8 +108,8 @@ export async function validateFileUpload(fileFieldName: string) {
           new AppError(
             "Internal Server Error",
             500,
-            "An unexpectd error occurred during file validation"
-          )
+            "An unexpectd error occurred during file validation",
+          ),
         );
         return;
       }

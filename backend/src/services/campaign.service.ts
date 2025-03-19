@@ -2,7 +2,7 @@ import { Campaign, SensitiveCampaignFields } from "../models/campaign.model.js";
 import { PaginatedList } from "../utils/util.types.js";
 
 export function excludeSensitiveCampaignProperties(
-  campaigns: PaginatedList<Campaign>
+  campaigns: PaginatedList<Campaign>,
 ): PaginatedList<Omit<Campaign, SensitiveCampaignFields>> {
   return {
     items: campaigns.items.map((campaign) => {

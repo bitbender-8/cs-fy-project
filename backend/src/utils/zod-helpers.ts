@@ -76,7 +76,7 @@ export const validBankAccountNo = () =>
       },
       {
         message: "Must be a numeric bank account number",
-      }
+      },
     );
 
 export const validUuid = () => z.string().uuid({ message: "Invalid UUID" });
@@ -95,12 +95,12 @@ export const validMoneyAmount = () =>
     {
       message:
         "Money field must be a non-negative number with up to two decimal places.",
-    }
+    },
   );
 
 export const validCurrency = () =>
   z.enum(CURRENCY_CODES, {
     message: `Invalid currency code. Must be one of: ${CURRENCY_CODES.filter(
-      (val) => val !== "XXX"
+      (val) => val !== "XXX",
     ).join(", ")}.`,
   });

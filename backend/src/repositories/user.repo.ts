@@ -2,7 +2,7 @@ import { UUID } from "crypto";
 import { query } from "./db.js";
 
 export async function getUuidFromAuth0Id(
-  auth0Id: string
+  auth0Id: string,
 ): Promise<UUID | null> {
   const recipientQueryString = `
         SELECT
