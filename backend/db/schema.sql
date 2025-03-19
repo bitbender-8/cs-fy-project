@@ -12,18 +12,12 @@ CREATE TABLE
         -- Recipient's date of birth.
         "dateOfBirth" DATE NOT NULL,
         -- Recipient's email address. This is not required.
-        "email" VARCHAR(100),
+        "email" VARCHAR(100) NULL,
         -- Recipient's phone number.
         "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
-        -- Hashed password for security.
-        "passwordHash" VARCHAR(255) NOT NULL,
-        /* DOC-UPDATE: Update relational schema. */
-        -- Stores refresh JWT tokens.
-        "refreshToken" VARCHAR(255) NULL,
-        -- Number of failed login attempts.
-        "loginAttempts" INTEGER DEFAULT 0,
-        -- Timestamp when the account was locked due to failed attempts.
-        "accountLockDate" TIMESTAMP DEFAULT NULL,
+        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
+        -- The auth0 user id
+        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
         -- A short biography or description of the recipient.
         "bio" TEXT,
         -- URL to the recipient's profile picture.
@@ -60,15 +54,9 @@ CREATE TABLE
         "email" VARCHAR(100) NOT NULL,
         -- Supervisor's phone number.
         "phoneNo" VARCHAR(20) NOT NULL,
-        -- Hashed password for security.
-        "passwordHash" VARCHAR(255) NOT NULL,
-        /* DOC-UPDATE: Update relational schema. */
-        -- Stores refresh JWT tokens.
-        "refreshToken" VARCHAR(255) NULL,
-        -- Number of failed login attempts.
-        "loginAttempts" INTEGER DEFAULT 0,
-        -- Timestamp when the account was locked with time zone.
-        "accountLockDate" TIMESTAMPTZ
+        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
+        -- The auth0 user id
+        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE
     );
 
 -- Stores notifications sent to recipients or supervisors.
@@ -119,7 +107,7 @@ CREATE TABLE
         -- Title of the campaign.
         "title" VARCHAR(100) NOT NULL,
         -- Description of the campaign.
-        "description" TEXT NOT NULL,
+        "description" VARCHAR(500) NOT NULL,
         -- Fundraising goal for the campaign.
         "fundraisingGoal" BIGINT NOT NULL,
         -- Current status of the campaign.
@@ -145,9 +133,10 @@ CREATE TABLE
         -- End date of the campaign with time zone.
         "endDate" TIMESTAMPTZ,
         -- Foreign key referencing the Recipient table (campaign owner).
-        "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id"),
+        "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id")
+        /* DOC-UPDATE: Remove managing supervisor id. All recipients are managed by a single supervisor for now. */
         -- Foreign key referencing the Supervisor table (managing supervisor).
-        "managingSupervisorId" UUID NOT NULL REFERENCES "Supervisor" ("id")
+        -- "managingSupervisorId" UUID NOT NULL REFERENCES "Supervisor" ("id")
     );
 
 -- Stores URLs of redacted campaign documents.
@@ -251,7 +240,7 @@ CREATE TABLE
         "title" VARCHAR(100) NOT NULL,
         -- Content of the post.
         "content" TEXT NOT NULL,
-        -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute not null, then the post is not available to the public. 
+        -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute is null, then the post is not available to the public. 
         "publicPostDate" TIMESTAMPTZ,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")

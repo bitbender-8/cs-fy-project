@@ -1,22 +1,26 @@
 import { UUID } from "crypto";
+import { z } from "zod";
+import {
+  MIN_STRING_LENGTH,
+  validDate,
+  validNonEmptyString,
+  validPhoneNo,
+  validUrl,
+  validUuid,
+} from "../utils/zod-helpers.js";
 
-// Email ommitted from this interface because it is optional for Recipients and required for Supervisors.
+export type UserRole = "Supervisor" | "Recipient";
+
+// Email omiited from Base User interface because it is optional for Recipients and requried for Supervisors
 export interface User {
   id?: UUID;
+  auth0UserId?: string;
   firstName: string;
   middleName: string;
   lastName: string;
-  dateOfBirth: Date | string;
+  dateOfBirth: string;
   phoneNo: string;
-  passwordHash?: string;
-  loginAttempts?: number;
-  accountLockDate?: Date | string;
 }
-
-export type SensitiveUserFields =
-  | "passwordHash"
-  | "loginAttempts"
-  | "accountLockDate";
 
 export interface Recipient extends User {
   email?: string;
@@ -33,3 +37,34 @@ export interface SocialMediaHandle {
   id?: UUID;
   socialMediaHandle: string;
 }
+
+// ================= Zod schemas ====================
+// Define User schema
+export const UserSchema = z.object({
+  id: validUuid().optional(),
+  auth0UserId: validNonEmptyString(MIN_STRING_LENGTH, 100),
+  firstName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  middleName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  lastName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  dateOfBirth: validDate(true),
+  phoneNo: validPhoneNo(),
+});
+
+// Define SocialMediaHandle schema
+export const SocialMediaHandleSchema = z.object({
+  id: validUuid().optional(),
+  socialMediaHandle: validUrl(),
+});
+
+// Define Recipient schema extending User
+export const RecipientSchema = UserSchema.extend({
+  email: z.string().email().optional(),
+  bio: validNonEmptyString(MIN_STRING_LENGTH, 500),
+  profilePictureUrl: validUrl().optional(),
+  socialMediaHandles: z.array(SocialMediaHandleSchema).optional(),
+});
+
+// Define Supervisor schema extending User
+export const SupervisorSchema = UserSchema.extend({
+  email: z.string().email(),
+});

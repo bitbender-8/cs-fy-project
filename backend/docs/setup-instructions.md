@@ -1,6 +1,6 @@
 # Connecting to PostgreSQL Database in pgAdmin4
 
-**Note:** Before proceeding, ensure you've run `docker-compose up` in the directory containing your `docker-compose.yml` file to start the PostgreSQL and pgAdmin4 containers. Also be aware that this version of `docker-compose.yml` only sets up the database and pgAdmin4; it doesn't start the backend server.
+**Note:** Before proceeding, ensure you've run `docker-compose up` in the directory containing your `docker-compose.yml` file to create and start the PostgreSQL and pgAdmin4 containers. If you've done this before, all you need to do to start them up again is run `docker-compose start` while in the `/backend` directory. Also be aware that this version of `docker-compose.yml` only sets up the database and pgAdmin4; it doesn't start the backend server.
 
 To connect to the database in pgAdmin4 using the provided `docker-compose.yml` file, follow these steps:
 

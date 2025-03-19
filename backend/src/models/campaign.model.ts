@@ -1,31 +1,48 @@
 import { UUID } from "crypto";
+import { z } from "zod";
+import {
+  MIN_STRING_LENGTH,
+  validNonEmptyString,
+  validBankAccountNo,
+  validCampaignStatus,
+  validDate,
+  validPhoneNo,
+  validUrl,
+  validUuid,
+  validMoneyAmount,
+  CAMPAIGN_STATUSES,
+} from "../utils/zod-helpers.js";
 
-export type CampaignStatus =
-  | "PENDING_REVIEW"
-  | "VERIFIED"
-  | "DENIED"
-  | "LIVE"
-  | "PAUSED"
-  | "COMPLETED";
+export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+/** Schema defined at {@link CampaignSchema} */
 export interface Campaign {
-  id: UUID;
+  id?: UUID;
   title: string;
   description: string;
   fundraisingGoal: string;
   status: CampaignStatus;
   category: string;
-  submissionDate: Date | string;
-  verificationDate: Date | string;
-  denialDate: Date | string;
-  launchDate: Date | string;
+  launchDate?: Date | string;
   endDate: Date | string;
+  ownerRecipientId: UUID;
   redactedDocumentUrls: string[];
 
-  // Sensitive fields below
+  // Sensitive fields: Available to Supervisors and Campaign owners
+  submissionDate?: Date | string;
+  verificationDate?: Date | string;
+  denialDate?: Date | string;
   documentUrls: string[];
   paymentInfo: PaymentInfo;
 }
+
+/** For use with the Omit utility type on {@link Campaign} */
+export type SensitiveCampaignFields =
+  | "submissionDate"
+  | "verificationDate"
+  | "denialDate"
+  | "documentUrls"
+  | "paymentInfo";
 
 export interface PaymentInfo {
   paymentMethod: string;
@@ -47,6 +64,53 @@ export interface CampaignPost {
   id: UUID;
   title: string;
   content: string;
-  publicPostDate: Date | string;
+  // If falsy, then campaign is not publicly available.
+  publicPostDate?: Date | string | null;
   campaignId: UUID;
 }
+
+// ================= Zod schemas ====================
+
+export const PaymentInfoSchema = z.object({
+  paymentMethod: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  phoneNo: validPhoneNo(),
+  bankAccountNo: validBankAccountNo(),
+  bankName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+});
+
+// FIXME Add more specific validation logic. Like min and max length of campaign, things like submissionDate < verificationDate.
+export const CampaignSchema = z.object({
+  id: validUuid().optional(),
+  title: validNonEmptyString(MIN_STRING_LENGTH, 100),
+  description: validNonEmptyString(MIN_STRING_LENGTH, 500),
+  fundraisingGoal: validMoneyAmount(),
+  status: validCampaignStatus(),
+  category: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  launchDate: validDate(false).optional(),
+  endDate: validDate(false),
+  redactedDocumentUrls: z.array(validUrl()).optional(),
+
+  // Sensitive fields
+  submissionDate: validDate(true).optional(),
+  verificationDate: validDate(true).optional(),
+  denialDate: validDate(true).optional(),
+  documentUrls: z.array(validUrl()).optional(),
+  paymentInfo: PaymentInfoSchema.optional(),
+});
+
+export const CampaignDonationSchema = z.object({
+  id: validUuid().optional(),
+  grossAmount: validMoneyAmount(),
+  serviceFee: validMoneyAmount(),
+  timestamp: validDate(true),
+  transactionRef: validNonEmptyString(MIN_STRING_LENGTH, 255),
+  campaignId: validUuid(),
+});
+
+export const CampaignPostSchema = z.object({
+  id: validUuid().optional(),
+  title: validNonEmptyString(MIN_STRING_LENGTH, 100),
+  content: validNonEmptyString(MIN_STRING_LENGTH, Infinity),
+  publicPostDate: validDate(true).optional(),
+  campaingId: validUuid(),
+});

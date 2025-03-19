@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import pg, { PoolClient, QueryResult, QueryResultRow } from "pg";
+import { config } from "../config.js";
 
 const pool = new pg.Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: Number(process.env.DB_PORT),
+  user: config.DB_USER,
+  host: config.DB_HOST,
+  database: config.DB_NAME,
+  password: config.DB_PASSWORD,
+  port: Number(config.DB_PORT),
 });
 
 /**
@@ -18,7 +19,7 @@ const pool = new pg.Pool({
  */
 export const query = async <T extends QueryResultRow = any>(
   text: string,
-  params?: any[],
+  params?: any[]
 ): Promise<QueryResult<T>> => {
   try {
     const result = await pool.query<T>(text, params);
