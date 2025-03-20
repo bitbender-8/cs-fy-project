@@ -142,8 +142,9 @@ CREATE TABLE
 -- Stores URLs of redacted campaign documents.
 CREATE TABLE
     "RedactedCampaignDocuments" (
+        /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
         -- URL of the redacted document.
-        "documentUrl" TEXT PRIMARY KEY,
+        "url" TEXT PRIMARY KEY,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
@@ -151,8 +152,9 @@ CREATE TABLE
 -- Stores URLs of original campaign documents.
 CREATE TABLE
     "CampaignDocuments" (
+        /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
         -- URL of the document.
-        "documentUrl" TEXT PRIMARY KEY,
+        "url" TEXT PRIMARY KEY,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
@@ -172,6 +174,40 @@ CREATE TABLE
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+    );
+
+-- Stores posts related to a campaign.
+CREATE TABLE
+    "CampaignPost" (
+        -- Unique identifier for each campaign post.
+        "id" UUID PRIMARY KEY,
+        -- Title of the post.
+        "title" VARCHAR(100) NOT NULL,
+        -- Content of the post.
+        "content" TEXT NOT NULL,
+        -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute is null, then the post is not available to the public. 
+        "publicPostDate" TIMESTAMPTZ,
+        -- Foreign key referencing the Campaign table.
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+    );
+
+-- Stores requests to update a campaign post.
+CREATE TABLE
+    "PostUpdateRequest" (
+        -- Unique identifier for each post update request.
+        "id" UUID PRIMARY KEY,
+        -- Title of the request.
+        "title" VARCHAR(100) NOT NULL,
+        -- Timestamp when the request was made with time zone.
+        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        -- Justification for the post update.
+        "justification" TEXT NOT NULL,
+        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
+        -- Foreign key referencing the Campaign table.
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id"),
+        -- Foreign key referencing the CampaignPost table.
+        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id")
     );
 
 -- Stores requests to extend the end date of a campaign.
@@ -229,38 +265,4 @@ CREATE TABLE
         "newStatus" "CampaignStatus" NOT NULL,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
-    );
-
--- Stores posts related to a campaign.
-CREATE TABLE
-    "CampaignPost" (
-        -- Unique identifier for each campaign post.
-        "id" UUID PRIMARY KEY,
-        -- Title of the post.
-        "title" VARCHAR(100) NOT NULL,
-        -- Content of the post.
-        "content" TEXT NOT NULL,
-        -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute is null, then the post is not available to the public. 
-        "publicPostDate" TIMESTAMPTZ,
-        -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
-    );
-
--- Stores requests to update a campaign post.
-CREATE TABLE
-    "PostUpdateRequest" (
-        -- Unique identifier for each post update request.
-        "id" UUID PRIMARY KEY,
-        -- Title of the request.
-        "title" VARCHAR(100) NOT NULL,
-        -- Timestamp when the request was made with time zone.
-        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
-        -- Justification for the post update.
-        "justification" TEXT NOT NULL,
-        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
-        "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
-        -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id"),
-        -- Foreign key referencing the CampaignPost table.
-        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id")
     );

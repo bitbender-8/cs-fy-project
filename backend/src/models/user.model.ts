@@ -36,6 +36,7 @@ export interface Supervisor extends User {
 export interface SocialMediaHandle {
   id?: UUID;
   socialMediaHandle: string;
+  recipientId: UUID;
 }
 
 // ================= Zod schemas ====================
@@ -54,6 +55,7 @@ export const UserSchema = z.object({
 export const SocialMediaHandleSchema = z.object({
   id: validUuid().optional(),
   socialMediaHandle: validUrl(),
+  recipientId: validUuid(),
 });
 
 // Define Recipient schema extending User

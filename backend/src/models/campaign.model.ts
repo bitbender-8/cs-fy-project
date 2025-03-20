@@ -17,7 +17,8 @@ export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
 /** Schema defined at {@link CampaignSchema} */
 export interface Campaign {
-  id?: UUID;
+  id: UUID;
+  ownerRecipientId: UUID;
   title: string;
   description: string;
   fundraisingGoal: string;
@@ -25,15 +26,14 @@ export interface Campaign {
   category: string;
   launchDate?: Date | string;
   endDate: Date | string;
-  ownerRecipientId: UUID;
-  redactedDocumentUrls: string[];
+  redactedDocumentUrls?: string[];
 
   // Sensitive fields: Available to Supervisors and Campaign owners
   submissionDate?: Date | string;
   verificationDate?: Date | string;
   denialDate?: Date | string;
-  documentUrls: string[];
-  paymentInfo: PaymentInfo;
+  documentUrls?: string[];
+  paymentInfo?: PaymentInfo;
 }
 
 /** For use with the Omit utility type on {@link Campaign} */
@@ -55,7 +55,7 @@ export interface CampaignDonation {
   id: UUID;
   grossAmount: string;
   serviceFee: string;
-  timestmap: Date | string;
+  timestamp: Date | string;
   transactionRef: string;
   campaignId: UUID;
 }
@@ -65,7 +65,7 @@ export interface CampaignPost {
   title: string;
   content: string;
   // If falsy, then campaign is not publicly available.
-  publicPostDate?: Date | string | null;
+  publicPostDate?: Date | string;
   campaignId: UUID;
 }
 
@@ -81,6 +81,7 @@ export const PaymentInfoSchema = z.object({
 // FIXME Add more specific validation logic. Like min and max length of campaign, things like submissionDate < verificationDate.
 export const CampaignSchema = z.object({
   id: validUuid().optional(),
+  ownerRecipientId: validUuid(),
   title: validNonEmptyString(MIN_STRING_LENGTH, 100),
   description: validNonEmptyString(MIN_STRING_LENGTH, 500),
   fundraisingGoal: validMoneyAmount(),
