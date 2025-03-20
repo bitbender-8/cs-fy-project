@@ -8,7 +8,7 @@ export const config = {
     process.env.ALLOWED_FILE_EXTENSIONS ?? ".jpg;.jpeg;.png;.gif",
   PAGE_SIZE: parseInt(process.env.PAGE_SIZE ?? "10"),
   ALLOWED_MAX_MONEY_AMOUNT: parseInt(
-    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000"
+    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000",
   ),
 
   // Database config

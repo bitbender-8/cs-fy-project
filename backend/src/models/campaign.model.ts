@@ -53,8 +53,8 @@ export interface PaymentInfo {
 
 export interface CampaignDonation {
   id: UUID;
-  grossAmount: string ;
-  serviceFee: string ;
+  grossAmount: string;
+  serviceFee: string;
   timestamp: Date | string;
   transactionRef: string;
   campaignId: UUID;
