@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { config } from "../config.js";
 
 // Possible campaign statuses
 export const CAMPAIGN_STATUSES = [
@@ -76,31 +77,37 @@ export const validBankAccountNo = () =>
       },
       {
         message: "Must be a numeric bank account number",
-      },
+      }
     );
 
 export const validUuid = () => z.string().uuid({ message: "Invalid UUID" });
 
 export const validMoneyAmount = () =>
-  z.string().refine(
-    (val) => {
-      const parsedValue = parseFloat(val);
-      return (
-        !isNaN(parsedValue) &&
-        parsedValue >= 0 &&
-        Number.isFinite(parsedValue) &&
-        parsedValue.toFixed(2).replace(/\.0+$/, "") === val.replace(/\.0+$/, "")
-      );
-    },
-    {
-      message:
-        "Money field must be a non-negative number with up to two decimal places.",
-    },
-  );
+  z
+    .string()
+    .refine(
+      (val) => {
+        const parsedValue = parseFloat(val);
+        return (
+          !isNaN(parsedValue) &&
+          parsedValue >= 0 &&
+          Number.isFinite(parsedValue) &&
+          parsedValue.toFixed(2).replace(/\.0+$/, "") ===
+            val.replace(/\.0+$/, "")
+        );
+      },
+      {
+        message:
+          "Money field must be a non-negative number with up to two decimal places.",
+      }
+    )
+    .refine((val) => parseFloat(val) < config.ALLOWED_MAX_MONEY_AMOUNT, {
+      message: `Money amount specified is too large. Maximum amount allowed is ${config.ALLOWED_FILE_EXTENSIONS}.`,
+    });
 
 export const validCurrency = () =>
   z.enum(CURRENCY_CODES, {
     message: `Invalid currency code. Must be one of: ${CURRENCY_CODES.filter(
-      (val) => val !== "XXX",
+      (val) => val !== "XXX"
     ).join(", ")}.`,
   });
