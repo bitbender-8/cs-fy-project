@@ -1,4 +1,4 @@
-import { query } from "./db.js";
+import { query } from "../db.js";
 import {
   Recipient,
   SocialMediaHandle,
@@ -10,7 +10,7 @@ import {
   CampaignDonation,
   CampaignPost,
 } from "../models/campaign.model.js";
-import { fromMoneyStrToBigInt } from "../utils/util.types.js";
+import { fromMoneyStrToBigInt } from "./util.types.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
@@ -29,25 +29,26 @@ import {
   generateSocialHandles,
   generateStatusChangeRequests,
   generateSupervisors,
-} from "../mock-data-generators.js";
+} from "./mock-generators.js";
 
 // You have to creae these manually in the auth0 dashboard, and assign them their roles
-const auth0RecipientIds = [
-  "auth0|67d983c50f7916d942e2514f",
-  "auth0|67d983749ae3ba0e60ed1597",
-  "auth0|67d9835f77a6532deb96364d",
-  "auth0|67d983426b97b76f336bed56",
-  "auth0|67da6cdc404de3d21ed70c88",
-  "auth0|67da6d005a52ee8008cbe671",
-];
+const auth0RecipientIds = process.env.AUTH0_TEST_RECIPIENTS?.split(";");
+const auth0SupervisorIds = process.env.AUTH0_TEST_SUPERVISORS?.split(";");
 
-// You have to creae these manually in the auth0 dashboard, and assign them their roles
-const auth0SupervisorIds = [
-  "auth0|67d69ed056c40acd60ab91d4",
-  "auth0|67da6d1c3a675923873af94b",
-  "auth0|67da6d7d5a52ee8008cbe67f",
-  "auth0|67da6df15e3f387facab43fe",
-];
+if (!auth0RecipientIds || !auth0SupervisorIds) {
+  console.error("Failed to load auth0 test users.");
+  process.exit(1);
+}
+
+if (auth0RecipientIds.length === 0) {
+  console.error("Auth0 recipient IDs not provided.");
+  process.exit(1);
+}
+
+if (auth0SupervisorIds.length === 0) {
+  console.error("Auth0 supervisor IDs not provided.");
+  process.exit(1);
+}
 
 async function seedRecipients(recipients: Recipient[]): Promise<void> {
   const queryString = `
@@ -142,7 +143,7 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
       "subject",
       "body",
       "isRead",
-      "timestamp",
+      "createdAt",
       "recipientId",
       "supervisorId"
     ) VALUES (
@@ -157,7 +158,7 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
         notification.subject,
         notification.body,
         notification.isRead,
-        notification.timestamp,
+        notification.createdAt,
         null,
         notification.supervisorId,
       ]);
@@ -167,7 +168,7 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
         notification.subject,
         notification.body,
         notification.isRead,
-        notification.timestamp,
+        notification.createdAt,
         notification.recipientId,
         null,
       ]);
@@ -257,7 +258,7 @@ async function seedCampaignDonations(
       "id",
       "grossAmount",
       "serviceFee",
-      "timestamp",
+      "createdAt",
       "transactionRef",
       "campaignId"
     ) VALUES (
@@ -270,7 +271,7 @@ async function seedCampaignDonations(
       donation.id,
       fromMoneyStrToBigInt(donation.grossAmount),
       fromMoneyStrToBigInt(donation.serviceFee),
-      donation.timestamp,
+      donation.createdAt,
       donation.transactionRef,
       donation.campaignId,
     ]);

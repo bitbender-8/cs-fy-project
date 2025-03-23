@@ -13,7 +13,7 @@ export type Notification =
       subject: string;
       body: string;
       isRead: boolean;
-      timestamp: Date | string;
+      createdAt: Date | string;
       recipientId: UUID;
     }
   | {
@@ -21,7 +21,7 @@ export type Notification =
       subject: string;
       body: string;
       isRead: boolean;
-      timestamp: Date | string;
+      createdAt: Date | string;
       supervisorId: UUID;
     };
 
@@ -31,6 +31,6 @@ export const NotificationSchema = z.object({
   subject: validNonEmptyString(MIN_STRING_LENGTH, 255),
   body: validNonEmptyString(MIN_STRING_LENGTH, 500),
   isRead: z.boolean(),
-  timeStamp: validDate(true),
+  createdAt: validDate(true),
   userId: validUuid(),
 });

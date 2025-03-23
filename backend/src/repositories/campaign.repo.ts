@@ -1,7 +1,7 @@
 import { config } from "../config.js";
 import { Campaign } from "../models/campaign.model.js";
 import { PaginatedList } from "../utils/util.types.js";
-import { query } from "./db.js";
+import { query } from "../db.js";
 import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
 
 /** Validate filter params before passing */

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import pg, { PoolClient, QueryResult, QueryResultRow } from "pg";
-import { config } from "../config.js";
+import { config } from "./config.js";
 
 const pool = new pg.Pool({
   user: config.DB_USER,
