@@ -85,7 +85,7 @@ async function seedRecipients(recipients: Recipient[]): Promise<void> {
 }
 
 async function seedSocialHandles(
-  socialHandles: SocialMediaHandle[]
+  socialHandles: SocialMediaHandle[],
 ): Promise<void> {
   const queryString = `
     INSERT INTO "RecipientSocialMediaHandle" (
@@ -251,7 +251,7 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
 }
 
 async function seedCampaignDonations(
-  donations: CampaignDonation[]
+  donations: CampaignDonation[],
 ): Promise<void> {
   const queryString = `
     INSERT INTO "CampaignDonation" (
@@ -303,7 +303,7 @@ async function seedCampaignPosts(campaignPosts: CampaignPost[]): Promise<void> {
 }
 
 async function seedPostUpdateRequests(
-  requests: PostUpdateRequest[]
+  requests: PostUpdateRequest[],
 ): Promise<void> {
   const queryString = `
     INSERT INTO "PostUpdateRequest" (
@@ -331,7 +331,7 @@ async function seedPostUpdateRequests(
 }
 
 async function seedEndDateExtensionRequests(
-  requests: EndDateExtensionRequest[]
+  requests: EndDateExtensionRequest[],
 ): Promise<void> {
   const queryString = `
     INSERT INTO "EndDateExtensionRequest" (
@@ -359,7 +359,7 @@ async function seedEndDateExtensionRequests(
 }
 
 async function seedGoalAdjustmentRequests(
-  requests: GoalAdjustmentRequest[]
+  requests: GoalAdjustmentRequest[],
 ): Promise<void> {
   const queryString = `
     INSERT INTO "GoalAdjustmentRequest" (
@@ -389,7 +389,7 @@ async function seedGoalAdjustmentRequests(
 }
 
 async function seedStatusChangeRequests(
-  requests: StatusChangeRequest[]
+  requests: StatusChangeRequest[],
 ): Promise<void> {
   const queryString = `
     INSERT INTO "StatusChangeRequest" (
@@ -442,34 +442,34 @@ async function seedDatabase({
   const notifications = generateNotifications(
     recipients,
     supervisors,
-    noOfNotifications
+    noOfNotifications,
   );
   const campaigns = generateCampaigns(
     recipients,
     noOfCampaigns,
-    noOfCampaignCategories
+    noOfCampaignCategories,
   );
   const campaignDonations = generateCampaignDonations(
     campaigns,
-    avgDonationPerCampaign
+    avgDonationPerCampaign,
   );
   const campaignPosts = generateCampaignPosts(campaigns, avgPostPerCampaign);
   const postUpdateRequests = generatePostUpdateRequests(
     campaigns,
     campaignPosts,
-    noOfRequestsPerRequestType
+    noOfRequestsPerRequestType,
   );
   const endDateExtensionRequests = generateEndDateExtensionRequests(
     campaigns,
-    noOfRequestsPerRequestType
+    noOfRequestsPerRequestType,
   );
   const goalAdjustmentRequests = generateGoalAdjustmentRequests(
     campaigns,
-    noOfRequestsPerRequestType
+    noOfRequestsPerRequestType,
   );
   const statusChangeRequests = generateStatusChangeRequests(
     campaigns,
-    noOfRequestsPerRequestType
+    noOfRequestsPerRequestType,
   );
 
   // Seed database

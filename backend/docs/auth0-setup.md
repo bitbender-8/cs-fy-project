@@ -13,7 +13,7 @@ exports.onExecutePostLogin = async (event, api) => {
     api.idToken.setCustomClaim(`${namespace}/roles`, event.authorization.roles);
     api.accessToken.setCustomClaim(
       `${namespace}/roles`,
-      event.authorization.roles
+      event.authorization.roles,
     );
   }
 };
