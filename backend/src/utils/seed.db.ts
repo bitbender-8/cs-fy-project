@@ -1,4 +1,4 @@
-import { query } from "./db.js";
+import { query } from "../db.js";
 import {
   Recipient,
   SocialMediaHandle,
@@ -10,7 +10,7 @@ import {
   CampaignDonation,
   CampaignPost,
 } from "../models/campaign.model.js";
-import { fromMoneyStrToBigInt } from "../utils/util.types.js";
+import { fromMoneyStrToBigInt } from "./util.types.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
@@ -29,25 +29,26 @@ import {
   generateSocialHandles,
   generateStatusChangeRequests,
   generateSupervisors,
-} from "../mock-data-generators.js";
+} from "./mock-generators.js";
 
 // You have to creae these manually in the auth0 dashboard, and assign them their roles
-const auth0RecipientIds = [
-  "auth0|67d983c50f7916d942e2514f",
-  "auth0|67d983749ae3ba0e60ed1597",
-  "auth0|67d9835f77a6532deb96364d",
-  "auth0|67d983426b97b76f336bed56",
-  "auth0|67da6cdc404de3d21ed70c88",
-  "auth0|67da6d005a52ee8008cbe671",
-];
+const auth0RecipientIds = process.env.AUTH0_TEST_RECIPIENTS?.split(";");
+const auth0SupervisorIds = process.env.AUTH0_TEST_SUPERVISORS?.split(";");
 
-// You have to creae these manually in the auth0 dashboard, and assign them their roles
-const auth0SupervisorIds = [
-  "auth0|67d69ed056c40acd60ab91d4",
-  "auth0|67da6d1c3a675923873af94b",
-  "auth0|67da6d7d5a52ee8008cbe67f",
-  "auth0|67da6df15e3f387facab43fe",
-];
+if (!auth0RecipientIds || !auth0SupervisorIds) {
+  console.error("Failed to load auth0 test users.");
+  process.exit(1);
+}
+
+if (auth0RecipientIds.length === 0) {
+  console.error("Auth0 recipient IDs not provided.");
+  process.exit(1);
+}
+
+if (auth0SupervisorIds.length === 0) {
+  console.error("Auth0 supervisor IDs not provided.");
+  process.exit(1);
+}
 
 async function seedRecipients(recipients: Recipient[]): Promise<void> {
   const queryString = `
@@ -84,7 +85,7 @@ async function seedRecipients(recipients: Recipient[]): Promise<void> {
 }
 
 async function seedSocialHandles(
-  socialHandles: SocialMediaHandle[],
+  socialHandles: SocialMediaHandle[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "RecipientSocialMediaHandle" (
@@ -142,7 +143,7 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
       "subject",
       "body",
       "isRead",
-      "timestamp",
+      "createdAt",
       "recipientId",
       "supervisorId"
     ) VALUES (
@@ -157,7 +158,7 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
         notification.subject,
         notification.body,
         notification.isRead,
-        notification.timestamp,
+        notification.createdAt,
         null,
         notification.supervisorId,
       ]);
@@ -167,7 +168,7 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
         notification.subject,
         notification.body,
         notification.isRead,
-        notification.timestamp,
+        notification.createdAt,
         notification.recipientId,
         null,
       ]);
@@ -250,14 +251,14 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
 }
 
 async function seedCampaignDonations(
-  donations: CampaignDonation[],
+  donations: CampaignDonation[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "CampaignDonation" (
       "id",
       "grossAmount",
       "serviceFee",
-      "timestamp",
+      "createdAt",
       "transactionRef",
       "campaignId"
     ) VALUES (
@@ -270,7 +271,7 @@ async function seedCampaignDonations(
       donation.id,
       fromMoneyStrToBigInt(donation.grossAmount),
       fromMoneyStrToBigInt(donation.serviceFee),
-      donation.timestamp,
+      donation.createdAt,
       donation.transactionRef,
       donation.campaignId,
     ]);
@@ -302,7 +303,7 @@ async function seedCampaignPosts(campaignPosts: CampaignPost[]): Promise<void> {
 }
 
 async function seedPostUpdateRequests(
-  requests: PostUpdateRequest[],
+  requests: PostUpdateRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "PostUpdateRequest" (
@@ -330,7 +331,7 @@ async function seedPostUpdateRequests(
 }
 
 async function seedEndDateExtensionRequests(
-  requests: EndDateExtensionRequest[],
+  requests: EndDateExtensionRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "EndDateExtensionRequest" (
@@ -358,7 +359,7 @@ async function seedEndDateExtensionRequests(
 }
 
 async function seedGoalAdjustmentRequests(
-  requests: GoalAdjustmentRequest[],
+  requests: GoalAdjustmentRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "GoalAdjustmentRequest" (
@@ -388,7 +389,7 @@ async function seedGoalAdjustmentRequests(
 }
 
 async function seedStatusChangeRequests(
-  requests: StatusChangeRequest[],
+  requests: StatusChangeRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "StatusChangeRequest" (
@@ -441,34 +442,34 @@ async function seedDatabase({
   const notifications = generateNotifications(
     recipients,
     supervisors,
-    noOfNotifications,
+    noOfNotifications
   );
   const campaigns = generateCampaigns(
     recipients,
     noOfCampaigns,
-    noOfCampaignCategories,
+    noOfCampaignCategories
   );
   const campaignDonations = generateCampaignDonations(
     campaigns,
-    avgDonationPerCampaign,
+    avgDonationPerCampaign
   );
   const campaignPosts = generateCampaignPosts(campaigns, avgPostPerCampaign);
   const postUpdateRequests = generatePostUpdateRequests(
     campaigns,
     campaignPosts,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const endDateExtensionRequests = generateEndDateExtensionRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const goalAdjustmentRequests = generateGoalAdjustmentRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const statusChangeRequests = generateStatusChangeRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
 
   // Seed database

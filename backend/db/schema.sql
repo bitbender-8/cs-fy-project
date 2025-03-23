@@ -70,8 +70,9 @@ CREATE TABLE
         "body" TEXT,
         -- Indicates whether the notification has been read.
         "isRead" BOOLEAN NOT NULL,
+        /* DOC-UPDATE Changed timestamp column to createdAt bc it causes errors when used in prepared statements (it might be reserved). */
         -- Timestamp when the notification was issued with time zone.
-        "timestamp" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Foreign key referencing the Recipient table.
         "recipientId" UUID REFERENCES "Recipient" ("id"),
         -- Foreign key referencing the Supervisor table.
@@ -168,8 +169,9 @@ CREATE TABLE
         "grossAmount" BIGINT NOT NULL,
         -- Fee charged for the donation service.
         "serviceFee" BIGINT NOT NULL,
+        /* DOC-UPDATE Changed timestamp column to createdAt bc it causes errors when used in prepared statements (it might be reserved). */
         -- Timestamp of the donation transaction with time zone.
-        "timestamp" TIMESTAMPTZ NOT NULL,
+        "createdAt" TIMESTAMPTZ NOT NULL,
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
         -- Foreign key referencing the Campaign table.

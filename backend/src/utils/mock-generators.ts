@@ -3,21 +3,21 @@ import {
   Recipient,
   SocialMediaHandle,
   Supervisor,
-} from "./models/user.model.js";
+} from "../models/user.model.js";
 import { randomUUID, UUID } from "crypto";
-import { Notification } from "./models/notification.model.js";
+import { Notification } from "../models/notification.model.js";
 import {
   Campaign,
   CampaignDonation,
   CampaignPost,
-} from "./models/campaign.model.js";
-import { CAMPAIGN_STATUSES } from "./utils/zod-helpers.js";
+} from "../models/campaign.model.js";
+import { CAMPAIGN_STATUSES } from "./zod-helpers.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
   PostUpdateRequest,
   StatusChangeRequest,
-} from "./models/campaign-request.model.js";
+} from "../models/campaign-request.model.js";
 
 export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
   const recipients: Recipient[] = [];
@@ -131,7 +131,7 @@ export function generateNotifications(
         subject: faker.lorem.sentence({ min: 1, max: 2 }),
         body: faker.lorem.sentence({ min: 3, max: 5 }),
         isRead: faker.datatype.boolean(),
-        timestamp: faker.date
+        createdAt: faker.date
           .past({ years: 30, refDate: new Date() })
           .toISOString(),
         supervisorId: faker.helpers.arrayElement(supervisors).id as UUID,
@@ -142,7 +142,7 @@ export function generateNotifications(
         subject: faker.lorem.sentence({ min: 1, max: 2 }),
         body: faker.lorem.sentence({ min: 3, max: 5 }),
         isRead: faker.datatype.boolean(),
-        timestamp: faker.date
+        createdAt: faker.date
           .past({ years: 30, refDate: new Date() })
           .toISOString(),
         recipientId: faker.helpers.arrayElement(recipients).id as UUID,
@@ -259,7 +259,7 @@ export function generateCampaignDonations(
         id: randomUUID(),
         grossAmount: grossAmount,
         serviceFee: serviceFee,
-        timestamp: faker.date.recent().toISOString(),
+        createdAt: faker.date.recent().toISOString(),
         transactionRef: faker.string.alphanumeric(16),
         campaignId: campaign.id,
       };

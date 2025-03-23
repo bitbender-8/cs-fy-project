@@ -55,7 +55,7 @@ export interface CampaignDonation {
   id: UUID;
   grossAmount: string;
   serviceFee: string;
-  timestamp: Date | string;
+  createdAt: Date | string;
   transactionRef: string;
   campaignId: UUID;
 }
@@ -103,7 +103,7 @@ export const CampaignDonationSchema = z.object({
   id: validUuid().optional(),
   grossAmount: validMoneyAmount(),
   serviceFee: validMoneyAmount(),
-  timestamp: validDate(true),
+  createdAt: validDate(true),
   transactionRef: validNonEmptyString(MIN_STRING_LENGTH, 255),
   campaignId: validUuid(),
 });

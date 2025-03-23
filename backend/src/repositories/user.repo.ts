@@ -1,5 +1,5 @@
 import { UUID } from "crypto";
-import { query } from "./db.js";
+import { query } from "../utils/db.js";
 
 export async function getUuidFromAuth0Id(
   auth0Id: string,
