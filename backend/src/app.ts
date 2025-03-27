@@ -4,6 +4,7 @@ import { errorHandler } from "./errors/error-handlers.js";
 import { jwtCheck } from "./middleware/auth.middleware.js";
 import { campaignRouter } from "./routes/campaign.routes.js";
 import { config } from "./config.js";
+import { recipientRouter } from "./routes/recipient.routes.js";
 
 const app: Application = express();
 
@@ -27,6 +28,7 @@ app.use(jwtCheck);
 
 // Mount routes
 app.use("/campaigns", campaignRouter);
+app.use("/recipients", recipientRouter)
 
 // Error handlers
 app.use(errorHandler);

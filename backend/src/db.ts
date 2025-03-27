@@ -19,13 +19,14 @@ const pool = new pg.Pool({
  */
 export const query = async <T extends QueryResultRow = any>(
   text: string,
-  params?: any[],
+  params?: any[]
 ): Promise<QueryResult<T>> => {
   try {
     const result = await pool.query<T>(text, params);
     return result;
-  } catch (error) {
-    console.error("Database query error:", error);
+  } catch (err) {
+    const error = err as Error;
+    error.message = "Database query error: " + error.message;
     throw error;
   }
 };
@@ -39,8 +40,9 @@ export const getClient = async (): Promise<PoolClient> => {
   try {
     const client = await pool.connect();
     return client;
-  } catch (error) {
-    console.error("Error connecting to database:", error);
+  } catch (err: unknown) {
+    const error = err as Error;
+    error.message = "Error connecting to the database: " + error.message;
     throw error;
   }
 };

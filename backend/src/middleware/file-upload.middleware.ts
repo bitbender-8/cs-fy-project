@@ -63,7 +63,6 @@ export async function validateFileUpload(fileFieldName: string) {
           );
           return;
         }
-
         // File extension validation
         const allowedExtensions = config.ALLOWED_FILE_EXTENSIONS?.split(";");
         const ext = path.extname(req.file.originalname).toLowerCase();
@@ -73,12 +72,11 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(",")}.`
+              `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`
             )
           );
           return;
         }
-
         // File Magic Number Validation
         // Remove leading dot
         const allowedFileTypes = allowedExtensions.map((ext) => ext.slice(1));
@@ -89,11 +87,12 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The uploaded file has invalid content or is corrupted. Allowed file types include ${allowedExtensions.join(",")}.`
+              `The uploaded file has invalid content or is corrupted. Allowed file types include ${allowedExtensions.join(", ")}.`
             )
           );
           return;
         }
+        next();
       });
     } else {
       // No file upload, proceed to next middleware or route handler.

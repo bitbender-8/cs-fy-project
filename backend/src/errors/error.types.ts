@@ -35,4 +35,5 @@ export class AppError extends Error {
 export type AppErrorType =
   | "Internal Server Error"
   | "Validation Failure"
-  | "Not Found";
+  | "Not Found"
+  | "Service Unavailable";

@@ -25,6 +25,8 @@ tags:
     description: Posts that provide updates on a campaign's progress.
 paths:
   # TODO: Add sortBy and sortOrder to routes with list returns.
+  # TODO: Add a 593 response for all endpoitns that need to access the authentication server.
+  
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
   /supervisors/{supervisorId}:
@@ -112,7 +114,8 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /recipients:
-    # NEXT 1
+    # TODO: Update specifications to comply with changes at implementation
+    # DONE
     # (Role: Anon | Recipient | Supervisor, Owner: N/A) => Full access
     post:
       tags:
@@ -121,21 +124,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
-              allOf:
-                - $ref: "#/components/schemas/Recipient"
               properties:
-                password:
+                recipient:
+                  type: object
+                  $ref: "#/components/schemas/Recipient"
+                profilePicture:
                   type: string
-                  description: The user's password.
-                passwordConfirmation:
-                  type: string
-                  description: The user's password confirmation.
+                  format: binary
               required:
-                - password
-                - passwordConfirmation
+                - recipientData
+                - profilePicture
       responses:
         "201":
           description: Recipient created successfully
@@ -157,6 +158,12 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
         "500":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: The authentication service is temporarily unavailable
           content:
             application/json:
               schema:
@@ -1314,6 +1321,7 @@ paths:
         - bearerHttpAuth: []
 components:
   schemas:
+    # TODO: Update schemas with latest changes.
     PaginatedList:
       type: object
       properties:

@@ -28,7 +28,7 @@
     "lint": "eslint . --fix",
     "build": "tsc",
     "prod": "tsc && node -env-file=.env --env-file=.env.local --env-file=.env.test build/app.js",
-    "dev": "tsx watch -env-file=.env --env-file=.env.local --env-file=.env.test src/app.ts",
+    "dev": "tsx watch --env-file=.env --env-file=.env.local --env-file=.env.test src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:seed": "tsx --env-file=.env --env-file=.env.local --env-file=.env.test src/utils/seed.db.ts"
   },
@@ -51,10 +51,12 @@
     "helmet": "^8.0.0",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.13.3",
+    "ts-case-convert": "^2.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/js": "9.15.0",
+    "@faker-js/faker": "^9.6.0",
     "@tsconfig/node22": "22.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "22.10.0",
@@ -67,7 +69,6 @@
     "swagger-ui-express": "^5.0.1",
     "tsx": "^4.19.2",
     "typescript": "5.7.2",
-    "typescript-eslint": "8.16.0",
-    "@faker-js/faker": "^9.6.0"
+    "typescript-eslint": "8.16.0"
   }
 }

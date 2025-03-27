@@ -18,10 +18,12 @@ export function errorHandler(
   if (err instanceof AppError) {
     problemDetails = {
       title: err.errorType,
-      detail: err.uiMessage,
       status: err.httpCode,
+      detail: err.uiMessage,
     };
     console.error(`Fail: ${err.internalMessage ?? err.uiMessage}`);
+    res.status(problemDetails.status).json(problemDetails);
+    return;
   }
 
   console.error(err);

@@ -13,8 +13,9 @@ CREATE TABLE
         "dateOfBirth" DATE NOT NULL,
         -- Recipient's email address. This is not required.
         "email" VARCHAR(100) NULL,
+        /* FIXME: Made phoen nullable for mvp. */
         -- Recipient's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
+        "phoneNo" VARCHAR(20) UNIQUE,
         /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
         -- The auth0 user id
         "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
