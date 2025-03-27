@@ -29,6 +29,7 @@ export interface Campaign {
   redactedDocumentUrls?: string[];
 
   // Sensitive fields: Available to Supervisors and Campaign owners
+  isPublic?: boolean;
   submissionDate?: Date | string;
   verificationDate?: Date | string;
   denialDate?: Date | string;
@@ -42,7 +43,8 @@ export type SensitiveCampaignFields =
   | "verificationDate"
   | "denialDate"
   | "documentUrls"
-  | "paymentInfo";
+  | "paymentInfo"
+  | "isPublic";
 
 export interface PaymentInfo {
   paymentMethod: string;
@@ -92,6 +94,7 @@ export const CampaignSchema = z.object({
   redactedDocumentUrls: z.array(validUrl()).optional(),
 
   // Sensitive fields
+  isPublic: z.boolean().optional(),
   submissionDate: validDate(true).optional(),
   verificationDate: validDate(true).optional(),
   denialDate: validDate(true).optional(),

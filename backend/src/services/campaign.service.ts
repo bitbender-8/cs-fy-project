@@ -1,27 +1,36 @@
-import { Campaign, SensitiveCampaignFields } from "../models/campaign.model.js";
 import { PaginatedList } from "../utils/util.types.js";
+import { Campaign, SensitiveCampaignFields } from "../models/campaign.model.js";
 
 export function excludeSensitiveCampaignProperties(
-  campaigns: PaginatedList<Campaign>,
+  campaigns: PaginatedList<Campaign>
 ): PaginatedList<Omit<Campaign, SensitiveCampaignFields>> {
   return {
     items: campaigns.items.map((campaign) => {
       const {
-        submissionDate,
-        verificationDate,
-        denialDate,
-        documentUrls,
-        paymentInfo,
-        ...publicCampaign
+        id,
+        ownerRecipientId,
+        title,
+        description,
+        fundraisingGoal,
+        status,
+        category,
+        launchDate,
+        endDate,
+        redactedDocumentUrls,
       } = campaign;
 
-      void submissionDate;
-      void verificationDate;
-      void denialDate;
-      void documentUrls;
-      void paymentInfo;
-
-      return publicCampaign;
+      return {
+        id,
+        ownerRecipientId,
+        title,
+        description,
+        fundraisingGoal,
+        status,
+        category,
+        launchDate,
+        endDate,
+        redactedDocumentUrls,
+      };
     }),
     pageCount: campaigns.pageCount,
     pageNo: campaigns.pageNo,

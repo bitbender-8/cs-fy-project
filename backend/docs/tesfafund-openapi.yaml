@@ -290,7 +290,7 @@ paths:
   /campaigns:
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns & Sensitive fields hidden
+    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns with ensitive fields hidden
     get:
       tags:
         - Campaigns
@@ -403,7 +403,7 @@ paths:
               - type: string
                 format: date
         - name: isPublic
-          description: Filter public campaigns.
+          description: Filters public campaigns.
           in: query
           schema:
             type: boolean
@@ -513,8 +513,7 @@ paths:
   /campaigns/{campaignId}:
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns & Sensitive fields hidden
-    # # A campaign is no public if the `launchDate` property is falsy.
+    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns with ensitive fields hidden
     get:
       tags:
         - Campaigns

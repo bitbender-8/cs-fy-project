@@ -25,10 +25,14 @@ export class AppError extends Error {
     public errorType: AppErrorType,
     public httpCode: number,
     public uiMessage: string,
+    public internalMessage: string
   ) {
     super();
   }
 }
 
 /** Application-wide error types. Safe to show in a UI. */
-export type AppErrorType = "Internal Server Error" | "Validation Failure";
+export type AppErrorType =
+  | "Internal Server Error"
+  | "Validation Failure"
+  | "Not Found";

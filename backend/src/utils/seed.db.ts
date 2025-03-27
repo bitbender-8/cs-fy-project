@@ -30,6 +30,7 @@ import {
   generateStatusChangeRequests,
   generateSupervisors,
 } from "./mock-generators.js";
+import { exit } from "process";
 
 // You have to creae these manually in the auth0 dashboard, and assign them their roles
 const auth0RecipientIds = process.env.AUTH0_TEST_RECIPIENTS?.split(";");
@@ -85,7 +86,7 @@ async function seedRecipients(recipients: Recipient[]): Promise<void> {
 }
 
 async function seedSocialHandles(
-  socialHandles: SocialMediaHandle[],
+  socialHandles: SocialMediaHandle[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "RecipientSocialMediaHandle" (
@@ -194,9 +195,10 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       "verificationDate",
       "denialDate",
       "launchDate",
-      "endDate"
+      "endDate",
+      "isPublic"
     ) VALUES (
-       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
     )
   `;
 
@@ -235,6 +237,7 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       campaign.denialDate,
       campaign.launchDate,
       campaign.endDate,
+      campaign.isPublic,
     ]);
 
     if (campaign.documentUrls) {
@@ -251,7 +254,7 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
 }
 
 async function seedCampaignDonations(
-  donations: CampaignDonation[],
+  donations: CampaignDonation[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "CampaignDonation" (
@@ -303,7 +306,7 @@ async function seedCampaignPosts(campaignPosts: CampaignPost[]): Promise<void> {
 }
 
 async function seedPostUpdateRequests(
-  requests: PostUpdateRequest[],
+  requests: PostUpdateRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "PostUpdateRequest" (
@@ -331,7 +334,7 @@ async function seedPostUpdateRequests(
 }
 
 async function seedEndDateExtensionRequests(
-  requests: EndDateExtensionRequest[],
+  requests: EndDateExtensionRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "EndDateExtensionRequest" (
@@ -359,7 +362,7 @@ async function seedEndDateExtensionRequests(
 }
 
 async function seedGoalAdjustmentRequests(
-  requests: GoalAdjustmentRequest[],
+  requests: GoalAdjustmentRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "GoalAdjustmentRequest" (
@@ -389,7 +392,7 @@ async function seedGoalAdjustmentRequests(
 }
 
 async function seedStatusChangeRequests(
-  requests: StatusChangeRequest[],
+  requests: StatusChangeRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "StatusChangeRequest" (
@@ -442,34 +445,34 @@ async function seedDatabase({
   const notifications = generateNotifications(
     recipients,
     supervisors,
-    noOfNotifications,
+    noOfNotifications
   );
   const campaigns = generateCampaigns(
     recipients,
     noOfCampaigns,
-    noOfCampaignCategories,
+    noOfCampaignCategories
   );
   const campaignDonations = generateCampaignDonations(
     campaigns,
-    avgDonationPerCampaign,
+    avgDonationPerCampaign
   );
   const campaignPosts = generateCampaignPosts(campaigns, avgPostPerCampaign);
   const postUpdateRequests = generatePostUpdateRequests(
     campaigns,
     campaignPosts,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const endDateExtensionRequests = generateEndDateExtensionRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const goalAdjustmentRequests = generateGoalAdjustmentRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const statusChangeRequests = generateStatusChangeRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
 
   // Seed database
@@ -487,6 +490,7 @@ async function seedDatabase({
     .then(() => seedStatusChangeRequests(statusChangeRequests))
     .then(() => {
       console.log("Database seeding completed.");
+      exit(0);
     })
     .catch((error) => console.error("Error seeding database: ", error));
 }
@@ -495,9 +499,9 @@ seedDatabase({
   auth0RecipientIds,
   auth0SupervisorIds,
   avgDonationPerCampaign: 5,
-  avgPostPerCampaign: 3,
-  noOfRequestsPerRequestType: 2,
-  noOfNotifications: 10,
-  noOfCampaigns: 5,
+  avgPostPerCampaign: 4,
+  noOfRequestsPerRequestType: 4,
+  noOfNotifications: 15,
+  noOfCampaigns: 25,
   noOfCampaignCategories: 6,
 });

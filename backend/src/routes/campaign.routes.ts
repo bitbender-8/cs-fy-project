@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { UUID } from "crypto";
 
 import { readCampaigns } from "../repositories/campaign.repo.js";
 import { getUserRoles } from "../services/user.service.js";
@@ -6,8 +7,9 @@ import { CampaignFilterSchema } from "../models/filters/campaign-filters.js";
 import { ProblemDetails } from "../errors/error.types.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { PaginatedList } from "../utils/util.types.js";
-import { Campaign, SensitiveCampaignFields } from "../models/campaign.model.js";
+import { Campaign } from "../models/campaign.model.js";
 import { excludeSensitiveCampaignProperties } from "../services/campaign.service.js";
+import { validUuid } from "../utils/zod-helpers.js";
 
 export const campaignRouter: Router = Router();
 
@@ -28,84 +30,138 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  if (getUserRoles(req.auth).includes("Supervisor")) {
-    // Supervisors have access to all filterParams, and campaigns
-    res.status(200).json(await readCampaigns(parsedQueryParams.data));
-  } else if (getUserRoles(req.auth).includes("Recipient")) {
-    // Recipients have access to public campaigns, and campaigns which they own.
+  // Omit sensitive query params
+  const {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    minSubmissionDate,
+    maxSubmissionDate,
+    minVerificationDate,
+    maxVerificationDate,
+    minDenialDate,
+    maxDenialDate,
+    isPublic,
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    ...publicQueryParams
+  } = parsedQueryParams.data;
+
+  const userRoles = getUserRoles(req.auth);
+  let campaigns: PaginatedList<Campaign>;
+
+  if (userRoles.includes("Supervisor")) {
+    // REMOVE
+    console.log("User is a supervisor.");
+
+    // Supervisor: full access
+    campaigns = await readCampaigns(parsedQueryParams.data);
+  } else if (userRoles.includes("Recipient")) {
+    // REMOVE
+    console.log("User is a recipient.");
 
     const recipientIdFromParam = parsedQueryParams.data.ownerRecipientId;
     const recipientIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? "",
+      req.auth?.payload.sub ?? ""
     );
 
-    if (!recipientIdFromJwt) {
-      const problemDetails = {
-        title: "Internal Server Error",
-        status: 500,
-        detail: "Something went wrong.",
-      };
-      console.error(
-        "Fail: Something went wrong while retrieving the Recipient's ID.",
-      );
-      res.status(problemDetails.status).json(problemDetails);
-      return;
-    }
-
-    // If the recipient specifies their own id in the query parameter, then are given full access to all campaigns which they own
     if (recipientIdFromParam && recipientIdFromJwt === recipientIdFromParam) {
-      res.status(200).json(
-        await readCampaigns({
-          ...parsedQueryParams.data,
-          ownerRecipientId: recipientIdFromParam,
-        }),
-      );
-      return;
+      // Recipient: own campaigns
+      campaigns = await readCampaigns({
+        ...parsedQueryParams.data,
+        ownerRecipientId: recipientIdFromParam,
+      });
     } else {
-      // Otherwise, the recipient is given access to public campiagns, and public query params.
-
-      const campaigns: PaginatedList<Omit<Campaign, SensitiveCampaignFields>> =
-        excludeSensitiveCampaignProperties(
-          await readCampaigns({
-            title: parsedQueryParams.data.title,
-            status: parsedQueryParams.data.status,
-            category: parsedQueryParams.data.category,
-            minLaunchDate: parsedQueryParams.data.minLaunchDate,
-            maxLaunchDate: parsedQueryParams.data.maxLaunchDate,
-            minEndDate: parsedQueryParams.data.minEndDate,
-            maxEndDate: parsedQueryParams.data.maxEndDate,
-            isPublic: true,
-            page: parsedQueryParams.data.page,
-            limit: parsedQueryParams.data.limit,
-          }),
-        );
-
-      res.status(200).json(campaigns);
+      // Recipient: public campaigns
+      campaigns = excludeSensitiveCampaignProperties(
+        await readCampaigns({
+          ...publicQueryParams,
+          isPublic: true,
+        })
+      );
     }
   } else {
-    res.status(200).json(
-      excludeSensitiveCampaignProperties(
-        await readCampaigns({
-          title: parsedQueryParams.data.title,
-          status: parsedQueryParams.data.status,
-          category: parsedQueryParams.data.category,
-          minLaunchDate: parsedQueryParams.data.minLaunchDate,
-          maxLaunchDate: parsedQueryParams.data.maxLaunchDate,
-          minEndDate: parsedQueryParams.data.minEndDate,
-          maxEndDate: parsedQueryParams.data.maxEndDate,
-          isPublic: true,
-          page: parsedQueryParams.data.page,
-          limit: parsedQueryParams.data.limit,
-        }),
-      ),
+    // REMOVE
+    console.log("User is anonymous.");
+
+    // Public campaigns
+    campaigns = excludeSensitiveCampaignProperties(
+      await readCampaigns({
+        ...publicQueryParams,
+        isPublic: true,
+      })
     );
   }
+
+  res.status(200).json(campaigns);
+  return;
 });
 
 campaignRouter.get(
   "/:campaignId",
   async (req: Request, res: Response): Promise<void> => {
-    // REMOVE
-    console.log(req, res);
-  },
+    const parsedPathParams = validUuid().safeParse(req.params.campaignId);
+    if (!parsedPathParams.success) {
+      const problemDetails: ProblemDetails = {
+        title: "Validation Failure",
+        status: 400,
+        detail: parsedPathParams.error.issues[0].message,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    const campaignId = parsedPathParams.data as UUID;
+    const userRoles = getUserRoles(req.auth);
+    let campaign: Campaign;
+
+    if (userRoles.includes("Supervisor")) {
+      // REMOVE
+      console.log("User is a supervisor.");
+
+      // Supervisor: full access
+      campaign = (await readCampaigns({ id: campaignId })).items[0];
+    } else if (userRoles.includes("Recipient")) {
+      // REMOVE
+      console.log("User is a recipient.");
+
+      const recipientIdFromJwt = await getUuidFromAuth0Id(
+        req.auth?.payload.sub ?? ""
+      );
+
+      const tempCampaign = (
+        await readCampaigns({
+          id: campaignId,
+          ownerRecipientId: recipientIdFromJwt,
+        })
+      ).items[0];
+
+      if (tempCampaign) {
+        // Recipient: Own campaign
+        campaign = tempCampaign;
+      } else {
+        // Recipient: Public campaigns
+        campaign = excludeSensitiveCampaignProperties(
+          await readCampaigns({ id: campaignId, isPublic: true })
+        ).items[0];
+      }
+    } else {
+      // REMOVE
+      console.log("User is anonymous.");
+
+      // Public campaigns
+      campaign = excludeSensitiveCampaignProperties(
+        await readCampaigns({ id: campaignId, isPublic: true })
+      ).items[0];
+    }
+
+    if (campaign) {
+      res.status(200).json(campaign);
+    } else {
+      res.status(404).json({
+        title: "Not Found",
+        status: 404,
+        detail: "Campaign not found.",
+      });
+    }
+
+    return;
+  }
 );

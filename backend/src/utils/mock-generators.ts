@@ -53,7 +53,7 @@ export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
 }
 
 export function generateSocialHandles(
-  recipients: Recipient[],
+  recipients: Recipient[]
 ): SocialMediaHandle[] {
   const socialHandles: SocialMediaHandle[] = [];
 
@@ -84,7 +84,7 @@ export function generateSocialHandles(
 }
 
 export function generateSupervisors(
-  auth0SupervisorIds: string[],
+  auth0SupervisorIds: string[]
 ): Supervisor[] {
   const supervisors: Supervisor[] = [];
 
@@ -117,7 +117,7 @@ export function generateSupervisors(
 export function generateNotifications(
   recipients: Recipient[],
   supervisors: Supervisor[],
-  noOfNotifications: number,
+  noOfNotifications: number
 ): Notification[] {
   const notifications: Notification[] = [];
 
@@ -150,7 +150,7 @@ export function generateNotifications(
     }
 
     notifications.push(
-      supervisorNotification ?? (recipientNotification as Notification),
+      supervisorNotification ?? (recipientNotification as Notification)
     );
   }
 
@@ -160,7 +160,7 @@ export function generateNotifications(
 export function generateCampaigns(
   recipients: Recipient[],
   noOfCampaigns: number,
-  noOfCategories: number = 5,
+  noOfCategories: number = 5
 ): Campaign[] {
   const campiagns: Campaign[] = [];
   const categories: string[] = [];
@@ -221,6 +221,7 @@ export function generateCampaigns(
         bankAccountNo: faker.finance.accountNumber(16),
         bankName: faker.helpers.arrayElement(bankNames),
       },
+      isPublic: faker.datatype.boolean(),
       submissionDate,
       verificationDate,
       denialDate,
@@ -238,14 +239,14 @@ export function generateCampaigns(
 
 export function generateCampaignDonations(
   campaigns: Campaign[],
-  avgDonationPerCampaign: number,
+  avgDonationPerCampaign: number
 ): CampaignDonation[] {
   const campaignDonations: CampaignDonation[] = [];
 
   for (const campaign of campaigns) {
     // Random variation around avg
     const donationCount = Math.round(
-      avgDonationPerCampaign * (1 + (Math.random() - 0.5)),
+      avgDonationPerCampaign * (1 + (Math.random() - 0.5))
     );
 
     for (let i = 0; i < donationCount; i++) {
@@ -273,13 +274,13 @@ export function generateCampaignDonations(
 
 export function generateCampaignPosts(
   campaigns: Campaign[],
-  avgPostPerCampaign: number,
+  avgPostPerCampaign: number
 ): CampaignPost[] {
   const campaignPosts: CampaignPost[] = [];
 
   for (const campaign of campaigns) {
     const postCount = Math.round(
-      avgPostPerCampaign * (1 + (Math.random() - 0.5)),
+      avgPostPerCampaign * (1 + (Math.random() - 0.5))
     );
 
     for (let i = 0; i < postCount; i++) {
@@ -304,7 +305,7 @@ export function generateCampaignPosts(
 export function generatePostUpdateRequests(
   campaigns: Campaign[],
   campaignPosts: CampaignPost[],
-  noOfRequests: number,
+  noOfRequests: number
 ): PostUpdateRequest[] {
   // This is because of the unique constraint on table "PostUpdateRequest", we need a way to uniquely and randomly select campaign posts.
 
@@ -314,7 +315,7 @@ export function generatePostUpdateRequests(
     const campaign = faker.helpers.arrayElement(campaigns);
     const newPost = availableCampaignPosts.splice(
       Math.floor(Math.random() * availableCampaignPosts.length),
-      1,
+      1
     )[0];
     const requestDate = faker.date.past();
     const resolutionDate = faker.datatype.boolean()
@@ -335,7 +336,7 @@ export function generatePostUpdateRequests(
 
 export function generateEndDateExtensionRequests(
   campaigns: Campaign[],
-  noOfRequests: number,
+  noOfRequests: number
 ): EndDateExtensionRequest[] {
   return Array.from({ length: noOfRequests }, () => {
     const campaign = faker.helpers.arrayElement(campaigns);
@@ -359,7 +360,7 @@ export function generateEndDateExtensionRequests(
 
 export function generateGoalAdjustmentRequests(
   campaigns: Campaign[],
-  noOfRequests: number,
+  noOfRequests: number
 ): GoalAdjustmentRequest[] {
   return Array.from({ length: noOfRequests }, () => {
     const campaign = faker.helpers.arrayElement(campaigns);
@@ -383,7 +384,7 @@ export function generateGoalAdjustmentRequests(
 
 export function generateStatusChangeRequests(
   campaigns: Campaign[],
-  noOfRequests: number,
+  noOfRequests: number
 ): StatusChangeRequest[] {
   return Array.from({ length: noOfRequests }, () => {
     const campaign = faker.helpers.arrayElement(campaigns);

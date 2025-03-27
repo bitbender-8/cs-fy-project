@@ -133,6 +133,8 @@ CREATE TABLE
         "launchDate" TIMESTAMPTZ,
         -- End date of the campaign with time zone.
         "endDate" TIMESTAMPTZ,
+        /* DOC-UPDATE Determines whether the campaign is publicly available. Removes the need to rely on launchDate implicitly. */
+        "isPublic" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Recipient table (campaign owner).
         "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id")
         /* DOC-UPDATE: Remove managing supervisor id. All recipients are managed by a single supervisor for now. */

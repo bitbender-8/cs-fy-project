@@ -5,24 +5,26 @@ export function errorHandler(
   err: Error,
   req: Request,
   res: Response,
-  _next: NextFunction,
+  _next: NextFunction
 ): void {
   void _next;
 
-  let errorDetails: ProblemDetails = {
+  let problemDetails: ProblemDetails = {
     title: "Internal Server Error",
     status: 500,
     detail: "Something went wrong.",
   };
 
   if (err instanceof AppError) {
-    errorDetails = {
+    problemDetails = {
       title: err.errorType,
       detail: err.uiMessage,
       status: err.httpCode,
     };
+    console.error(`Fail: ${err.internalMessage}`);
   }
 
-  res.status(errorDetails.status).json(errorDetails);
+  console.error(err);
+  res.status(problemDetails.status).json(problemDetails);
   return;
 }

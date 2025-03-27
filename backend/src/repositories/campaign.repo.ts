@@ -3,10 +3,11 @@ import { Campaign } from "../models/campaign.model.js";
 import { PaginatedList } from "../utils/util.types.js";
 import { query } from "../db.js";
 import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
+import { UUID } from "crypto";
 
 /** Validate filter params before passing */
 export async function readCampaigns(
-  filterParams: CampaignFilterParams,
+  filterParams: CampaignFilterParams & { id?: UUID }
 ): Promise<PaginatedList<Campaign>> {
   let queryString = `
         SELECT
@@ -25,6 +26,7 @@ export async function readCampaigns(
             "denialDate",
             "launchDate",
             "endDate",
+            "isPublic",
             "ownerRecipientId"
         FROM
             "Campaign"
@@ -36,8 +38,10 @@ export async function readCampaigns(
   const values: unknown[] = [];
   let paramIndex = 1;
 
-  if (filterParams.isPublic) {
-    whereClauses.push(`"launchDate" IS NOT NULL`);
+  if (filterParams.id) {
+    whereClauses.push(`"id" = $${paramIndex}`);
+    values.push(filterParams.id);
+    paramIndex++;
   }
 
   if (filterParams.title) {
@@ -64,40 +68,30 @@ export async function readCampaigns(
     paramIndex++;
   }
 
+  if (filterParams.isPublic) {
+    whereClauses.push(`"isPublic" = TRUE `);
+  }
+
   const dateFilters = {
-    launchDate: {
-      minParam: "minLaunchDate",
-      maxParam: "maxLaunchDate",
-    },
-    submissionDate: {
-      minParam: "minSubmissionDate",
-      maxParam: "maxSubmissionDate",
-    },
-    verificationDate: {
-      minParam: "minVerificationDate",
-      maxParam: "maxVerificationDate",
-    },
-    denialDate: {
-      minParam: "minDenialDate",
-      maxParam: "maxDenialDate",
-    },
-    endDate: {
-      minParam: "minEndDate",
-      maxParam: "maxEndDate",
-    },
+    launchDate: ["minLaunchDate", "maxLaunchDate"],
+    submissionDate: ["minSubmissionDate", "maxSubmissionDate"],
+    verificationDate: ["minVerificationDate", "maxVerificationDate"],
+    denialDate: ["minDenialDate", "maxDenialDate"],
+    endDate: ["minEndDate", "maxEndDate"],
   } as const;
 
   for (const dateField in dateFilters) {
-    const filter = dateFilters[dateField as keyof typeof dateFilters];
+    const [minParam, maxParam] =
+      dateFilters[dateField as keyof typeof dateFilters];
 
-    if (filterParams[filter.minParam]) {
+    if (filterParams[minParam]) {
       whereClauses.push(`"${dateField}" >= $${paramIndex}`);
-      values.push(filterParams[filter.minParam]);
+      values.push(filterParams[minParam]);
       paramIndex++;
     }
-    if (filterParams[filter.maxParam]) {
+    if (filterParams[maxParam]) {
       whereClauses.push(`"${dateField}" <= $${paramIndex}`);
-      values.push(filterParams[filter.maxParam]);
+      values.push(filterParams[maxParam]);
       paramIndex++;
     }
   }
@@ -107,7 +101,7 @@ export async function readCampaigns(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Campaign"${whereClause}`,
-    values,
+    values
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -115,7 +109,7 @@ export async function readCampaigns(
   queryString += whereClause;
   queryString += `
         ORDER BY
-            "submissionDate" DESC
+            "title" ASC
         LIMIT
             $${paramIndex}
         OFFSET
@@ -137,12 +131,12 @@ export async function readCampaigns(
           bankName,
         },
       };
-    },
+    }
   );
 
   return {
     items: campaigns ?? [],
-    pageCount: totalPages ?? 0,
-    pageNo: pageNo ?? 1,
+    pageCount: totalPages === 0 ? 1 : totalPages,
+    pageNo: pageNo,
   };
 }
