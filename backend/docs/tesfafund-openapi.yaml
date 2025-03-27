@@ -28,6 +28,7 @@ paths:
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
   /supervisors/{supervisorId}:
+    # NEXT 5
     get:
       tags:
         - Supervisors
@@ -67,6 +68,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 6
     put:
       tags:
         - Supervisors
@@ -110,6 +112,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /recipients:
+    # NEXT 1
     # (Role: Anon | Recipient | Supervisor, Owner: N/A) => Full access
     post:
       tags:
@@ -162,6 +165,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /recipients/{recipientId}:
+    # NEXT 2
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Full access
@@ -204,6 +208,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 3
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -248,6 +253,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 4
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -288,6 +294,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaigns:
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Access to public campaigns with ensitive fields hidden
@@ -457,6 +464,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 7
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes | No) => Full access
     # (Role: Anon, Owner: No) => No access
@@ -511,6 +519,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method.
   /campaigns/{campaignId}:
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Access to public campaigns with ensitive fields hidden
@@ -561,6 +570,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 8
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => No access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -608,6 +618,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaign-posts/:
+    # NEXT 15
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Access to public posts.
@@ -704,6 +715,7 @@ paths:
   # TODO: Add the donation route with /campaigns/{campaignId}/donate
   # Permissions differ by method
   /campaign-requests:
+    # NEXT 10
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -831,6 +843,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 9
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -894,6 +907,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaign-requests/{campaignRequestId}:
+    # NEXT 11
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -942,6 +956,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXXT 13
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -988,6 +1003,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaign-request/{campaignRequestId}/resolve:
+    # NEXT 12
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => No access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -1067,6 +1083,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /notifications:
+    # NEXT 14
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Supervisor, Owner: Yes) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
@@ -1159,6 +1176,7 @@ paths:
   # # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
   # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
   /notifications/{notificationId}:
+    # NEXT 16
     get:
       tags:
         - Notifications
@@ -1204,6 +1222,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 17
     patch:
       tags:
         - Notifications
@@ -1251,6 +1270,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 18
     delete:
       tags:
         - Notifications

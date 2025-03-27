@@ -8,3 +8,6 @@ export function getUserRoles(authToken?: { payload: JWTPayload }): UserRole[] {
     (authToken?.payload[`${config.AUTH0_NAMESPACE}/roles`] as UserRole[]) ?? []
   );
 }
+
+// Does the user with this auth0 ID exist?
+export async function verifyAuth0UserId(auth0UserId?: string ):  

@@ -25,7 +25,7 @@ export class AppError extends Error {
     public errorType: AppErrorType,
     public httpCode: number,
     public uiMessage: string,
-    public internalMessage: string
+    public internalMessage?: string
   ) {
     super();
   }

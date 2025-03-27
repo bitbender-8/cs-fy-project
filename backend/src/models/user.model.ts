@@ -19,7 +19,7 @@ export interface User {
   middleName: string;
   lastName: string;
   dateOfBirth: string;
-  phoneNo: string;
+  phoneNo?: string;
 }
 
 export interface Recipient extends User {
@@ -48,7 +48,8 @@ export const UserSchema = z.object({
   middleName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   lastName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   dateOfBirth: validDate(true),
-  phoneNo: validPhoneNo(),
+  // FIXME: This is temporary, just until we add phone signups.
+  phoneNo: validPhoneNo().optional(),
 });
 
 // Define SocialMediaHandle schema

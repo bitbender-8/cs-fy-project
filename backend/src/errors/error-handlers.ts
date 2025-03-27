@@ -21,7 +21,7 @@ export function errorHandler(
       detail: err.uiMessage,
       status: err.httpCode,
     };
-    console.error(`Fail: ${err.internalMessage}`);
+    console.error(`Fail: ${err.internalMessage ?? err.uiMessage}`);
   }
 
   console.error(err);

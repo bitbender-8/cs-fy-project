@@ -22,5 +22,5 @@ To connect to the database in pgAdmin4 using the provided `docker-compose.yml` f
 7. After creating the database, copy and paste the queries in `backend/db/schema.sql` to create the database tables.
 8. Finally, to populate the db with some mock data:
    1. First, create test users in your auth0 dashboard, and assign them a role (Supervisor or Recipient).
-   2. Add the auth0 ids to `backend/src/.env` separated by commas (to `AUTH0_TEST_SUPERVISORS` and `AUTH0_TEST_RECIPIENTS`).
+   2. Add the auth0 ids to `backend/src/.env` separated by semicolons (to `AUTH0_TEST_SUPERVISORS` and `AUTH0_TEST_RECIPIENTS`).
    3. Finally, run the command `npm run db:seed`.

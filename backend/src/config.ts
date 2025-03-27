@@ -4,11 +4,13 @@ export const config = {
   PORT: process.env.PORT ?? 4000,
   UPLOAD_DIR: process.env.UPLOAD_DIR ?? "./uploads",
   MAX_FILE_SIZE_MB: process.env.MAX_FILE_SIZE_MB ?? 10,
+  ALLOWED_MIME_TYPES:
+    process.env.ALLOWED_MIME_TYPES ?? "image/jpeg;image/png;image/gif",
   ALLOWED_FILE_EXTENSIONS:
     process.env.ALLOWED_FILE_EXTENSIONS ?? ".jpg;.jpeg;.png;.gif",
   PAGE_SIZE: parseInt(process.env.PAGE_SIZE ?? "10"),
   ALLOWED_MAX_MONEY_AMOUNT: parseInt(
-    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000",
+    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000"
   ),
 
   // Database config
@@ -19,8 +21,9 @@ export const config = {
   DB_NAME: process.env.DB_NAME ?? "TesfaFundDB",
 
   // Auth0 config
-  AUDIENCE: process.env.AUDIENCE ?? "",
-  ISSUER_BASE_URL: process.env.ISSUER_BASE_URL ?? "",
   AUTH0_NAMESPACE:
     process.env.AUTH0_NAMESPACE ?? "https://tesfafund-api.example.com",
+  AUDIENCE: process.env.AUDIENCE ?? "CHANGE ME",
+  ISSUER_BASE_URL: process.env.ISSUER_BASE_URL ?? "CHANGE ME",
+  MANAGEMENT_ACCESS_TOKEN: process.env.MANAGEMENT_ACCESS_TOKEN ?? "CHANGE ME",
 };
