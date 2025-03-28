@@ -6,10 +6,27 @@ import axios from "axios";
 import { AppError } from "../errors/error.types.js";
 import { objectToCamel } from "ts-case-convert";
 
-export function getUserRoles(authToken?: { payload: JWTPayload }): UserRole[] {
-  return (
-    (authToken?.payload[`${config.AUTH0_NAMESPACE}/roles`] as UserRole[]) ?? []
-  );
+export function getUserRole(authToken?: {
+  payload: JWTPayload;
+}): UserRole | undefined {
+  if (!authToken || !authToken.payload) {
+    return undefined; // No auth token or payload, so no role.
+  }
+
+  const roles = authToken.payload[`${config.AUTH0_NAMESPACE}/roles`];
+
+  if (!Array.isArray(roles) || roles.length === 0) {
+    return undefined; // Roles are not an array or are empty.
+  }
+
+  const firstRole = roles[0];
+
+  // Validate the type of the first element.
+  if (typeof firstRole === "string") {
+    return firstRole as UserRole; // Safe type assertion after validation.
+  }
+
+  return undefined; // First element is not a string, hence not a valid role.
 }
 
 type Auth0UserResponse = {

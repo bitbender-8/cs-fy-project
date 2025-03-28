@@ -6,7 +6,7 @@ import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
 import { UUID } from "crypto";
 
 /** Validate filter params before passing */
-export async function readCampaigns(
+export async function getCampaigns(
   filterParams: CampaignFilterParams & { id?: UUID }
 ): Promise<PaginatedList<Campaign>> {
   let queryString = `

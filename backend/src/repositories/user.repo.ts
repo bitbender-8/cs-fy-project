@@ -3,7 +3,10 @@ import pg from "pg";
 
 import { query } from "../db.js";
 import { AppError } from "../errors/error.types.js";
-import { Recipient } from "../models/user.model.js";
+import { Recipient, SocialMediaHandle } from "../models/user.model.js";
+import { RecipientFilterParams } from "../models/filters/recipient-filters.js";
+import { PaginatedList } from "../utils/util.types.js";
+import { config } from "../config.js";
 
 /**
  * Retrieves the UUID of a user (either Recipient or Supervisor) based on their Auth0 ID.
@@ -36,6 +39,134 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
       "User with the provided Auth0 ID not found in the database."
     );
   }
+}
+
+export async function getRecipients(
+  filterParams: RecipientFilterParams & { id?: UUID }
+): Promise<PaginatedList<Recipient>> {
+  let queryString = `
+    SELECT 
+      "id",
+      "auth0UserId",
+      "firstName",
+      "middleName",
+      "lastName",
+      "dateOfBirth",
+      "email",
+      "phoneNo",
+      "bio",
+      "profilePictureUrl"
+    FROM
+      "Recipient"
+  `;
+
+  const limit = filterParams.limit ?? config.PAGE_SIZE;
+  const pageNo = filterParams.page || 1;
+  const whereClauses: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  if (filterParams.id) {
+    whereClauses.push(`"id" = $${paramIndex}`);
+    values.push(filterParams.id);
+    paramIndex++;
+  }
+
+  if (filterParams.name) {
+    whereClauses.push(`
+    (
+      "firstName" ILIKE '%' || $${paramIndex} || '%' OR 
+      "middleName" ILIKE '%' || $${paramIndex} || '%' OR 
+      "lastName" ILIKE '%' || $${paramIndex} || '%'
+    )`);
+    values.push(filterParams.name);
+    paramIndex++;
+  }
+
+  if (filterParams.email) {
+    whereClauses.push(`"email" ILIKE '%' || $${paramIndex} || '%'`);
+    values.push(filterParams.email);
+    paramIndex++;
+  }
+
+  if (filterParams.phoneNo) {
+    whereClauses.push(`"phoneNo" ILIKE '%' || $${paramIndex} || '%'`);
+    values.push(filterParams.phoneNo);
+    paramIndex++;
+  }
+
+  const dateFilters = {
+    dateOfBirth: ["minBirthDate", "maxBirthDate"],
+  } as const;
+
+  for (const dateField in dateFilters) {
+    const [minParam, maxParam] =
+      dateFilters[dateField as keyof typeof dateFilters];
+
+    if (filterParams[minParam]) {
+      whereClauses.push(`"${dateField}" >= $${paramIndex}`);
+      values.push(filterParams[minParam]);
+      paramIndex++;
+    }
+    if (filterParams[maxParam]) {
+      whereClauses.push(`"${dateField}" <= $${paramIndex}`);
+      values.push(filterParams[maxParam]);
+      paramIndex++;
+    }
+  }
+
+  const whereClause =
+    whereClauses.length > 0 ? ` WHERE ${whereClauses.join(" AND ")}` : "";
+
+  const countResult = await query(
+    `SELECT COUNT(*) FROM "Recipient"${whereClause}`,
+    values
+  );
+  const totalRecords = parseInt(countResult.rows[0].count, 10);
+  const totalPages = Math.ceil(totalRecords / limit);
+
+  queryString += whereClause;
+  queryString += `
+        ORDER BY
+            "firstName" ASC
+        LIMIT
+            $${paramIndex}
+        OFFSET
+            ($${paramIndex + 1} - 1) * $${paramIndex}
+    `;
+  values.push(limit, pageNo);
+
+  const recipients: Recipient[] = await Promise.all(
+    (await query<Recipient>(queryString, values)).rows.map(
+      async (recipient) => {
+        const socialHandlesQueryString = `
+        SELECT
+            "id",
+            "recipientId",
+            "socialMediaHandle"
+        FROM
+            "RecipientSocialMediaHandle"
+        WHERE
+            "recipientId" = $1
+    `;
+
+        return {
+          ...recipient,
+          socialMediaHandles: (
+            await query<SocialMediaHandle>(socialHandlesQueryString, [
+              recipient.id,
+            ])
+          ).rows,
+        };
+      }
+    )
+  );
+
+  return {
+    items: recipients ?? [],
+    pageCount: totalPages === 0 ? 1 : totalPages,
+    pageNo: pageNo,
+  };
 }
 
 export async function insertRecipient(
@@ -133,15 +264,21 @@ export async function insertRecipient(
           throw new AppError(
             "Validation Failure",
             409,
-            "Phone number has already been used by another user",
+            "Phone number is already in use by another recipient",
             error.message
           );
         } else if (error.constraint === "Recipient_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
-            "Auth0 authentication ID is already in use by another user",
+            "Auth0 authentication ID is already in use by another recipient",
             error.message
+          );
+        } else if (error.constraint === "Recipient_email_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Email is already in use by another recipient"
           );
         }
         throw error;

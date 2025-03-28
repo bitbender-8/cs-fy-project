@@ -15,6 +15,19 @@ import {
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+export const SENSITIVE_CAMPAIGN_FIELDS = [
+  "submissionDate",
+  "verificationDate",
+  "denialDate",
+  "documentUrls",
+  "paymentInfo",
+  "isPublic",
+] as const;
+
+/** For use with the Omit utility type on {@link Campaign} */
+export type SensitiveCampaignFields =
+  (typeof SENSITIVE_CAMPAIGN_FIELDS)[number];
+
 /** Schema defined at {@link CampaignSchema} */
 export interface Campaign {
   id: UUID;
@@ -36,15 +49,6 @@ export interface Campaign {
   documentUrls?: string[];
   paymentInfo?: PaymentInfo;
 }
-
-/** For use with the Omit utility type on {@link Campaign} */
-export type SensitiveCampaignFields =
-  | "submissionDate"
-  | "verificationDate"
-  | "denialDate"
-  | "documentUrls"
-  | "paymentInfo"
-  | "isPublic";
 
 export interface PaymentInfo {
   paymentMethod: string;

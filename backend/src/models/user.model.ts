@@ -18,9 +18,16 @@ export interface User {
   firstName: string;
   middleName: string;
   lastName: string;
-  dateOfBirth: string;
+  dateOfBirth: Date | string;
   phoneNo?: string;
 }
+
+export const SENSITIVE_USER_FIELDS = [
+  "auth0UserId",
+  "dateOfBirth",
+  "phoneNo",
+] as const;
+export type SensitiveUserFields = (typeof SENSITIVE_USER_FIELDS)[number];
 
 export interface Recipient extends User {
   email?: string;
@@ -43,12 +50,12 @@ export interface SocialMediaHandle {
 // Define User schema
 export const UserSchema = z.object({
   id: validUuid().optional(),
-  auth0UserId: validNonEmptyString(MIN_STRING_LENGTH, 100),
+  auth0UserId: validNonEmptyString(MIN_STRING_LENGTH, 255),
   firstName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   middleName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   lastName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   dateOfBirth: validDate(true),
-  // FIXME: This is temporary, just until we add phone signups.
+  // FIXME: This is temporary, just until we add phone signups. Phone being optional that is.
   phoneNo: validPhoneNo().optional(),
 });
 

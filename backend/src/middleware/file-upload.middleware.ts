@@ -3,11 +3,22 @@ import fs from "fs";
 import * as fileType from "file-type";
 import multer from "multer";
 import { NextFunction, Request, Response } from "express";
+import { randomUUID } from "crypto";
 
 import { AppError } from "../errors/error.types.js";
 import { config } from "../config.js";
 
-const upload = multer({ dest: config.UPLOAD_DIR });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, config.UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      cb(null, `${randomUUID()}${ext}`);
+    },
+  }),
+});
 
 export async function validateFileUpload(fileFieldName: string) {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -87,7 +98,7 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The uploaded file has invalid content or is corrupted. Allowed file types include ${allowedExtensions.join(", ")}.`
+              `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`
             )
           );
           return;

@@ -25,8 +25,8 @@ tags:
     description: Posts that provide updates on a campaign's progress.
 paths:
   # TODO: Add sortBy and sortOrder to routes with list returns.
-  # TODO: Add a 593 response for all endpoitns that need to access the authentication server.
-  
+  # TODO: Add a 503 response for all endpoitns that need to access the authentication server.
+
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
   /supervisors/{supervisorId}:
@@ -114,9 +114,9 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /recipients:
-    # TODO: Update specifications to comply with changes at implementation
-    # DONE
+    # TODO: Possible differences with implementation, needs to be updated
     # (Role: Anon | Recipient | Supervisor, Owner: N/A) => Full access
+    # DONE
     post:
       tags:
         - Recipients
@@ -170,12 +170,98 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Partial access (sensitive fields not vsisible)
+    # (Role: Anon | Recipient, Owner: No) => Partial access (sensitive fields not visible)
+    # DONE
+    get:
+      tags:
+        - Recipients
+      summary: Retrieves recipients using filter params, hides data and parameters based on user's authorization level.
+      parameters:
+        - name: name
+          in: query
+          description: Filter by recipient's name (applies to first, middle, or last name).
+          schema:
+            type: string
+        - name: minBirthDate
+          description: The minimum birth date of the recipient (inclusive). This option is restricted to authorized supervisors.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxBirthDate
+          description: The maximum birth date of the recipient (inclusive). This option is restricted to authorized supervisors.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: email
+          in: query
+          schema:
+            type: string
+            format: email
+        - name: phoneNo
+          description: The phone number of the recipient. This option is restricted to supervisors.
+          in: query
+          schema:
+            type: string
+        - name: page
+          description: Page number for pagination. Must be a positive integer.
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          description: Maximum number of items per page. Must be a positive integer.
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginatedList"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Campaign"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No recipients found matching the criteria (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
   # Permissions differ by method
   /recipients/{recipientId}:
-    # NEXT 2
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => Full access
+    # (Role: Anon | Recipient, Owner: No) => Partial access (selected fields not visible)
+    # DONE
     get:
       tags:
         - Recipients

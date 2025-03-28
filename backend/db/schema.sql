@@ -11,11 +11,12 @@ CREATE TABLE
         "lastName" VARCHAR(50) NOT NULL,
         -- Recipient's date of birth.
         "dateOfBirth" DATE NOT NULL,
+        /* Added a unique constraint on the recipient's email. */
         -- Recipient's email address. This is not required.
-        "email" VARCHAR(100) NULL,
-        /* FIXME: Made phoen nullable for mvp. */
+        "email" VARCHAR(100) NULL UNIQUE,
+        /* FIXME(bitbender-8): Made phoen nullable for mvp. Will have to get it from auth0, after customizing the signup page. */
         -- Recipient's phone number.
-        "phoneNo" VARCHAR(20) UNIQUE,
+        "phoneNo" VARCHAR(20) NULL UNIQUE,
         /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
         -- The auth0 user id
         "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
@@ -52,9 +53,9 @@ CREATE TABLE
         -- Supervisor's date of birth.
         "dateOfBirth" DATE NOT NULL,
         -- Supervisor's email address.
-        "email" VARCHAR(100) NOT NULL,
+        "email" VARCHAR(100) NOT NULL UNIQUE,
         -- Supervisor's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL,
+        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
         /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
         -- The auth0 user id
         "auth0UserId" VARCHAR(255) NOT NULL UNIQUE
