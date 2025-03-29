@@ -24,11 +24,11 @@ export const validNonEmptyString = (min: number, max: number) =>
       message: "Cannot be empty or contain only whitespace",
     });
 
-const E164_PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
+const E164_PHONE_REGEX = /^\+[1-9]\d{7,14}$/;
 export const validPhoneNo = () =>
   z.string().regex(E164_PHONE_REGEX, {
     message:
-      "Phone number must be in E.164 format (e.g., +1234567890, max 15 digits)",
+      "Phone number must be in E.164 format (e.g., +1234567890, 8 to 15 digits)",
   });
 
 export const validDate = (isPast: boolean) => {
@@ -78,7 +78,7 @@ export const validBankAccountNo = () =>
       },
       {
         message: "Must be a numeric bank account number",
-      }
+      },
     );
 
 export const validUuid = () => z.string().uuid({ message: "Invalid UUID" });
@@ -100,7 +100,7 @@ export const validMoneyAmount = () =>
       {
         message:
           "Money field must be a non-negative number with up to two decimal places.",
-      }
+      },
     )
     .refine((val) => parseFloat(val) < config.ALLOWED_MAX_MONEY_AMOUNT, {
       message: `Money amount specified is too large. Maximum amount allowed is ${config.ALLOWED_FILE_EXTENSIONS}.`,
@@ -109,6 +109,6 @@ export const validMoneyAmount = () =>
 export const validCurrency = () =>
   z.enum(CURRENCY_CODES, {
     message: `Invalid currency code. Must be one of: ${CURRENCY_CODES.filter(
-      (val) => val !== "XXX"
+      (val) => val !== "XXX",
     ).join(", ")}.`,
   });

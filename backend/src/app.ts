@@ -28,7 +28,7 @@ app.use(jwtCheck);
 
 // Mount routes
 app.use("/campaigns", campaignRouter);
-app.use("/recipients", recipientRouter)
+app.use("/recipients", recipientRouter);
 
 // Error handlers
 app.use(errorHandler);

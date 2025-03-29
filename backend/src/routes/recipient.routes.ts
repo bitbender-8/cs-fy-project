@@ -1,27 +1,27 @@
 import { Router, Request, Response } from "express";
-import { UUID } from "crypto";
 
-import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import {
   Recipient,
   RecipientSchema,
-  SENSITIVE_USER_FIELDS,
   SensitiveUserFields,
+  LOCKED_USER_FIELDS,
+  SENSITIVE_USER_FIELDS,
 } from "../models/user.model.js";
-import { ProblemDetails } from "../errors/error.types.js";
-import { getUserRole, verifyAuth0UserId } from "../services/user.service.js";
 import {
   getRecipients,
-  getUuidFromAuth0Id,
   insertRecipient,
+  updateRecipient,
+  getUuidFromAuth0Id,
 } from "../repositories/user.repo.js";
-import { validUuid } from "../utils/zod-helpers.js";
-import { excludeSensitiveProperties } from "../services/campaign.service.js";
 import {
   RecipientFilterSchema,
   SENSITIVE_USER_FILTERS,
 } from "../models/filters/recipient-filters.js";
-import { PaginatedList } from "../utils/util.types.js";
+import { excludeProperties } from "../utils/utils.js";
+import { ProblemDetails } from "../errors/error.types.js";
+import { PaginatedList, validateUUIDParam } from "../utils/utils.js";
+import { getUserRole, verifyAuth0UserId } from "../services/user.service.js";
+import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 
 export const recipientRouter: Router = Router();
 
@@ -29,8 +29,6 @@ recipientRouter.post(
   "/",
   await validateFileUpload("profilePicture"),
   async (req: Request, res: Response): Promise<void> => {
-    const profilePicture = req.file;
-
     // Validate recipient data
     if (!req.body) {
       const problemDetails: ProblemDetails = {
@@ -41,14 +39,13 @@ recipientRouter.post(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
-    console.log(req.body);
 
     const parsedRecipient = RecipientSchema.safeParse(req.body);
     if (!parsedRecipient.success) {
       const problemDetails: ProblemDetails = {
         title: "Validation Failure",
         status: 400,
-        detail: "One or more query params failed validation",
+        detail: "One or more recipient fields failed validation",
         fieldFailures: parsedRecipient.error.issues.map((issue) => ({
           field: issue.path.join("."),
           uiMessage: issue.message,
@@ -62,7 +59,7 @@ recipientRouter.post(
     const recipient = parsedRecipient.data as Recipient;
     const auth0User = await verifyAuth0UserId(recipient.auth0UserId as string);
     recipient.email = auth0User.email;
-    recipient.profilePictureUrl = profilePicture
+    recipient.profilePictureUrl = req.file
       ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
       : undefined;
 
@@ -82,19 +79,7 @@ recipientRouter.post(
 recipientRouter.get(
   "/:id",
   async (req: Request, res: Response): Promise<void> => {
-    const parsedId = validUuid().safeParse(req.params.id);
-
-    if (!parsedId.success) {
-      const problemDetails: ProblemDetails = {
-        title: "Validation Failure",
-        status: 400,
-        detail: parsedId.error.issues[0].message,
-      };
-      res.status(problemDetails.status).json(problemDetails);
-      return;
-    }
-
-    const recipientId = parsedId.data as UUID;
+    const recipientId = validateUUIDParam(req.params.id);
     let recipient: Recipient | Omit<Recipient, SensitiveUserFields>;
 
     switch (getUserRole(req.auth)) {
@@ -114,10 +99,9 @@ recipientRouter.get(
               id: recipientId,
             })
           ).items[0];
-          console.log(recipient);
         } else {
           // Recipient: Public recipient data
-          recipient = excludeSensitiveProperties(
+          recipient = excludeProperties(
             (
               await getRecipients({
                 id: recipientId,
@@ -130,7 +114,7 @@ recipientRouter.get(
       }
       default:
         // Public recipient data
-        recipient = excludeSensitiveProperties(
+        recipient = excludeProperties(
           (
             await getRecipients({
               id: recipientId,
@@ -174,7 +158,7 @@ recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
 
   // Create filter params with sensitive filters omitted
   const queryParams = parsedQueryParams.data;
-  const publicQueryParams = excludeSensitiveProperties(
+  const publicQueryParams = excludeProperties(
     queryParams,
     SENSITIVE_USER_FILTERS
   );
@@ -192,7 +176,7 @@ recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
     recipients = {
       ...result,
       items: result.items.map((recipient) =>
-        excludeSensitiveProperties(recipient, SENSITIVE_USER_FIELDS)
+        excludeProperties(recipient, SENSITIVE_USER_FIELDS)
       ),
     };
   }
@@ -200,3 +184,73 @@ recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
   res.status(200).json(recipients);
   return;
 });
+
+recipientRouter.put(
+  "/:id",
+  await validateFileUpload("profilePicture"),
+  async (req: Request, res: Response): Promise<void> => {
+    if (getUserRole(req.auth) === "Recipient") {
+      const recipientId = validateUUIDParam(req.params.id);
+
+      // Check that the authenticatd recipient owns the data they are trying to modify
+      const recipientIdFromJwt = await getUuidFromAuth0Id(
+        req.auth?.payload.sub ?? ""
+      );
+
+      if (recipientId !== recipientIdFromJwt) {
+        const problemDetails: ProblemDetails = {
+          title: "Permission Denied",
+          status: 403,
+          detail: `You are attempting to modify a recipient resource that does not belong to your authenticated user. Recipient ID in request: ${recipientIdFromJwt}, Authorized Recipient ID: ${recipientIdFromJwt}`,
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+
+      // Validate recipient data
+      if (!req.body || Object.keys(req.body).length === 0) {
+        const problemDetails: ProblemDetails = {
+          title: "Validation Failure",
+          status: 400,
+          detail: "Recipient body cannot be empty",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+
+      const parsedRecipient = RecipientSchema.partial().safeParse(req.body);
+      if (!parsedRecipient.success) {
+        const problemDetails: ProblemDetails = {
+          title: "Validation Failure",
+          status: 400,
+          detail: "One or more recipient fields failed validation",
+          fieldFailures: parsedRecipient.error.issues.map((issue) => ({
+            field: issue.path.join("."),
+            uiMessage: issue.message,
+          })),
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+      console.log(parsedRecipient.data);
+
+      // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to.
+      await updateRecipient(
+        recipientId,
+        excludeProperties(parsedRecipient.data as Recipient, LOCKED_USER_FIELDS)
+      );
+
+      res.status(204).send();
+      return;
+    } else {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail:
+          "Only authenticated users with the role 'Recipient' are authorized to modify this resource.",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+  }
+);

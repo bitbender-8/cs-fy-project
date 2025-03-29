@@ -47,7 +47,7 @@ type Auth0UserResponse = {
 };
 
 export async function verifyAuth0UserId(
-  auth0UserId: string
+  auth0UserId: string,
 ): Promise<Auth0UserResponse> {
   const options = {
     method: "GET",
@@ -74,7 +74,7 @@ export async function verifyAuth0UserId(
             "Validation Failure",
             400,
             "Failed to verify user ID",
-            `The authentication server could not find the user with the id '${auth0UserId}'`
+            `The authentication server could not find the user with the id '${auth0UserId}'`,
           );
         case 400:
         case 401:
@@ -82,8 +82,8 @@ export async function verifyAuth0UserId(
           throw new AppError(
             "Internal Server Error",
             500,
-            "Cannot contact autentication server",
-            `Auth0 userId verification failed due to a bad request. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`
+            "Something went wrong",
+            `Auth0 userId verification failed due to a bad request. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`,
           );
         case 500:
         case 503:
@@ -91,14 +91,14 @@ export async function verifyAuth0UserId(
             "Service Unavailable",
             503,
             "Authentication service is temporarily unavailable",
-            `Auth0 userId verification failed due to an unexpected server error. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`
+            `Auth0 userId verification failed due to an unexpected server error. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`,
           );
         default:
           throw new AppError(
             "Internal Server Error",
             500,
             "Something went wrong",
-            `Auth0 userId verification failed due to an unexpected error. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`
+            `Auth0 userId verification failed due to an unexpected error. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`,
           );
       }
     } else if (error.request) {
@@ -107,7 +107,7 @@ export async function verifyAuth0UserId(
         "Service Unavailable",
         503,
         "Authentication service is temporarily unavailable",
-        `No response was received from the Auth0 authentication server. Message: ${error.message}`
+        `No response was received from the Auth0 authentication server. Message: ${error.message}`,
       );
     } else {
       // Something went wrong while setting up the request
@@ -115,7 +115,7 @@ export async function verifyAuth0UserId(
         "Internal Server Error",
         500,
         "Something went wrong",
-        `An error occurred while setting up the verification request. Message: ${error.message}`
+        `An error occurred while setting up the verification request. Message: ${error.message}`,
       );
     }
   }

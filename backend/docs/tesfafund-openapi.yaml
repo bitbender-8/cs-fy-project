@@ -25,6 +25,7 @@ tags:
     description: Posts that provide updates on a campaign's progress.
 paths:
   # TODO: Add sortBy and sortOrder to routes with list returns.
+  # TODO  change {supervisorId} and others to {id}
   # TODO: Add a 503 response for all endpoitns that need to access the authentication server.
 
   # For all methods, no access unless:
@@ -301,7 +302,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 3
+    # DONE
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -328,6 +329,12 @@ paths:
           description: Successful update - No content to return.
         "400":
           description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden - User is not allowed access
           content:
             application/json:
               schema:

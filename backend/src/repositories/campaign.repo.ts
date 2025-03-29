@@ -1,6 +1,6 @@
 import { config } from "../config.js";
 import { Campaign } from "../models/campaign.model.js";
-import { PaginatedList } from "../utils/util.types.js";
+import { PaginatedList } from "../utils/utils.js";
 import { query } from "../db.js";
 import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
 import { UUID } from "crypto";

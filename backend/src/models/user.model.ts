@@ -11,7 +11,18 @@ import {
 
 export type UserRole = "Supervisor" | "Recipient";
 
-// Email omiited from Base User interface because it is optional for Recipients and requried for Supervisors
+export const SENSITIVE_USER_FIELDS = [
+  "auth0UserId",
+  "dateOfBirth",
+  "phoneNo",
+] as const;
+export type SensitiveUserFields = (typeof SENSITIVE_USER_FIELDS)[number];
+
+/** These fields cannot be updated by the user.  */
+export const LOCKED_USER_FIELDS = ["phoneNo", "email", "auth0UserId"] as const;
+export type LockedUserFields = (typeof LOCKED_USER_FIELDS)[number];
+
+// Email omiited from Base User interface because it is optional for Recipients and requried for Supervisors.
 export interface User {
   id?: UUID;
   auth0UserId?: string;
@@ -20,25 +31,17 @@ export interface User {
   lastName: string;
   dateOfBirth: Date | string;
   phoneNo?: string;
+  email: string;
 }
 
-export const SENSITIVE_USER_FIELDS = [
-  "auth0UserId",
-  "dateOfBirth",
-  "phoneNo",
-] as const;
-export type SensitiveUserFields = (typeof SENSITIVE_USER_FIELDS)[number];
-
 export interface Recipient extends User {
-  email?: string;
   bio?: string;
   profilePictureUrl?: string;
   socialMediaHandles?: SocialMediaHandle[];
 }
 
-export interface Supervisor extends User {
-  email: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Supervisor extends User {}
 
 export interface SocialMediaHandle {
   id?: UUID;
@@ -57,6 +60,7 @@ export const UserSchema = z.object({
   dateOfBirth: validDate(true),
   // FIXME: This is temporary, just until we add phone signups. Phone being optional that is.
   phoneNo: validPhoneNo().optional(),
+  email: z.string().email(),
 });
 
 // Define SocialMediaHandle schema
@@ -68,13 +72,10 @@ export const SocialMediaHandleSchema = z.object({
 
 // Define Recipient schema extending User
 export const RecipientSchema = UserSchema.extend({
-  email: z.string().email().optional(),
   bio: validNonEmptyString(MIN_STRING_LENGTH, 500),
   profilePictureUrl: validUrl().optional(),
   socialMediaHandles: z.array(SocialMediaHandleSchema).optional(),
 });
 
 // Define Supervisor schema extending User
-export const SupervisorSchema = UserSchema.extend({
-  email: z.string().email(),
-});
+export const SupervisorSchema = UserSchema;

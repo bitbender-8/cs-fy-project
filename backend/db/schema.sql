@@ -14,7 +14,7 @@ CREATE TABLE
         /* Added a unique constraint on the recipient's email. */
         -- Recipient's email address. This is not required.
         "email" VARCHAR(100) NULL UNIQUE,
-        /* FIXME(bitbender-8): Made phoen nullable for mvp. Will have to get it from auth0, after customizing the signup page. */
+        /* FIXME(bitbender-8): Made phone nullable for mvp. Will have to get it from auth0, after customizing the signup page. */
         -- Recipient's phone number.
         "phoneNo" VARCHAR(20) NULL UNIQUE,
         /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
@@ -76,9 +76,9 @@ CREATE TABLE
         -- Timestamp when the notification was issued with time zone.
         "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Foreign key referencing the Recipient table.
-        "recipientId" UUID REFERENCES "Recipient" ("id"),
+        "recipientId" UUID REFERENCES "Recipient" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- Foreign key referencing the Supervisor table.
-        "supervisorId" UUID REFERENCES "Supervisor" ("id"),
+        "supervisorId" UUID REFERENCES "Supervisor" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- A notification can belong either to a recipient or a supervisor. (i.e. recipientId or supervisorId must be set, but not both).
         CHECK (
             (
@@ -138,7 +138,7 @@ CREATE TABLE
         /* DOC-UPDATE Determines whether the campaign is publicly available. Removes the need to rely on launchDate implicitly. */
         "isPublic" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Recipient table (campaign owner).
-        "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id")
+        "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id") ON UPDATE CASCADE ON DELETE CASCADE
         /* DOC-UPDATE: Remove managing supervisor id. All recipients are managed by a single supervisor for now. */
         -- Foreign key referencing the Supervisor table (managing supervisor).
         -- "managingSupervisorId" UUID NOT NULL REFERENCES "Supervisor" ("id")
@@ -151,7 +151,7 @@ CREATE TABLE
         -- URL of the redacted document.
         "url" TEXT PRIMARY KEY,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores URLs of original campaign documents.
@@ -161,7 +161,7 @@ CREATE TABLE
         -- URL of the document.
         "url" TEXT PRIMARY KEY,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Records a campaign's donation transactions.
@@ -179,7 +179,7 @@ CREATE TABLE
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores posts related to a campaign.
@@ -194,7 +194,7 @@ CREATE TABLE
         -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute is null, then the post is not available to the public. 
         "publicPostDate" TIMESTAMPTZ,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to update a campaign post.
@@ -211,9 +211,9 @@ CREATE TABLE
         /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id"),
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- Foreign key referencing the CampaignPost table.
-        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id")
+        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to extend the end date of a campaign.
@@ -232,7 +232,7 @@ CREATE TABLE
         -- The new proposed end date with time zone.
         "newEndDate" TIMESTAMPTZ NOT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to adjust the fundraising goal of a campaign.
@@ -251,7 +251,7 @@ CREATE TABLE
         -- The new proposed fundraising goal.
         "newGoal" BIGINT NOT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to change the status of a campaign.
@@ -270,5 +270,5 @@ CREATE TABLE
         -- The new proposed status.
         "newStatus" "CampaignStatus" NOT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );

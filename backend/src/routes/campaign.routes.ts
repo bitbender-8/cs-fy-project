@@ -1,5 +1,4 @@
 import { Router, Request, Response } from "express";
-import { UUID } from "crypto";
 
 import { getCampaigns } from "../repositories/campaign.repo.js";
 import { getUserRole } from "../services/user.service.js";
@@ -9,14 +8,13 @@ import {
 } from "../models/filters/campaign-filters.js";
 import { ProblemDetails } from "../errors/error.types.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
-import { PaginatedList } from "../utils/util.types.js";
+import { PaginatedList, validateUUIDParam } from "../utils/utils.js";
 import {
   Campaign,
   SENSITIVE_CAMPAIGN_FIELDS,
   SensitiveCampaignFields,
 } from "../models/campaign.model.js";
-import { excludeSensitiveProperties } from "../services/campaign.service.js";
-import { validUuid } from "../utils/zod-helpers.js";
+import { excludeProperties } from "../utils/utils.js";
 
 export const campaignRouter: Router = Router();
 
@@ -39,7 +37,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
 
   // Create filter params with sensitive filters omitted
   const queryParams = parsedQueryParams.data;
-  const publicQueryParams = excludeSensitiveProperties(
+  const publicQueryParams = excludeProperties(
     queryParams,
     SENSITIVE_CAMPAIGN_FILTERS
   );
@@ -72,7 +70,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
         campaigns = {
           ...result,
           items: result.items.map((campaign) =>
-            excludeSensitiveProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS)
+            excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS)
           ),
         };
       }
@@ -88,7 +86,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
       campaigns = {
         ...result,
         items: result.items.map((campaign) =>
-          excludeSensitiveProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS)
+          excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS)
         ),
       };
     }
@@ -101,18 +99,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
 campaignRouter.get(
   "/:id",
   async (req: Request, res: Response): Promise<void> => {
-    const parsedId = validUuid().safeParse(req.params.id);
-    if (!parsedId.success) {
-      const problemDetails: ProblemDetails = {
-        title: "Validation Failure",
-        status: 400,
-        detail: parsedId.error.issues[0].message,
-      };
-      res.status(problemDetails.status).json(problemDetails);
-      return;
-    }
-
-    const campaignId = parsedId.data as UUID;
+    const campaignId = validateUUIDParam(req.params.id);
     let campaign: Campaign | Omit<Campaign, SensitiveCampaignFields>;
 
     switch (getUserRole(req.auth)) {
@@ -136,7 +123,7 @@ campaignRouter.get(
           campaign = tempCampaign;
         } else {
           // Recipient: Public campaigns
-          campaign = excludeSensitiveProperties(
+          campaign = excludeProperties(
             (await getCampaigns({ id: campaignId, isPublic: true })).items[0],
             SENSITIVE_CAMPAIGN_FIELDS
           );
@@ -145,7 +132,7 @@ campaignRouter.get(
       }
       default:
         // Public campaigns
-        campaign = excludeSensitiveProperties(
+        campaign = excludeProperties(
           (await getCampaigns({ id: campaignId, isPublic: true })).items[0],
           SENSITIVE_CAMPAIGN_FIELDS
         );
@@ -155,7 +142,7 @@ campaignRouter.get(
       const problemDetails: ProblemDetails = {
         title: "Not Found",
         status: 404,
-        detail: "Campaign not found.",
+        detail: "Campaign not found",
       };
       res.status(problemDetails.status).json(problemDetails);
     } else {

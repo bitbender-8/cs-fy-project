@@ -35,8 +35,8 @@ export async function validateFileUpload(fileFieldName: string) {
               "Internal Server Error",
               500,
               "An error occurred during file upload",
-              err.message
-            )
+              err.message,
+            ),
           );
 
           return;
@@ -55,8 +55,8 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The MIME file type ${req.file.mimetype} is invalid. Allowed type(s) are ${allowedMimeTypes.join(", ")}`
-            )
+              `The MIME file type ${req.file.mimetype} is invalid. Allowed type(s) are ${allowedMimeTypes.join(", ")}`,
+            ),
           );
           return;
         }
@@ -69,8 +69,8 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`
-            )
+              `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`,
+            ),
           );
           return;
         }
@@ -83,8 +83,8 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`
-            )
+              `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`,
+            ),
           );
           return;
         }
@@ -98,8 +98,8 @@ export async function validateFileUpload(fileFieldName: string) {
             new AppError(
               "Validation Failure",
               400,
-              `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`
-            )
+              `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`,
+            ),
           );
           return;
         }

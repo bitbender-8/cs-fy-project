@@ -1,12 +1,17 @@
-import { UUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
 import pg from "pg";
 
 import { query } from "../db.js";
 import { AppError } from "../errors/error.types.js";
-import { Recipient, SocialMediaHandle } from "../models/user.model.js";
+import {
+  LockedUserFields,
+  Recipient,
+  SocialMediaHandle,
+} from "../models/user.model.js";
 import { RecipientFilterParams } from "../models/filters/recipient-filters.js";
-import { PaginatedList } from "../utils/util.types.js";
+import { excludeProperties, PaginatedList } from "../utils/utils.js";
 import { config } from "../config.js";
+import { buildUpdateQueryData } from "./repo-utils.js";
 
 /**
  * Retrieves the UUID of a user (either Recipient or Supervisor) based on their Auth0 ID.
@@ -139,24 +144,9 @@ export async function getRecipients(
   const recipients: Recipient[] = await Promise.all(
     (await query<Recipient>(queryString, values)).rows.map(
       async (recipient) => {
-        const socialHandlesQueryString = `
-        SELECT
-            "id",
-            "recipientId",
-            "socialMediaHandle"
-        FROM
-            "RecipientSocialMediaHandle"
-        WHERE
-            "recipientId" = $1
-    `;
-
         return {
           ...recipient,
-          socialMediaHandles: (
-            await query<SocialMediaHandle>(socialHandlesQueryString, [
-              recipient.id,
-            ])
-          ).rows,
+          socialMediaHandles: await getSocialMediaHandles(recipient.id as UUID),
         };
       }
     )
@@ -174,8 +164,7 @@ export async function insertRecipient(
 ): Promise<Recipient> {
   try {
     const result = await query(
-      `
-        INSERT INTO "Recipient" (
+      ` INSERT INTO "Recipient" (
           "id",
           "firstName",
           "middleName",
@@ -223,29 +212,12 @@ export async function insertRecipient(
       insertedRecipient.socialMediaHandles = [];
 
       for (const handle of recipient.socialMediaHandles) {
-        const insertedHandle = await query(
-          `
-            INSERT INTO "RecipientSocialMediaHandle" (
-              "id",
-              "recipientId",
-              "socialMediaHandle"
-            ) VALUES (
-              $1, $2, $3 
-            ) RETURNING *
-          `,
-          [crypto.randomUUID(), insertedRecipient.id, handle.socialMediaHandle]
-        );
+        const insertedHandle = await insertSocialMediaHandle({
+          recipientId: recipient.id as UUID,
+          socialMediaHandle: handle.socialMediaHandle,
+        });
 
-        if (!insertedHandle || insertedHandle.rows.length === 0) {
-          throw new AppError(
-            "Internal Server Error",
-            500,
-            "Something went wrong",
-            "Failed to insert recipient's social handles"
-          );
-        }
-
-        insertedRecipient.socialMediaHandles.push(insertedHandle.rows[0]);
+        insertedRecipient.socialMediaHandles.push(insertedHandle);
       }
     }
 
@@ -298,4 +270,179 @@ export async function insertRecipient(
         throw error;
     }
   }
+}
+
+export async function updateRecipient(
+  recipientId: UUID,
+  recipient: Omit<Recipient, LockedUserFields>
+): Promise<Recipient> {
+  try {
+    const { fragments, values: updateValues } = buildUpdateQueryData(
+      excludeProperties(recipient, ["socialMediaHandles", "id"])
+    );
+
+    if (fragments.length === 0) {
+      throw new AppError(
+        "Validation Failure",
+        400,
+        "Recipient body cannot be empty"
+      );
+    }
+
+    const updateQuery = `
+      UPDATE "Recipient"
+      SET 
+        ${fragments.join(", ")}
+      WHERE
+        "id" = $${updateValues.length + 1}
+      RETURNING *
+    `;
+
+    updateValues.push(recipientId);
+    const result = await query(updateQuery, updateValues);
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Not Found",
+        404,
+        "Recipient not found",
+        "A recipient with the given ID does not exist"
+      );
+    }
+
+    const updatedRecipient = result.rows[0] as Recipient;
+    updatedRecipient.socialMediaHandles = [];
+
+    if (
+      recipient.socialMediaHandles &&
+      recipient.socialMediaHandles.length > 0
+    ) {
+      for (const handle of recipient.socialMediaHandles) {
+        // If the socialMediaHandle object has an id this means that the query is an update, otherwise it is an insert
+        if (handle.id) {
+          const updatedHandle = await updateSocialMediaHandle({
+            id: handle.id,
+            recipientId,
+            socialMediaHandle: handle.socialMediaHandle,
+          });
+          updatedRecipient.socialMediaHandles.push(updatedHandle);
+        } else {
+          const insertedHandle = await insertSocialMediaHandle({
+            recipientId,
+            socialMediaHandle: handle.socialMediaHandle,
+          });
+          updatedRecipient.socialMediaHandles.push(insertedHandle);
+        }
+      }
+    } else {
+      updatedRecipient.socialMediaHandles =
+        await getSocialMediaHandles(recipientId);
+    }
+
+    return updatedRecipient;
+  } catch (error: unknown) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23505":
+        if (error.constraint === "Recipient_phoneNo_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Phone number is already in use by another recipient",
+            error.message
+          );
+        } else if (error.constraint === "Recipient_auth0UserId_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Auth0 authentication ID is already in use by another recipient",
+            error.message
+          );
+        } else if (error.constraint === "Recipient_email_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Email is already in use by another recipient",
+            error.message
+          );
+        }
+        throw error;
+      case "23503":
+        if (
+          error.constraint === "RecipientSocialMediaHandle_recipientId_fkey"
+        ) {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `The recipient ID specified in the social media handle does not exist. Message: ${error.message}`
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
+}
+
+async function getSocialMediaHandles(
+  recipientId: UUID
+): Promise<SocialMediaHandle[]> {
+  const result = await query(
+    `SELECT * FROM "RecipientSocialMediaHandle" WHERE "recipientId" = $1`,
+    [recipientId]
+  );
+  return result.rows as SocialMediaHandle[];
+}
+
+async function updateSocialMediaHandle(
+  handle: Required<SocialMediaHandle>
+): Promise<SocialMediaHandle> {
+  const result = await query<SocialMediaHandle>(
+    `UPDATE "RecipientSocialMediaHandle"
+       SET "socialMediaHandle" = $3
+       WHERE "id" = $1 AND "recipientId" = $2
+       RETURNING *`,
+    [handle.id, handle.recipientId, handle.socialMediaHandle]
+  );
+
+  if (!result || result.rows.length === 0) {
+    throw new AppError(
+      "Internal Server Error",
+      500,
+      "Something went wrong",
+      "Failed to update recipient's social handle"
+    );
+  }
+
+  return result.rows[0];
+}
+
+async function insertSocialMediaHandle(
+  handle: Omit<SocialMediaHandle, "id">
+): Promise<SocialMediaHandle> {
+  const result = await query<SocialMediaHandle>(
+    `INSERT INTO "RecipientSocialMediaHandle" (
+       "id",
+       "recipientId",
+       "socialMediaHandle"
+     ) VALUES (
+       $1, $2, $3
+     ) RETURNING *`,
+    [randomUUID(), handle.recipientId, handle.socialMediaHandle]
+  );
+
+  if (!result || result.rows.length === 0) {
+    throw new AppError(
+      "Internal Server Error",
+      500,
+      "Something went wrong",
+      "Failed to insert recipient's social handle"
+    );
+  }
+
+  return result.rows[0];
 }

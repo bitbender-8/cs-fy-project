@@ -1,5 +1,6 @@
 # Cleanup tasks
 
+- [ ] (bitbender-8): Add a route to serve files. Make sure to create openapi docs for it.
 - DOC-UPDATE: Update diagrams marked with `[update at end]` at the testing phase.
 
 ## Things to discuss
