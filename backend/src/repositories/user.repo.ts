@@ -159,6 +159,14 @@ export async function getRecipients(
   };
 }
 
+export async function deleteRecipient(recipientId: UUID): Promise<boolean> {
+  const result = await query(`DELETE FROM "Recipient" WHERE "id" = $1`, [
+    recipientId,
+  ]);
+
+  return (result.rowCount ?? -1) > 0;
+}
+
 export async function insertRecipient(
   recipient: Recipient
 ): Promise<Recipient> {

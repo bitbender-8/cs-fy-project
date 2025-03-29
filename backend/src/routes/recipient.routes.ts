@@ -12,6 +12,7 @@ import {
   insertRecipient,
   updateRecipient,
   getUuidFromAuth0Id,
+  deleteRecipient,
 } from "../repositories/user.repo.js";
 import {
   RecipientFilterSchema,
@@ -201,7 +202,7 @@ recipientRouter.put(
         const problemDetails: ProblemDetails = {
           title: "Permission Denied",
           status: 403,
-          detail: `You are attempting to modify a recipient resource that does not belong to your authenticated user. Recipient ID in request: ${recipientIdFromJwt}, Authorized Recipient ID: ${recipientIdFromJwt}`,
+          detail: "You do not have permission to update this recipient",
         };
         res.status(problemDetails.status).json(problemDetails);
         return;
@@ -246,11 +247,65 @@ recipientRouter.put(
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
         status: 403,
-        detail:
-          "Only authenticated users with the role 'Recipient' are authorized to modify this resource.",
+        detail: "You do not have permission to update this recipient",
       };
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
+  }
+);
+
+recipientRouter.delete(
+  "/:id",
+  async (req: Request, res: Response): Promise<void> => {
+    const recipientId = validateUUIDParam(req.params.id);
+    let isRecipientDeleted = false;
+
+    switch (getUserRole(req.auth)) {
+      case "Supervisor":
+        // Supervisor: full access
+        isRecipientDeleted = await deleteRecipient(recipientId);
+        break;
+      case "Recipient": {
+        const userIdFromJwt = await getUuidFromAuth0Id(
+          req.auth?.payload.sub ?? ""
+        );
+
+        // Recipient: full access only if they own the data
+        if (userIdFromJwt === recipientId) {
+          isRecipientDeleted = await deleteRecipient(recipientId);
+        } else {
+          const problemDetails: ProblemDetails = {
+            title: "Permission Denied",
+            status: 403,
+            detail: "You do not have permission to delete this recipient.",
+          };
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+        break;
+      }
+      default: {
+        const problemDetails: ProblemDetails = {
+          title: "Permission Denied",
+          status: 403,
+          detail: "You do not have permission to delete recipients.",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+    }
+
+    if (!isRecipientDeleted) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: "Recipient with given ID not found",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    res.status(204).send();
   }
 );

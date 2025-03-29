@@ -179,7 +179,7 @@ CREATE TABLE
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE RESTRICT
     );
 
 -- Stores posts related to a campaign.
