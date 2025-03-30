@@ -8,7 +8,7 @@ import {
 } from "../models/filters/campaign-filters.js";
 import { ProblemDetails } from "../errors/error.types.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
-import { PaginatedList, validateUUIDParam } from "../utils/utils.js";
+import { PaginatedList, validateUuidParam } from "../utils/utils.js";
 import {
   Campaign,
   SENSITIVE_CAMPAIGN_FIELDS,
@@ -99,7 +99,7 @@ campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
 campaignRouter.get(
   "/:id",
   async (req: Request, res: Response): Promise<void> => {
-    const campaignId = validateUUIDParam(req.params.id);
+    const campaignId = validateUuidParam(req.params.id);
     let campaign: Campaign | Omit<Campaign, SensitiveCampaignFields>;
 
     switch (getUserRole(req.auth)) {

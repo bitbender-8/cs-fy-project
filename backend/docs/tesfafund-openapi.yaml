@@ -25,19 +25,18 @@ tags:
     description: Posts that provide updates on a campaign's progress.
 paths:
   # TODO: Add sortBy and sortOrder to routes with list returns.
-  # TODO  change {supervisorId} and others to {id}
   # TODO: Add a 503 response for all endpoitns that need to access the authentication server.
 
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
-  /supervisors/{supervisorId}:
+  /supervisors/{id}:
     # NEXT 5
     get:
       tags:
         - Supervisors
       summary: Retrieves the supervisor by ID, works only for authenticated supervisor.
       parameters:
-        - name: supervisorId
+        - name: id
           in: path
           required: true
           description: The unique id of the supervisor.
@@ -77,7 +76,7 @@ paths:
         - Supervisors
       summary: Updates the supervisor's details, works only for authenticated supervisor.
       parameters:
-        - name: supervisorId
+        - name: id
           in: path
           required: true
           description: The unique id of the supervisor.
@@ -258,7 +257,7 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method
-  /recipients/{recipientId}:
+  /recipients/{id}:
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Partial access (selected fields not visible)
@@ -268,7 +267,7 @@ paths:
         - Recipients
       summary: Retrieves the recipient by ID, based on user's authorization permissions.
       parameters:
-        - name: recipientId
+        - name: id
           in: path
           required: true
           description: The unique id of the recipient.
@@ -302,16 +301,16 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # DONE
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
+    # DONE
     put:
       tags:
         - Recipients
       summary: Updates an existing recipient.
       parameters:
-        - name: recipientId
+        - name: id
           in: path
           required: true
           description: The unique id of the recipient to update.
@@ -353,16 +352,16 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 4
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
+    # DONE
     delete:
       tags:
         - Recipients
       summary: Deletes a Recipient by ID, works only for authenticated Recipient.
       parameters:
-        - name: recipientId
+        - name: id
           in: path
           required: true
           description: The unique id of the recipient to update.
@@ -618,7 +617,7 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method.
-  /campaigns/{campaignId}:
+  /campaigns/{id}:
     # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
@@ -630,7 +629,7 @@ paths:
       description: |
         Retrieves a campaign by ID, respecting requester authorization: public campaign (unauthenticated), Recipient's campaign (authenticated), or all campaigns (Supervisor).
       parameters:
-        - name: campaignId
+        - name: id
           in: path
           required: true
           description: The unique id of the campaign.
@@ -680,7 +679,7 @@ paths:
       summary: Updates the campaign data. Available only for supervisors.
       description: This is used exclusively by supervisors to update a campaign (without recipient involvement), or when they approve the campaign application.
       parameters:
-        - name: campaignId
+        - name: id
           in: path
           required: true
           description: The unique id of the campaign to update.
@@ -1006,7 +1005,7 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method
-  /campaign-requests/{campaignRequestId}:
+  /campaign-requests/{id}:
     # NEXT 11
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
@@ -1016,7 +1015,7 @@ paths:
         - Campaign Requests
       summary: Retrieves a campaign request by ID. Access depends on user's role.
       parameters:
-        - name: campaignRequestId
+        - name: id
           in: path
           required: true
           description: The ID of the campaign request
@@ -1065,7 +1064,7 @@ paths:
         - Campaign Request
       summary: Deletes a campaign request. Access depends on user's role.
       parameters:
-        - name: campaignRequestId
+        - name: id
           in: path
           required: true
           description: The ID of the campaign request
@@ -1102,7 +1101,7 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method
-  /campaign-request/{campaignRequestId}/resolve:
+  /campaign-request/{id}/resolve:
     # NEXT 12
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => No access
@@ -1112,7 +1111,7 @@ paths:
         - Campaign Requests
       summary: Resolves a campaign request by approving or denying it.
       parameters:
-        - name: campaignRequestId
+        - name: id
           in: path
           required: true
           description: The ID of the campaign request to resolve.
@@ -1275,14 +1274,14 @@ paths:
   # For all methods:
   # # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
   # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
-  /notifications/{notificationId}:
+  /notifications/{id}:
     # NEXT 16
     get:
       tags:
         - Notifications
       summary: Fetches a notification by its ID. Access depends on the user's role.
       parameters:
-        - name: notificationId
+        - name: id
           in: path
           required: true
           description: The unique ID of the notification.
@@ -1328,7 +1327,7 @@ paths:
         - Notifications
       summary: Updates a notification, mainly used for updating `isRead`.
       parameters:
-        - name: notificationId
+        - name: id
           in: path
           required: true
           description: The unique ID of the notification.
@@ -1376,7 +1375,7 @@ paths:
         - Notifications
       summary: Deletes a notification by its ID. Access depends on user's role.
       parameters:
-        - name: notificationId
+        - name: id
           in: path
           required: true
           description: The unique ID of the notification.

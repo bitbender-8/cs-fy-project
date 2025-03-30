@@ -15,16 +15,66 @@ import {
   deleteRecipient,
 } from "../repositories/user.repo.js";
 import {
-  RecipientFilterSchema,
+  UserFilterSchema,
   SENSITIVE_USER_FILTERS,
-} from "../models/filters/recipient-filters.js";
+} from "../models/filters/user-filters.js";
 import { excludeProperties } from "../utils/utils.js";
 import { ProblemDetails } from "../errors/error.types.js";
-import { PaginatedList, validateUUIDParam } from "../utils/utils.js";
-import { getUserRole, verifyAuth0UserId } from "../services/user.service.js";
+import { PaginatedList, validateUuidParam } from "../utils/utils.js";
+import {
+  getUserRole,
+  verifyAuth0UserId,
+  verifyAuthentication,
+} from "../services/user.service.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 
 export const recipientRouter: Router = Router();
+
+recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
+  const parsedQueryParams = UserFilterSchema.safeParse(req.query);
+
+  if (!parsedQueryParams.success) {
+    const problemDetails: ProblemDetails = {
+      title: "Validation Failure",
+      status: 400,
+      detail: "One or more query params failed validation",
+      fieldFailures: parsedQueryParams.error.issues.map((issue) => ({
+        field: issue.path.join("."),
+        uiMessage: issue.message,
+      })),
+    };
+    res.status(problemDetails.status).json(problemDetails);
+    return;
+  }
+
+  // Create filter params with sensitive filters omitted
+  const queryParams = parsedQueryParams.data;
+  const publicQueryParams = excludeProperties(
+    queryParams,
+    SENSITIVE_USER_FILTERS
+  );
+
+  let recipients:
+    | PaginatedList<Recipient>
+    | PaginatedList<Omit<Recipient, SensitiveUserFields>>;
+
+  if (getUserRole(req.auth) === "Supervisor") {
+    // Supervisor: full access
+    recipients = await getRecipients(queryParams);
+  } else {
+    // Everyone else has access to public recipient data
+    const result = await getRecipients(publicQueryParams);
+    recipients = {
+      ...result,
+      items: result.items.map((recipient) =>
+        excludeProperties(recipient, SENSITIVE_USER_FIELDS)
+      ),
+    };
+  }
+
+  res.status(200).json(recipients);
+  return;
+});
 
 recipientRouter.post(
   "/",
@@ -80,7 +130,7 @@ recipientRouter.post(
 recipientRouter.get(
   "/:id",
   async (req: Request, res: Response): Promise<void> => {
-    const recipientId = validateUUIDParam(req.params.id);
+    const recipientId = validateUuidParam(req.params.id);
     let recipient: Recipient | Omit<Recipient, SensitiveUserFields>;
 
     switch (getUserRole(req.auth)) {
@@ -140,58 +190,14 @@ recipientRouter.get(
   }
 );
 
-recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
-  const parsedQueryParams = RecipientFilterSchema.safeParse(req.query);
-
-  if (!parsedQueryParams.success) {
-    const problemDetails: ProblemDetails = {
-      title: "Validation Failure",
-      status: 400,
-      detail: "One or more query params failed validation",
-      fieldFailures: parsedQueryParams.error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        uiMessage: issue.message,
-      })),
-    };
-    res.status(problemDetails.status).json(problemDetails);
-    return;
-  }
-
-  // Create filter params with sensitive filters omitted
-  const queryParams = parsedQueryParams.data;
-  const publicQueryParams = excludeProperties(
-    queryParams,
-    SENSITIVE_USER_FILTERS
-  );
-
-  let recipients:
-    | PaginatedList<Recipient>
-    | PaginatedList<Omit<Recipient, SensitiveUserFields>>;
-
-  if (getUserRole(req.auth) === "Supervisor") {
-    // Supervisor: full access
-    recipients = await getRecipients(queryParams);
-  } else {
-    // Everyone else has access to public recipient data
-    const result = await getRecipients(publicQueryParams);
-    recipients = {
-      ...result,
-      items: result.items.map((recipient) =>
-        excludeProperties(recipient, SENSITIVE_USER_FIELDS)
-      ),
-    };
-  }
-
-  res.status(200).json(recipients);
-  return;
-});
-
 recipientRouter.put(
   "/:id",
   await validateFileUpload("profilePicture"),
   async (req: Request, res: Response): Promise<void> => {
+    verifyAuthentication(req.auth);
+
     if (getUserRole(req.auth) === "Recipient") {
-      const recipientId = validateUUIDParam(req.params.id);
+      const recipientId = validateUuidParam(req.params.id);
 
       // Check that the authenticatd recipient owns the data they are trying to modify
       const recipientIdFromJwt = await getUuidFromAuth0Id(
@@ -258,7 +264,8 @@ recipientRouter.put(
 recipientRouter.delete(
   "/:id",
   async (req: Request, res: Response): Promise<void> => {
-    const recipientId = validateUUIDParam(req.params.id);
+    verifyAuthentication(req.auth);
+    const recipientId = validateUuidParam(req.params.id);
     let isRecipientDeleted = false;
 
     switch (getUserRole(req.auth)) {

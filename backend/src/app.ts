@@ -5,6 +5,7 @@ import { jwtCheck } from "./middleware/auth.middleware.js";
 import { campaignRouter } from "./routes/campaign.routes.js";
 import { config } from "./config.js";
 import { recipientRouter } from "./routes/recipient.routes.js";
+import { supervisorRouter } from "./routes/supervisor.routes.js";
 
 const app: Application = express();
 
@@ -15,7 +16,7 @@ if (config.ENV === "Development") {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept",
+      "Origin, X-Requested-With, Content-Type, Accept"
     );
     next();
   });
@@ -29,6 +30,7 @@ app.use(jwtCheck);
 // Mount routes
 app.use("/campaigns", campaignRouter);
 app.use("/recipients", recipientRouter);
+app.use("/supervisors", supervisorRouter);
 
 // Error handlers
 app.use(errorHandler);

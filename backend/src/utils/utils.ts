@@ -85,7 +85,7 @@ export function fromIntToMoneyStr(moneyAmount: bigint): string | null {
   return `${integerPart}.${decimalPart}`;
 }
 
-export function validateUUIDParam(id: string): UUID {
+export function validateUuidParam(id: string): UUID {
   const parsedId = validUuid().safeParse(id);
 
   if (!parsedId.success) {

@@ -7,8 +7,9 @@ import {
   LockedUserFields,
   Recipient,
   SocialMediaHandle,
+  Supervisor,
 } from "../models/user.model.js";
-import { RecipientFilterParams } from "../models/filters/recipient-filters.js";
+import { UserFilterParams } from "../models/filters/user-filters.js";
 import { excludeProperties, PaginatedList } from "../utils/utils.js";
 import { config } from "../config.js";
 import { buildUpdateQueryData } from "./repo-utils.js";
@@ -46,8 +47,112 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
   }
 }
 
+export async function getSupervisors(
+  filterParams: UserFilterParams & { id: UUID }
+): Promise<PaginatedList<Supervisor>> {
+  let queryString = `
+    SELECT 
+      "id",
+      "auth0UserId",
+      "firstName",
+      "middleName",
+      "lastName",
+      "dateOfBirth",
+      "email",
+      "phoneNo"
+    FROM
+      "Supervisor"
+  `;
+
+  const limit = filterParams.limit ?? config.PAGE_SIZE;
+  const pageNo = filterParams.page || 1;
+  const whereClauses: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  if (filterParams.id) {
+    whereClauses.push(`"id" = $${paramIndex}`);
+    values.push(filterParams.id);
+    paramIndex++;
+  }
+
+  if (filterParams.name) {
+    whereClauses.push(`
+    (
+      "firstName" ILIKE '%' || $${paramIndex} || '%' OR 
+      "middleName" ILIKE '%' || $${paramIndex} || '%' OR 
+      "lastName" ILIKE '%' || $${paramIndex} || '%'
+    )`);
+    values.push(filterParams.name);
+    paramIndex++;
+  }
+
+  if (filterParams.email) {
+    whereClauses.push(`"email" ILIKE '%' || $${paramIndex} || '%'`);
+    values.push(filterParams.email);
+    paramIndex++;
+  }
+
+  if (filterParams.phoneNo) {
+    whereClauses.push(`"phoneNo" ILIKE '%' || $${paramIndex} || '%'`);
+    values.push(filterParams.phoneNo);
+    paramIndex++;
+  }
+
+  const dateFilters = {
+    dateOfBirth: ["minBirthDate", "maxBirthDate"],
+  } as const;
+
+  for (const dateField in dateFilters) {
+    const [minParam, maxParam] =
+      dateFilters[dateField as keyof typeof dateFilters];
+
+    if (filterParams[minParam]) {
+      whereClauses.push(`"${dateField}" >= $${paramIndex}`);
+      values.push(filterParams[minParam]);
+      paramIndex++;
+    }
+    if (filterParams[maxParam]) {
+      whereClauses.push(`"${dateField}" <= $${paramIndex}`);
+      values.push(filterParams[maxParam]);
+      paramIndex++;
+    }
+  }
+
+  const whereClause =
+    whereClauses.length > 0 ? ` WHERE ${whereClauses.join(" AND ")}` : "";
+
+  const countResult = await query(
+    `SELECT COUNT(*) FROM "Supervisor"${whereClause}`,
+    values
+  );
+  const totalRecords = parseInt(countResult.rows[0].count, 10);
+  const totalPages = Math.ceil(totalRecords / limit);
+
+  queryString += whereClause;
+  queryString += `
+        ORDER BY
+            "firstName" ASC
+        LIMIT
+            $${paramIndex}
+        OFFSET
+            ($${paramIndex + 1} - 1) * $${paramIndex}
+    `;
+  values.push(limit, pageNo);
+
+  const supervisors: Supervisor[] = (
+    await query<Supervisor>(queryString, values)
+  ).rows;
+
+  return {
+    items: supervisors ?? [],
+    pageCount: totalPages === 0 ? 1 : totalPages,
+    pageNo: pageNo,
+  };
+}
+
 export async function getRecipients(
-  filterParams: RecipientFilterParams & { id?: UUID }
+  filterParams: UserFilterParams & { id?: UUID }
 ): Promise<PaginatedList<Recipient>> {
   let queryString = `
     SELECT 

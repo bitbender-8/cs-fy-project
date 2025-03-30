@@ -6,8 +6,8 @@ import {
   validPhoneNo,
 } from "../../utils/zod-helpers.js";
 
-export type RecipientFilterParams = z.infer<typeof RecipientFilterSchema>;
-export const RecipientFilterSchema = z.object({
+export type UserFilterParams = z.infer<typeof UserFilterSchema>;
+export const UserFilterSchema = z.object({
   name: validNonEmptyString(MIN_STRING_LENGTH, 150).optional(),
   email: z.string().email().optional(),
   page: z.coerce.number().int().positive().optional(),

@@ -25,7 +25,7 @@ export class AppError extends Error {
     public errorType: AppErrorType,
     public httpCode: number,
     public uiMessage: string,
-    public internalMessage?: string,
+    public internalMessage?: string
   ) {
     super();
   }
@@ -37,4 +37,5 @@ export type AppErrorType =
   | "Validation Failure"
   | "Not Found"
   | "Permission Denied"
-  | "Service Unavailable";
+  | "Service Unavailable"
+  | "Authentication Required";
