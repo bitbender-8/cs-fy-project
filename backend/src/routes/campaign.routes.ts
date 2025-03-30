@@ -1,20 +1,23 @@
 import { Router, Request, Response } from "express";
 
-import { getCampaigns } from "../repositories/campaign.repo.js";
-import { getUserRole } from "../services/user.service.js";
+import { ProblemDetails } from "../errors/error.types.js";
 import {
   CampaignFilterSchema,
   SENSITIVE_CAMPAIGN_FILTERS,
 } from "../models/filters/campaign-filters.js";
-import { ProblemDetails } from "../errors/error.types.js";
-import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
-import { PaginatedList, validateUuidParam } from "../utils/utils.js";
+import {
+  PaginatedList,
+  excludeProperties,
+  validateUuidParam,
+} from "../utils/utils.js";
 import {
   Campaign,
   SENSITIVE_CAMPAIGN_FIELDS,
   SensitiveCampaignFields,
 } from "../models/campaign.model.js";
-import { excludeProperties } from "../utils/utils.js";
+import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
+import { getUserRole } from "../services/user.service.js";
+import { getCampaigns } from "../repositories/campaign.repo.js";
 
 export const campaignRouter: Router = Router();
 

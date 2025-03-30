@@ -7,6 +7,6 @@
     "noEmitOnError": true,
     "sourceMap": true
   },
-  "include": ["src/**/*", "src/models/.ts"],
+  "include": ["src/**/*", "src/models/.ts", "../temp/routes"],
   "exclude": ["node_modules", "build"]
 }

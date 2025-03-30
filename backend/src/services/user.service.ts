@@ -6,24 +6,6 @@ import axios from "axios";
 import { AppError } from "../errors/error.types.js";
 import { objectToCamel } from "ts-case-convert";
 
-/**
- * Verifies user authentication.
- *
- * Throws an AppError with a 401 Unauthenticated status if the provided authToken is missing,
- * indicating that the user is not authenticated.
- */
-export function verifyAuthentication(authToken?: {
-  payload: JWTPayload;
-}): void {
-  if (!authToken) {
-    throw new AppError(
-      "Authentication Required",
-      401,
-      "You must be authenticated to access this resource"
-    );
-  }
-}
-
 export function getUserRole(authToken?: {
   payload: JWTPayload;
 }): UserRole | undefined {
@@ -64,20 +46,17 @@ type Auth0UserResponse = {
   loginsCount: number;
 };
 
-export async function verifyAuth0UserId(
-  auth0UserId: string
-): Promise<Auth0UserResponse> {
+export async function deleteAuth0User(auth0UserId: string): Promise<void> {
   const options = {
-    method: "GET",
+    method: "DELETE",
     url: `${config.ISSUER_BASE_URL}/api/v2/users/${auth0UserId}`,
     headers: { authorization: `Bearer ${config.MANAGEMENT_ACCESS_TOKEN}` },
   };
 
   try {
-    const response = await axios.request<Auth0UserResponse>(options);
-    // TODO: Add validation to make sure the auth0Id belongs to a recipient.
+    console.log(await axios.request(options));
 
-    return objectToCamel(response.data);
+    return;
   } catch (error: unknown) {
     // You can find details here: https://axios-http.com/docs/handling_errors
     if (!axios.isAxiosError(error)) {
@@ -101,7 +80,9 @@ export async function verifyAuth0UserId(
             "Internal Server Error",
             500,
             "Something went wrong",
-            `Auth0 userId verification failed due to a bad request. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`
+            `User deletion from the authentication server failed due to a bad request.
+             Status: ${error.response.status},
+             Message: ${JSON.stringify(error.response.data)}`
           );
         case 500:
         case 503:
@@ -109,14 +90,18 @@ export async function verifyAuth0UserId(
             "Service Unavailable",
             503,
             "Authentication service is temporarily unavailable",
-            `Auth0 userId verification failed due to an unexpected server error. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`
+            `User deletion failed due to an unexpected error from the authentication server.  
+             Status: ${error.response.status},
+             Message: ${JSON.stringify(error.response.data)}`
           );
         default:
           throw new AppError(
             "Internal Server Error",
             500,
             "Something went wrong",
-            `Auth0 userId verification failed due to an unexpected error. Status: ${error.response.status}, Message: ${JSON.stringify(error.response.data)}`
+            `User deletion from the authentication server failed due to an unexpected error.
+             Status: ${error.response.status},
+             Message: ${JSON.stringify(error.response.data)}`
           );
       }
     } else if (error.request) {
@@ -125,7 +110,8 @@ export async function verifyAuth0UserId(
         "Service Unavailable",
         503,
         "Authentication service is temporarily unavailable",
-        `No response was received from the Auth0 authentication server. Message: ${error.message}`
+        `No response was received from the Auth0 authentication server. 
+         Message: ${error.message}`
       );
     } else {
       // Something went wrong while setting up the request
@@ -133,7 +119,89 @@ export async function verifyAuth0UserId(
         "Internal Server Error",
         500,
         "Something went wrong",
-        `An error occurred while setting up the verification request. Message: ${error.message}`
+        `An error occurred while setting up the deletion request for the authentication server. 
+         Message: ${error.message}`
+      );
+    }
+  }
+}
+
+export async function verifyAuth0UserId(
+  auth0UserId: string
+): Promise<Auth0UserResponse> {
+  const options = {
+    method: "GET",
+    url: `${config.ISSUER_BASE_URL}/api/v2/users/${auth0UserId}`,
+    headers: { authorization: `Bearer ${config.MANAGEMENT_ACCESS_TOKEN}` },
+  };
+
+  try {
+    const response = await axios.request<Auth0UserResponse>(options);
+
+    return objectToCamel(response.data);
+  } catch (error: unknown) {
+    // You can find details here: https://axios-http.com/docs/handling_errors
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+
+    if (error.response) {
+      // Request made, but server responds with StatusCode > 2xx
+      switch (error.response.status) {
+        case 404:
+          throw new AppError(
+            "Validation Failure",
+            400,
+            "Failed to verify user ID",
+            `The authentication server could not find the user with the ID '${auth0UserId}'`
+          );
+        case 400:
+        case 401:
+        case 403:
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `User ID verification failed due to a bad request.
+             Status: ${error.response.status},
+             Message: ${JSON.stringify(error.response.data)}`
+          );
+        case 500:
+        case 503:
+          throw new AppError(
+            "Service Unavailable",
+            503,
+            "Authentication service is temporarily unavailable",
+            `Status: ${error.response.status},
+             Message: ${JSON.stringify(error.response.data)}`
+          );
+        default:
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `User ID verification failed due to an unexpected error from the authentication server.
+             Status: ${error.response.status},
+             Message: ${JSON.stringify(error.response.data)}`
+          );
+      }
+    } else if (error.request) {
+      // Request made, but no response received
+      throw new AppError(
+        "Service Unavailable",
+        503,
+        "Authentication service is temporarily unavailable",
+        `No response was received from the authentication server.
+         Message: ${error.message}`
+      );
+    } else {
+      // Something went wrong while setting up the request
+      throw new AppError(
+        "Internal Server Error",
+        500,
+        "Something went wrong",
+        `An error occurred while setting up the verification request for the authentication server.
+         Message: ${error.message}`
       );
     }
   }

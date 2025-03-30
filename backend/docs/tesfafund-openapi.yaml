@@ -30,7 +30,7 @@ paths:
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
   /supervisors/{id}:
-    # NEXT 5
+    # DONE
     get:
       tags:
         - Supervisors

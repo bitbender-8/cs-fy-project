@@ -5,7 +5,7 @@ import { jwtCheck } from "./middleware/auth.middleware.js";
 import { campaignRouter } from "./routes/campaign.routes.js";
 import { config } from "./config.js";
 import { recipientRouter } from "./routes/recipient.routes.js";
-import { supervisorRouter } from "./routes/supervisor.routes.js";
+// import { supervisorRouter } from "./routes/supervisor.routes.js";
 
 const app: Application = express();
 
@@ -30,7 +30,7 @@ app.use(jwtCheck);
 // Mount routes
 app.use("/campaigns", campaignRouter);
 app.use("/recipients", recipientRouter);
-app.use("/supervisors", supervisorRouter);
+// app.use("/supervisors", supervisorRouter);
 
 // Error handlers
 app.use(errorHandler);

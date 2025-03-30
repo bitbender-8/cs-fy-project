@@ -44,6 +44,9 @@ CREATE TABLE
     "Supervisor" (
         -- Unique identifier for each supervisor.
         "id" UUID PRIMARY KEY,
+        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
+        -- The auth0 user id
+        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE
         -- Supervisor's first name.
         "firstName" VARCHAR(50) NOT NULL,
         -- Supervisor's middle name (father's name).
@@ -56,9 +59,6 @@ CREATE TABLE
         "email" VARCHAR(100) NOT NULL UNIQUE,
         -- Supervisor's phone number.
         "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
-        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
-        -- The auth0 user id
-        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE
     );
 
 -- Stores notifications sent to recipients or supervisors.

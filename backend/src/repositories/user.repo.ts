@@ -41,7 +41,7 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
     throw new AppError(
       "Not Found",
       404,
-      "User not found.",
+      "User not found",
       "User with the provided Auth0 ID not found in the database."
     );
   }
@@ -149,6 +149,81 @@ export async function getSupervisors(
     pageCount: totalPages === 0 ? 1 : totalPages,
     pageNo: pageNo,
   };
+}
+
+export async function updateSupervisor(
+  supervisorId: UUID,
+  supervisor: Omit<Supervisor, LockedUserFields>
+): Promise<Supervisor> {
+  try {
+    const { fragments, values: updateValues } = buildUpdateQueryData(
+      excludeProperties(supervisor, ["id"])
+    );
+
+    if (fragments.length === 0) {
+      throw new AppError(
+        "Validation Failure",
+        400,
+        "Supervisor body cannot be empty"
+      );
+    }
+
+    const updateQuery = `
+      UPDATE "Supervisor"
+      SET 
+        ${fragments.join(", ")}
+      WHERE
+        "id" = $${updateValues.length + 1}
+      RETURNING *
+    `;
+
+    updateValues.push(supervisorId);
+    const result = await query(updateQuery, updateValues);
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Not Found",
+        404,
+        "Supervisor not found",
+        "A supervisor with the given ID does not exist"
+      );
+    }
+
+    return result.rows[0] as Supervisor;
+  } catch (error: unknown) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23505":
+        if (error.constraint === "Supervisor_phoneNo_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Phone number is already in use by another supervisor",
+            error.message
+          );
+        } else if (error.constraint === "Supervisor_auth0UserId_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Auth0 authentication ID is already in use by another supervisor",
+            error.message
+          );
+        } else if (error.constraint === "Supervisor_email_key") {
+          throw new AppError(
+            "Validation Failure",
+            409,
+            "Email is already in use by another supervisor",
+            error.message
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
 }
 
 export async function getRecipients(
@@ -339,6 +414,7 @@ export async function insertRecipient(
     if (!(error instanceof pg.DatabaseError)) {
       throw error;
     }
+    console.log(error);
 
     // recipient phone no unique
     // recipient auth0userid unique

@@ -1,34 +1,87 @@
-import { Router, Request, Response } from "express";
+import { Request, Response, Router } from "express";
+import { AnyZodObject } from "zod";
 
 import {
+  SENSITIVE_USER_FILTERS,
+  UserFilterSchema,
+} from "../models/filters/user-filters.js";
+import { ProblemDetails } from "../errors/error.types.js";
+import {
+  excludeProperties,
+  PaginatedList,
+  validateUuidParam,
+} from "../utils/utils.js";
+import {
+  LOCKED_USER_FIELDS,
+  LockedUserFields,
   Recipient,
   RecipientSchema,
-  SensitiveUserFields,
-  LOCKED_USER_FIELDS,
   SENSITIVE_USER_FIELDS,
+  SensitiveUserFields,
 } from "../models/user.model.js";
 import {
-  getRecipients,
-  insertRecipient,
-  updateRecipient,
-  getUuidFromAuth0Id,
-  deleteRecipient,
-} from "../repositories/user.repo.js";
-import {
-  UserFilterSchema,
-  SENSITIVE_USER_FILTERS,
-} from "../models/filters/user-filters.js";
-import { excludeProperties } from "../utils/utils.js";
-import { ProblemDetails } from "../errors/error.types.js";
-import { PaginatedList, validateUuidParam } from "../utils/utils.js";
-import {
+  deleteAuth0User,
   getUserRole,
   verifyAuth0UserId,
-  verifyAuthentication,
 } from "../services/user.service.js";
+import {
+  deleteRecipient,
+  getRecipients,
+  getUuidFromAuth0Id,
+  insertRecipient,
+  updateRecipient,
+} from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
+import { validateRequestBody } from "../middleware/request-body.middleware.js";
+import { requireAuthentication } from "../middleware/auth.middleware.js";
 
 export const recipientRouter: Router = Router();
+
+// A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
+const updateableRecipientSchema: AnyZodObject = RecipientSchema.omit(
+  LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}) // Add {} as initial value
+);
+
+recipientRouter.put(
+  "/:id",
+  await validateFileUpload("profilePicture"),
+  validateRequestBody(updateableRecipientSchema),
+  requireAuthentication,
+  async (req: Request, res: Response): Promise<void> => {
+    if (getUserRole(req.auth) === "Recipient") {
+      const recipientId = validateUuidParam(req.params.id);
+      const recipient: Omit<Recipient, LockedUserFields> = req.body;
+
+      const recipientIdFromJwt = await getUuidFromAuth0Id(
+        req.auth?.payload.sub ?? ""
+      );
+
+      // Check that the authenticated recipient owns the data they are trying to modify
+      if (recipientId !== recipientIdFromJwt) {
+        const problemDetails: ProblemDetails = {
+          title: "Permission Denied",
+          status: 403,
+          detail: "You do not have permission to update this recipient",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+
+      await updateRecipient(recipientId, recipient);
+
+      res.status(204).send();
+      return;
+    } else {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail: "You do not have permission to access this resource",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+  }
+);
 
 recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
   const parsedQueryParams = UserFilterSchema.safeParse(req.query);
@@ -75,57 +128,6 @@ recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
   res.status(200).json(recipients);
   return;
 });
-
-recipientRouter.post(
-  "/",
-  await validateFileUpload("profilePicture"),
-  async (req: Request, res: Response): Promise<void> => {
-    // Validate recipient data
-    if (!req.body) {
-      const problemDetails: ProblemDetails = {
-        title: "Validation Failure",
-        status: 400,
-        detail: "Recipient body cannot be empty",
-      };
-      res.status(problemDetails.status).json(problemDetails);
-      return;
-    }
-
-    const parsedRecipient = RecipientSchema.safeParse(req.body);
-    if (!parsedRecipient.success) {
-      const problemDetails: ProblemDetails = {
-        title: "Validation Failure",
-        status: 400,
-        detail: "One or more recipient fields failed validation",
-        fieldFailures: parsedRecipient.error.issues.map((issue) => ({
-          field: issue.path.join("."),
-          uiMessage: issue.message,
-        })),
-      };
-      res.status(problemDetails.status).json(problemDetails);
-      return;
-    }
-
-    // Verify the recipient's auth0 user ID
-    const recipient = parsedRecipient.data as Recipient;
-    const auth0User = await verifyAuth0UserId(recipient.auth0UserId as string);
-    recipient.email = auth0User.email;
-    recipient.profilePictureUrl = req.file
-      ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
-      : undefined;
-
-    // Store recipient in DB
-    const insertedRecipient = await insertRecipient(recipient);
-    res
-      .set(
-        "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
-      )
-      .status(201)
-      .json(insertedRecipient);
-    return;
-  }
-);
 
 recipientRouter.get(
   "/:id",
@@ -190,102 +192,58 @@ recipientRouter.get(
   }
 );
 
-recipientRouter.put(
-  "/:id",
+// Ignores email from recipient object
+recipientRouter.post(
+  "/",
   await validateFileUpload("profilePicture"),
+  validateRequestBody(RecipientSchema),
   async (req: Request, res: Response): Promise<void> => {
-    verifyAuthentication(req.auth);
+    // Validated recipient data from middleware
+    const recipient: Recipient = req.body;
 
-    if (getUserRole(req.auth) === "Recipient") {
-      const recipientId = validateUuidParam(req.params.id);
+    // Verify the recipient's auth0 user ID
+    const auth0User = await verifyAuth0UserId(recipient.auth0UserId as string);
+    recipient.email = auth0User.email;
+    recipient.profilePictureUrl = req.file
+      ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
+      : undefined;
 
-      // Check that the authenticatd recipient owns the data they are trying to modify
-      const recipientIdFromJwt = await getUuidFromAuth0Id(
-        req.auth?.payload.sub ?? ""
-      );
-
-      if (recipientId !== recipientIdFromJwt) {
-        const problemDetails: ProblemDetails = {
-          title: "Permission Denied",
-          status: 403,
-          detail: "You do not have permission to update this recipient",
-        };
-        res.status(problemDetails.status).json(problemDetails);
-        return;
-      }
-
-      // Validate recipient data
-      if (!req.body || Object.keys(req.body).length === 0) {
-        const problemDetails: ProblemDetails = {
-          title: "Validation Failure",
-          status: 400,
-          detail: "Recipient body cannot be empty",
-        };
-        res.status(problemDetails.status).json(problemDetails);
-        return;
-      }
-
-      const parsedRecipient = RecipientSchema.partial().safeParse(req.body);
-      if (!parsedRecipient.success) {
-        const problemDetails: ProblemDetails = {
-          title: "Validation Failure",
-          status: 400,
-          detail: "One or more recipient fields failed validation",
-          fieldFailures: parsedRecipient.error.issues.map((issue) => ({
-            field: issue.path.join("."),
-            uiMessage: issue.message,
-          })),
-        };
-        res.status(problemDetails.status).json(problemDetails);
-        return;
-      }
-      console.log(parsedRecipient.data);
-
-      // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to.
-      await updateRecipient(
-        recipientId,
-        excludeProperties(parsedRecipient.data as Recipient, LOCKED_USER_FIELDS)
-      );
-
-      res.status(204).send();
-      return;
-    } else {
-      const problemDetails: ProblemDetails = {
-        title: "Permission Denied",
-        status: 403,
-        detail: "You do not have permission to update this recipient",
-      };
-      res.status(problemDetails.status).json(problemDetails);
-      return;
-    }
+    // Store recipient in DB
+    const insertedRecipient = await insertRecipient(recipient);
+    res
+      .set(
+        "Location",
+        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
+      )
+      .status(201)
+      .json(insertedRecipient);
+    return;
   }
 );
 
 recipientRouter.delete(
   "/:id",
+  requireAuthentication,
   async (req: Request, res: Response): Promise<void> => {
-    verifyAuthentication(req.auth);
     const recipientId = validateUuidParam(req.params.id);
-    let isRecipientDeleted = false;
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
 
     switch (getUserRole(req.auth)) {
       case "Supervisor":
         // Supervisor: full access
-        isRecipientDeleted = await deleteRecipient(recipientId);
+        await deleteAuth0User(auth0UserIdFromJwt);
+        await deleteRecipient(recipientId);
         break;
       case "Recipient": {
-        const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? ""
-        );
-
         // Recipient: full access only if they own the data
-        if (userIdFromJwt === recipientId) {
-          isRecipientDeleted = await deleteRecipient(recipientId);
+        if ((await getUuidFromAuth0Id(auth0UserIdFromJwt)) === recipientId) {
+          await deleteAuth0User(auth0UserIdFromJwt);
+          await deleteRecipient(recipientId);
         } else {
           const problemDetails: ProblemDetails = {
             title: "Permission Denied",
             status: 403,
-            detail: "You do not have permission to delete this recipient.",
+            detail: "You do not have permission to delete this recipient",
           };
           res.status(problemDetails.status).json(problemDetails);
           return;
@@ -296,21 +254,11 @@ recipientRouter.delete(
         const problemDetails: ProblemDetails = {
           title: "Permission Denied",
           status: 403,
-          detail: "You do not have permission to delete recipients.",
+          detail: "You do not have permission to access this resource",
         };
         res.status(problemDetails.status).json(problemDetails);
         return;
       }
-    }
-
-    if (!isRecipientDeleted) {
-      const problemDetails: ProblemDetails = {
-        title: "Not Found",
-        status: 404,
-        detail: "Recipient with given ID not found",
-      };
-      res.status(problemDetails.status).json(problemDetails);
-      return;
     }
 
     res.status(204).send();
