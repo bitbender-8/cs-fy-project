@@ -15,16 +15,24 @@ import {
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+export const LOCKED_CAMPAIGN_FIELDS = [
+  "id",
+  "ownerRecipientId",
+  "launchDate",
+  "submissionDate",
+  "verificationDate",
+  "denialDate",
+] as const;
+export type LockedCampaignFields = (typeof LOCKED_CAMPAIGN_FIELDS)[number];
+
 export const SENSITIVE_CAMPAIGN_FIELDS = [
   "submissionDate",
   "verificationDate",
   "denialDate",
-  "documentUrls",
+  "documents",
   "paymentInfo",
   "isPublic",
 ] as const;
-
-/** For use with the Omit utility type on {@link Campaign} */
 export type SensitiveCampaignFields =
   (typeof SENSITIVE_CAMPAIGN_FIELDS)[number];
 
@@ -39,15 +47,18 @@ export interface Campaign {
   category: string;
   launchDate?: Date | string;
   endDate: Date | string;
-  redactedDocumentUrls?: string[];
 
   // Sensitive fields: Available to Supervisors and Campaign owners
   isPublic?: boolean;
   submissionDate?: Date | string;
   verificationDate?: Date | string;
   denialDate?: Date | string;
-  documentUrls?: string[];
-  paymentInfo?: PaymentInfo;
+  // TODO On the admin client-side, make sure to require that every redacted document is matched to a normal document.
+  documents?: {
+    documentUrl: string;
+    redactedDocumentUrl?: string;
+  }[];
+  paymentInfo: PaymentInfo;
 }
 
 export interface PaymentInfo {
@@ -95,15 +106,21 @@ export const CampaignSchema = z.object({
   category: validNonEmptyString(MIN_STRING_LENGTH, 50),
   launchDate: validDate(false).optional(),
   endDate: validDate(false),
-  redactedDocumentUrls: z.array(validUrl()).optional(),
 
   // Sensitive fields
   isPublic: z.boolean().optional(),
   submissionDate: validDate(true).optional(),
   verificationDate: validDate(true).optional(),
   denialDate: validDate(true).optional(),
-  documentUrls: z.array(validUrl()).optional(),
-  paymentInfo: PaymentInfoSchema.optional(),
+  documents: z
+    .array(
+      z.object({
+        documentUrls: validUrl(),
+        redactedDocumentUrls: validUrl().optional(),
+      })
+    )
+    .optional(),
+  paymentInfo: PaymentInfoSchema,
 });
 
 export const CampaignDonationSchema = z.object({

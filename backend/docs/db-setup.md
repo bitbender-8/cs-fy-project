@@ -18,9 +18,11 @@ To connect to the database in pgAdmin4 using the provided `docker-compose.yml` f
    - **Password**: `StrongPassword` (specified as `POSTGRES_PASSWORD` in the `docker-compose.yml` file).
 5. Click the "Save" button to save the connection
    - Once you save the connection, pgAdmin4 should connect to the PostgreSQL database. You can then use pgAdmin4 to manage the `tesfafund-db` database.
-6. Under Servers/tesfafund-db/Databases, right click on Databases and create the database `TesfaFundDB`. All you have to provide is the name.
-7. After creating the database, copy and paste the queries in `backend/db/schema.sql` to create the database tables.
-8. Finally, to populate the db with some mock data:
+6. To create the database, run the commmand `npm run db:create`.
+   - Alternatively, you can do the following:
+     1. Under Servers/tesfafund-db/Databases, right click on Databases and create the database `TesfaFundDB`. All you have to provide is the name.
+     2. After creating the database, copy and paste the queries in `backend/db/schema.sql` to create the database tables.
+7. Finally, to populate the db with some mock data:
    1. First, create test users in your auth0 dashboard, and assign them a role (Supervisor or Recipient).
    2. Add the auth0 ids to `backend/src/.env.test` separated by semicolons (to `AUTH0_TEST_SUPERVISORS` and `AUTH0_TEST_RECIPIENTS`).
    3. Finally, run the command `npm run db:seed`.

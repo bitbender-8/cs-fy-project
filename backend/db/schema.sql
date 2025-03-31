@@ -46,7 +46,7 @@ CREATE TABLE
         "id" UUID PRIMARY KEY,
         /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
         -- The auth0 user id
-        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE
+        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
         -- Supervisor's first name.
         "firstName" VARCHAR(50) NOT NULL,
         -- Supervisor's middle name (father's name).
@@ -58,7 +58,7 @@ CREATE TABLE
         -- Supervisor's email address.
         "email" VARCHAR(100) NOT NULL UNIQUE,
         -- Supervisor's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
+        "phoneNo" VARCHAR(20) NOT NULL UNIQUE
     );
 
 -- Stores notifications sent to recipients or supervisors.
@@ -94,12 +94,12 @@ CREATE TABLE
 
 -- Encapsulates the possible statuses of a campaign.
 CREATE TYPE "CampaignStatus" AS ENUM (
-    'PENDING_REVIEW',
-    'VERIFIED',
-    'DENIED',
-    'LIVE',
-    'PAUSED',
-    'COMPLETED'
+    'Pending Review',
+    'Verified',
+    'Denied',
+    'Live',
+    'Paused',
+    'Completed'
 );
 
 -- Stores information about campaigns.
@@ -120,21 +120,21 @@ CREATE TABLE
         -- Payment method used (e.g., TeleBirr, CBEBirr, Phone transfer, etc.).
         "paymentMethod" VARCHAR(100) NOT NULL,
         -- Phone number associated with the payment method (if applicable).
-        "phoneNo" VARCHAR(20),
+        "phoneNo" VARCHAR(20) NULL,
         -- Bank account number (if applicable).
-        "bankAccountNo" VARCHAR(16),
+        "bankAccountNo" VARCHAR(16) NULL,
         -- Bank name (if applicable).
-        "bankName" VARCHAR(50),
+        "bankName" VARCHAR(50) NULL,
         -- Timestamp when the campaign was submitted with time zone.
         "submissionDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Timestamp when the campaign was verified with time zone.
-        "verificationDate" TIMESTAMPTZ,
+        "verificationDate" TIMESTAMPTZ NULL,
         -- Timestamp when the campaign was denied with time zone.
-        "denialDate" TIMESTAMPTZ,
+        "denialDate" TIMESTAMPTZ NULL,
         -- Timestamp when the campaign was launched with time zone.
-        "launchDate" TIMESTAMPTZ,
+        "launchDate" TIMESTAMPTZ NULL,
         -- End date of the campaign with time zone.
-        "endDate" TIMESTAMPTZ,
+        "endDate" TIMESTAMPTZ NULL,
         /* DOC-UPDATE Determines whether the campaign is publicly available. Removes the need to rely on launchDate implicitly. */
         "isPublic" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Recipient table (campaign owner).
@@ -144,22 +144,15 @@ CREATE TABLE
         -- "managingSupervisorId" UUID NOT NULL REFERENCES "Supervisor" ("id")
     );
 
--- Stores URLs of redacted campaign documents.
-CREATE TABLE
-    "RedactedCampaignDocuments" (
-        /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
-        -- URL of the redacted document.
-        "url" TEXT PRIMARY KEY,
-        -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
-    );
-
 -- Stores URLs of original campaign documents.
 CREATE TABLE
     "CampaignDocuments" (
         /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
         -- URL of the document.
-        "url" TEXT PRIMARY KEY,
+        "documentUrl" TEXT PRIMARY KEY,
+        /* DOC-UPDATE Removed the table 'RedactedCampaignDocuments' in favor of this column. */
+        -- URL of the redacted document.
+        "redactedDocumentUrl" TEXT NULL,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );

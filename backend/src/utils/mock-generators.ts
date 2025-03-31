@@ -40,12 +40,10 @@ export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
         Math.random() >= 0.5 ? faker.image.avatar() : undefined,
     };
 
-    if (Math.random() >= 0.5) {
-      recipient.email = faker.internet.email({
-        firstName: recipient.firstName,
-        lastName: recipient.lastName,
-      });
-    }
+    recipient.email = faker.internet.email({
+      firstName: recipient.firstName,
+      lastName: recipient.lastName,
+    });
 
     recipients.push(recipient);
   }
@@ -198,14 +196,15 @@ export function generateCampaigns(
     const endDate = faker.date
       .future({ years: 0.5, refDate: launchDate })
       .toISOString();
-    const documentUrls: string[] = [];
-    const redactedDocumentUrls: string[] = [];
+    const documents: {
+      documentUrl: string;
+      redactedDocumentUrl: string;
+    }[] = [];
 
-    for (let i = 0; i < faker.number.int({ min: 0, max: 10 }); i++) {
+    for (let i = 0; i < faker.number.int({ min: 0, max: 5 }); i++) {
       const documentUrl = faker.internet.url();
       const redactedDocumentUrl = faker.internet.url();
-      documentUrls.push(documentUrl);
-      redactedDocumentUrls.push(redactedDocumentUrl);
+      documents.push({ documentUrl, redactedDocumentUrl });
     }
 
     const campaign: Campaign = {
@@ -228,8 +227,7 @@ export function generateCampaigns(
       denialDate,
       launchDate,
       endDate,
-      documentUrls,
-      redactedDocumentUrls,
+      documents,
     };
 
     campiagns.push(campaign);

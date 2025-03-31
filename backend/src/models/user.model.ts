@@ -19,7 +19,12 @@ export const SENSITIVE_USER_FIELDS = [
 export type SensitiveUserFields = (typeof SENSITIVE_USER_FIELDS)[number];
 
 /** These fields cannot be updated by the user.  */
-export const LOCKED_USER_FIELDS = ["phoneNo", "email", "auth0UserId"] as const;
+export const LOCKED_USER_FIELDS = [
+  "id",
+  "phoneNo",
+  "email",
+  "auth0UserId",
+] as const;
 export type LockedUserFields = (typeof LOCKED_USER_FIELDS)[number];
 
 // Email omiited from Base User interface because it is optional for Recipients and requried for Supervisors.

@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 
-import { ProblemDetails } from "../errors/error.types.js";
 import {
   CampaignFilterSchema,
   SENSITIVE_CAMPAIGN_FILTERS,
@@ -12,14 +11,70 @@ import {
 } from "../utils/utils.js";
 import {
   Campaign,
+  CampaignSchema,
   SENSITIVE_CAMPAIGN_FIELDS,
   SensitiveCampaignFields,
 } from "../models/campaign.model.js";
-import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { getUserRole } from "../services/user.service.js";
-import { getCampaigns } from "../repositories/campaign.repo.js";
+import { ProblemDetails } from "../errors/error.types.js";
+import { getCampaigns, insertCampaign } from "../repositories/campaign.repo.js";
+import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
+import { validateFileUpload } from "../middleware/file-upload.middleware.js";
+import { validateRequestBody } from "../middleware/request-body.middleware.js";
+import { requireAuthentication } from "../middleware/auth.middleware.js";
 
 export const campaignRouter: Router = Router();
+
+campaignRouter.post(
+  "/",
+  requireAuthentication,
+  validateRequestBody(
+    CampaignSchema.omit({
+      id: true,
+      status: true,
+      isPublic: true,
+      denialDate: true,
+      launchDate: true,
+      submissionDate: true,
+      verificationDate: true,
+      ownerRecipientId: true,
+      documents: true,
+    })
+  ),
+  await validateFileUpload("documents"),
+  async (req: Request, res: Response): Promise<void> => {
+    if (getUserRole(req.auth) === "Recipient") {
+      const recipientId = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
+      const campaignData = req.body;
+
+      const documentUrls: string[] = [];
+
+      if (req.files && Array.isArray(req.files)) {
+        for (const file of req.files) {
+          documentUrls.push(`${process.env.UPLOAD_DIR}/${file.filename}`);
+        }
+      }
+
+      const insertedCampaign = await insertCampaign(recipientId, {
+        ...campaignData,
+        documents: {
+          documentUrls,
+        },
+      });
+
+      res.status(201).json(insertedCampaign);
+      return;
+    } else {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail: "You do not have permission to access this resource",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+  }
+);
 
 campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
   const parsedQueryParams = CampaignFilterSchema.safeParse(req.query);

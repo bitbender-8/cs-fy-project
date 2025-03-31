@@ -7,7 +7,7 @@ const pool = new pg.Pool({
   host: config.DB_HOST,
   database: config.DB_NAME,
   password: config.DB_PASSWORD,
-  port: Number(config.DB_PORT),
+  port: config.DB_PORT,
 });
 
 /**
@@ -19,7 +19,7 @@ const pool = new pg.Pool({
  */
 export const query = async <T extends QueryResultRow = any>(
   text: string,
-  params?: any[],
+  params?: any[]
 ): Promise<QueryResult<T>> => {
   try {
     const result = await pool.query<T>(text, params);

@@ -3,6 +3,7 @@ export const config = {
   ENV: process.env.ENV ?? "Development",
   PORT: process.env.PORT ?? 4000,
   UPLOAD_DIR: process.env.UPLOAD_DIR ?? "./uploads",
+  MAX_FILE_NO: parseInt(process.env.MAX_FILE_NO ?? "5"),
   MAX_FILE_SIZE_MB: process.env.MAX_FILE_SIZE_MB ?? 10,
   ALLOWED_MIME_TYPES:
     process.env.ALLOWED_MIME_TYPES ?? "image/jpeg;image/png;image/gif",
@@ -10,14 +11,14 @@ export const config = {
     process.env.ALLOWED_FILE_EXTENSIONS ?? ".jpg;.jpeg;.png;.gif",
   PAGE_SIZE: parseInt(process.env.PAGE_SIZE ?? "10"),
   ALLOWED_MAX_MONEY_AMOUNT: parseInt(
-    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000",
+    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000"
   ),
 
   // Database config
   DB_USER: process.env.DB_USER ?? "admin",
   DB_PASSWORD: process.env.DB_PASSWORD ?? "StrongPassword",
   DB_HOST: process.env.DB_HOST ?? "localhost",
-  DB_PORT: process.env.DB_PORT ?? "5432",
+  DB_PORT: parseInt(process.env.DB_PORT ?? "5432"),
   DB_NAME: process.env.DB_NAME ?? "TesfaFundDB",
 
   // Auth0 config

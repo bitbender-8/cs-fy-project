@@ -86,7 +86,7 @@ async function seedRecipients(recipients: Recipient[]): Promise<void> {
 }
 
 async function seedSocialHandles(
-  socialHandles: SocialMediaHandle[],
+  socialHandles: SocialMediaHandle[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "RecipientSocialMediaHandle" (
@@ -204,18 +204,11 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
 
   const docUrlQueryString = `
     INSERT INTO "CampaignDocuments" (
-      "url",
+      "documentUrl",
+      "redactedDocumentUrl",
       "campaignId"
     ) VALUES (
-      $1, $2
-    )
-  `;
-  const redDocUrlQueryString = `
-    INSERT into "RedactedCampaignDocuments" (
-      "url",
-      "campaignId"
-    ) VALUES (
-      $1, $2 
+      $1, $2, $3
     )
   `;
 
@@ -240,21 +233,20 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       campaign.isPublic,
     ]);
 
-    if (campaign.documentUrls) {
-      for (const url of campaign.documentUrls) {
-        await query(docUrlQueryString, [url, campaign.id]);
-      }
-    }
-    if (campaign.redactedDocumentUrls) {
-      for (const url of campaign.redactedDocumentUrls) {
-        await query(redDocUrlQueryString, [url, campaign.id]);
+    if (campaign.documents) {
+      for (const document of campaign.documents) {
+        await query(docUrlQueryString, [
+          document.documentUrl,
+          document.redactedDocumentUrl,
+          campaign.id,
+        ]);
       }
     }
   }
 }
 
 async function seedCampaignDonations(
-  donations: CampaignDonation[],
+  donations: CampaignDonation[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "CampaignDonation" (
@@ -306,7 +298,7 @@ async function seedCampaignPosts(campaignPosts: CampaignPost[]): Promise<void> {
 }
 
 async function seedPostUpdateRequests(
-  requests: PostUpdateRequest[],
+  requests: PostUpdateRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "PostUpdateRequest" (
@@ -334,7 +326,7 @@ async function seedPostUpdateRequests(
 }
 
 async function seedEndDateExtensionRequests(
-  requests: EndDateExtensionRequest[],
+  requests: EndDateExtensionRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "EndDateExtensionRequest" (
@@ -362,7 +354,7 @@ async function seedEndDateExtensionRequests(
 }
 
 async function seedGoalAdjustmentRequests(
-  requests: GoalAdjustmentRequest[],
+  requests: GoalAdjustmentRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "GoalAdjustmentRequest" (
@@ -392,7 +384,7 @@ async function seedGoalAdjustmentRequests(
 }
 
 async function seedStatusChangeRequests(
-  requests: StatusChangeRequest[],
+  requests: StatusChangeRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "StatusChangeRequest" (
@@ -420,6 +412,7 @@ async function seedStatusChangeRequests(
 }
 
 async function seedDatabase({
+  clearTables,
   auth0RecipientIds,
   auth0SupervisorIds,
   avgDonationPerCampaign,
@@ -429,6 +422,7 @@ async function seedDatabase({
   noOfCampaigns,
   noOfCampaignCategories = 5, // Default value for optional parameter
 }: {
+  clearTables: boolean;
   auth0RecipientIds: string[];
   auth0SupervisorIds: string[];
   avgDonationPerCampaign: number;
@@ -438,6 +432,25 @@ async function seedDatabase({
   noOfCampaigns: number;
   noOfCampaignCategories?: number;
 }): Promise<void> {
+  // Clear tables if necessary
+  if (clearTables) {
+    await query(`
+    DO $$
+    DECLARE
+        rec RECORD;
+    BEGIN
+        -- Loop through all tables in the public schema
+        FOR rec IN
+            SELECT tablename
+            FROM pg_tables
+            WHERE schemaname = 'public'
+        LOOP
+            EXECUTE 'TRUNCATE TABLE public.' || quote_ident(rec.tablename) || ' CASCADE;';
+        END LOOP;
+    END $$;
+    `);
+  }
+
   // Generate data
   const recipients = generateRecipients(auth0RecipientIds);
   const socialHandles = generateSocialHandles(recipients);
@@ -445,34 +458,34 @@ async function seedDatabase({
   const notifications = generateNotifications(
     recipients,
     supervisors,
-    noOfNotifications,
+    noOfNotifications
   );
   const campaigns = generateCampaigns(
     recipients,
     noOfCampaigns,
-    noOfCampaignCategories,
+    noOfCampaignCategories
   );
   const campaignDonations = generateCampaignDonations(
     campaigns,
-    avgDonationPerCampaign,
+    avgDonationPerCampaign
   );
   const campaignPosts = generateCampaignPosts(campaigns, avgPostPerCampaign);
   const postUpdateRequests = generatePostUpdateRequests(
     campaigns,
     campaignPosts,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const endDateExtensionRequests = generateEndDateExtensionRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const goalAdjustmentRequests = generateGoalAdjustmentRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const statusChangeRequests = generateStatusChangeRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
 
   // Seed database
@@ -496,6 +509,7 @@ async function seedDatabase({
 }
 
 seedDatabase({
+  clearTables: true,
   auth0RecipientIds,
   auth0SupervisorIds,
   avgDonationPerCampaign: 5,

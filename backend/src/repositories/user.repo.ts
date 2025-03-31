@@ -156,9 +156,8 @@ export async function updateSupervisor(
   supervisor: Omit<Supervisor, LockedUserFields>
 ): Promise<Supervisor> {
   try {
-    const { fragments, values: updateValues } = buildUpdateQueryData(
-      excludeProperties(supervisor, ["id"])
-    );
+    const { fragments, values: updateValues } =
+      buildUpdateQueryData(supervisor);
 
     if (fragments.length === 0) {
       throw new AppError(
@@ -368,7 +367,7 @@ export async function insertRecipient(
         ) RETURNING *
       `,
       [
-        crypto.randomUUID(),
+        randomUUID(),
         recipient.firstName,
         recipient.middleName,
         recipient.lastName,
@@ -414,11 +413,7 @@ export async function insertRecipient(
     if (!(error instanceof pg.DatabaseError)) {
       throw error;
     }
-    console.log(error);
 
-    // recipient phone no unique
-    // recipient auth0userid unique
-    // recipientId foreign key does not exist
     switch (error.code) {
       case "23505":
         if (error.constraint === "Recipient_phoneNo_key") {
@@ -443,18 +438,6 @@ export async function insertRecipient(
           );
         }
         throw error;
-      case "23503":
-        if (
-          error.constraint === "RecipientSocialMediaHandle_recipientId_fkey"
-        ) {
-          throw new AppError(
-            "Internal Server Error",
-            500,
-            "Something went wrong",
-            `The recipient ID specified in the social media handle does not exist. Message: ${error.message}`
-          );
-        }
-        throw error;
       default:
         throw error;
     }
@@ -467,7 +450,7 @@ export async function updateRecipient(
 ): Promise<Recipient> {
   try {
     const { fragments, values: updateValues } = buildUpdateQueryData(
-      excludeProperties(recipient, ["socialMediaHandles", "id"])
+      excludeProperties(recipient, ["socialMediaHandles"])
     );
 
     if (fragments.length === 0) {
@@ -559,18 +542,6 @@ export async function updateRecipient(
           );
         }
         throw error;
-      case "23503":
-        if (
-          error.constraint === "RecipientSocialMediaHandle_recipientId_fkey"
-        ) {
-          throw new AppError(
-            "Internal Server Error",
-            500,
-            "Something went wrong",
-            `The recipient ID specified in the social media handle does not exist. Message: ${error.message}`
-          );
-        }
-        throw error;
       default:
         throw error;
     }
@@ -590,48 +561,94 @@ async function getSocialMediaHandles(
 async function updateSocialMediaHandle(
   handle: Required<SocialMediaHandle>
 ): Promise<SocialMediaHandle> {
-  const result = await query<SocialMediaHandle>(
-    `UPDATE "RecipientSocialMediaHandle"
-       SET "socialMediaHandle" = $3
-       WHERE "id" = $1 AND "recipientId" = $2
-       RETURNING *`,
-    [handle.id, handle.recipientId, handle.socialMediaHandle]
-  );
-
-  if (!result || result.rows.length === 0) {
-    throw new AppError(
-      "Internal Server Error",
-      500,
-      "Something went wrong",
-      "Failed to update recipient's social handle"
+  try {
+    const result = await query<SocialMediaHandle>(
+      `UPDATE "RecipientSocialMediaHandle"
+         SET "socialMediaHandle" = $3
+         WHERE "id" = $1 AND "recipientId" = $2
+         RETURNING *`,
+      [handle.id, handle.recipientId, handle.socialMediaHandle]
     );
-  }
 
-  return result.rows[0];
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Internal Server Error",
+        500,
+        "Something went wrong",
+        "Failed to update recipient's social handle"
+      );
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23503":
+        if (
+          error.constraint === "RecipientSocialMediaHandle_recipientId_fkey"
+        ) {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `The recipient ID specified in the social media handle does not exist. Message: ${error.message}`
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
 }
 
 async function insertSocialMediaHandle(
   handle: Omit<SocialMediaHandle, "id">
 ): Promise<SocialMediaHandle> {
-  const result = await query<SocialMediaHandle>(
-    `INSERT INTO "RecipientSocialMediaHandle" (
-       "id",
-       "recipientId",
-       "socialMediaHandle"
-     ) VALUES (
-       $1, $2, $3
-     ) RETURNING *`,
-    [randomUUID(), handle.recipientId, handle.socialMediaHandle]
-  );
-
-  if (!result || result.rows.length === 0) {
-    throw new AppError(
-      "Internal Server Error",
-      500,
-      "Something went wrong",
-      "Failed to insert recipient's social handle"
+  try {
+    const result = await query<SocialMediaHandle>(
+      `INSERT INTO "RecipientSocialMediaHandle" (
+         "id",
+         "recipientId",
+         "socialMediaHandle"
+       ) VALUES (
+         $1, $2, $3
+       ) RETURNING *`,
+      [randomUUID(), handle.recipientId, handle.socialMediaHandle]
     );
-  }
 
-  return result.rows[0];
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Internal Server Error",
+        500,
+        "Something went wrong",
+        "Failed to insert recipient's social handle"
+      );
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23503":
+        if (
+          error.constraint === "RecipientSocialMediaHandle_recipientId_fkey"
+        ) {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `The recipient ID specified for the social media handle does not exist. Message: ${error.message}`
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
 }

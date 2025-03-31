@@ -30,7 +30,8 @@
     "prod": "tsc && node -env-file=.env --env-file=.env.local --env-file=.env.test build/app.js",
     "dev": "tsx watch --env-file=.env --env-file=.env.local --env-file=.env.test src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "db:seed": "tsx --env-file=.env --env-file=.env.local --env-file=.env.test src/utils/seed.db.ts"
+    "db:seed": "tsx --env-file=.env --env-file=.env.local --env-file=.env.test src/utils/seed.db.ts",
+    "db:create": "tsx --env-file=.env --env-file=.env.local --env-file=.env.test src/utils/create.db.ts"
   },
   "repository": {
     "type": "git",

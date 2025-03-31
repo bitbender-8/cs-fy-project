@@ -1,9 +1,12 @@
+import pg from "pg";
+
 import { config } from "../config.js";
 import { Campaign } from "../models/campaign.model.js";
 import { PaginatedList } from "../utils/utils.js";
 import { query } from "../db.js";
 import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
-import { UUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
+import { AppError } from "../errors/error.types.js";
 
 /** Validate filter params before passing */
 export async function getCampaigns(
@@ -139,4 +142,158 @@ export async function getCampaigns(
     pageCount: totalPages === 0 ? 1 : totalPages,
     pageNo: pageNo,
   };
+}
+
+export async function insertCampaign(
+  ownerRecipientId: UUID,
+  campaign: Campaign
+): Promise<Campaign> {
+  try {
+    // TEST What does the returning * return? all fields or those listed here?
+    const result = await query(
+      ` INSERT INTO "Campaign" (
+          "id",
+          "title",
+          "description",
+          "fundraisingGoal",
+          "status",
+          "category",
+          "paymentMethod",
+          "phoneNo",
+          "bankAccountNo",
+          "bankName",
+          "submissionDate",
+          "isPublic",
+          "ownerRecipientId"
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+        ) RETURNING * 
+      `,
+      [
+        randomUUID(),
+        campaign.title,
+        campaign.description,
+        campaign.fundraisingGoal,
+        "Pending Review",
+        campaign.category,
+        campaign.paymentInfo.paymentMethod,
+        campaign.paymentInfo.phoneNo,
+        campaign.paymentInfo.bankAccountNo,
+        campaign.paymentInfo.bankName,
+        campaign.paymentInfo.bankName,
+        Date.now(),
+        false,
+        ownerRecipientId,
+      ]
+    );
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Internal Server Error",
+        500,
+        "Something went wrong",
+        "Campaign insertion failed"
+      );
+    }
+
+    const insertedCampaign = result.rows[0] as Campaign;
+    console.log(insertedCampaign);
+
+    // Insert document urls if they exist
+    if (campaign.documents && campaign.documents.length > 0) {
+      insertedCampaign.documents = [];
+
+      for (const document of campaign.documents) {
+        const insertedDocument = (
+          await insertDocumentUrls(insertedCampaign.id, document)
+        ).document;
+
+        insertedCampaign.documents.push(insertedDocument);
+      }
+    }
+
+    return insertedCampaign;
+  } catch (error) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23503":
+        if (error.constraint === "Campaign_recipientId_fkey") {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `The recipient ID specified for the campaign does not exist. 
+            Message: ${error.message}`
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
+}
+
+async function insertDocumentUrls(
+  campaignId: UUID,
+  document: {
+    documentUrl: string;
+    redactedDocumentUrl?: string;
+  }
+): Promise<{
+  campaignId: UUID;
+  document: {
+    // Filenames must be randomly generated uuids
+    documentUrl: string;
+    redactedDocumentUrl?: string;
+  };
+}> {
+  try {
+    const result = await query(
+      `
+      INSERT INTO 
+        "CampaignDocuments" (
+          "documentUrl",
+          "redactedDocumentUrl",
+          "campaignId"
+        ) VALUES (
+         $1, $2, $3
+        ) RETURNING *`,
+      [document.documentUrl, document.redactedDocumentUrl ?? null, campaignId]
+    );
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Internal Server Error",
+        500,
+        "Something went wrong",
+        "Failed to insert campaign's document urls"
+      );
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    // There is no need to handle the case where the document url is not unique, because every document url has a name that is randomly generated.
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23503":
+        if (error.constraint === "CampaignDocuments_campaignId_fkey") {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            `The campaign ID specified for the document url does not exist. 
+            Message: ${error.message}`
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
 }

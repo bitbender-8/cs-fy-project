@@ -70,7 +70,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 6
+    # DONE
     put:
       tags:
         - Supervisors
