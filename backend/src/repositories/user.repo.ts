@@ -555,7 +555,12 @@ async function getSocialMediaHandles(
     `SELECT * FROM "RecipientSocialMediaHandle" WHERE "recipientId" = $1`,
     [recipientId]
   );
-  return result.rows as SocialMediaHandle[];
+
+  if (!result || result.rows.length === 0) {
+    return [];
+  }
+
+  return result.rows;
 }
 
 async function updateSocialMediaHandle(

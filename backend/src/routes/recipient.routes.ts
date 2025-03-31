@@ -33,7 +33,7 @@ import {
 } from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
-import { requireAuthentication } from "../middleware/auth.middleware.js";
+import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
 
 export const recipientRouter: Router = Router();
 
@@ -44,16 +44,16 @@ const updateableRecipientSchema: AnyZodObject = RecipientSchema.omit(
 
 recipientRouter.put(
   "/:id",
+  requireAuth,
   validateFileUpload("profilePicture", "Images"),
   validateRequestBody(updateableRecipientSchema),
-  requireAuthentication,
   async (req: Request, res: Response): Promise<void> => {
-    if (getUserRole(req.auth) === "Recipient") {
+    if (req.auth && getUserRole(req.auth) === "Recipient") {
       const recipientId = validateUuidParam(req.params.id);
       const recipient: Omit<Recipient, LockedUserFields> = req.body;
 
       const recipientIdFromJwt = await getUuidFromAuth0Id(
-        req.auth?.payload.sub ?? ""
+        req.auth.payload.sub ?? ""
       );
 
       // Check that the authenticated recipient owns the data they are trying to modify
@@ -83,54 +83,59 @@ recipientRouter.put(
   }
 );
 
-recipientRouter.get("/", async (req: Request, res: Response): Promise<void> => {
-  const parsedQueryParams = UserFilterSchema.safeParse(req.query);
+recipientRouter.get(
+  "/",
+  optionalAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const parsedQueryParams = UserFilterSchema.safeParse(req.query);
 
-  if (!parsedQueryParams.success) {
-    const problemDetails: ProblemDetails = {
-      title: "Validation Failure",
-      status: 400,
-      detail: "One or more query params failed validation",
-      fieldFailures: parsedQueryParams.error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        uiMessage: issue.message,
-      })),
-    };
-    res.status(problemDetails.status).json(problemDetails);
+    if (!parsedQueryParams.success) {
+      const problemDetails: ProblemDetails = {
+        title: "Validation Failure",
+        status: 400,
+        detail: "One or more query params failed validation",
+        fieldFailures: parsedQueryParams.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          uiMessage: issue.message,
+        })),
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    // Create filter params with sensitive filters omitted
+    const queryParams = parsedQueryParams.data;
+    const publicQueryParams = excludeProperties(
+      queryParams,
+      SENSITIVE_USER_FILTERS
+    );
+
+    let recipients:
+      | PaginatedList<Recipient>
+      | PaginatedList<Omit<Recipient, SensitiveUserFields>>;
+
+    if (getUserRole(req.auth) === "Supervisor") {
+      // Supervisor: full access
+      recipients = await getRecipients(queryParams);
+    } else {
+      // Everyone else has access to public recipient data
+      const result = await getRecipients(publicQueryParams);
+      recipients = {
+        ...result,
+        items: result.items.map((recipient) =>
+          excludeProperties(recipient, SENSITIVE_USER_FIELDS)
+        ),
+      };
+    }
+
+    res.status(200).json(recipients);
     return;
   }
-
-  // Create filter params with sensitive filters omitted
-  const queryParams = parsedQueryParams.data;
-  const publicQueryParams = excludeProperties(
-    queryParams,
-    SENSITIVE_USER_FILTERS
-  );
-
-  let recipients:
-    | PaginatedList<Recipient>
-    | PaginatedList<Omit<Recipient, SensitiveUserFields>>;
-
-  if (getUserRole(req.auth) === "Supervisor") {
-    // Supervisor: full access
-    recipients = await getRecipients(queryParams);
-  } else {
-    // Everyone else has access to public recipient data
-    const result = await getRecipients(publicQueryParams);
-    recipients = {
-      ...result,
-      items: result.items.map((recipient) =>
-        excludeProperties(recipient, SENSITIVE_USER_FIELDS)
-      ),
-    };
-  }
-
-  res.status(200).json(recipients);
-  return;
-});
+);
 
 recipientRouter.get(
   "/:id",
+  optionalAuth,
   async (req: Request, res: Response): Promise<void> => {
     const recipientId = validateUuidParam(req.params.id);
     let recipient: Recipient | Omit<Recipient, SensitiveUserFields>;
@@ -195,6 +200,7 @@ recipientRouter.get(
 // Ignores email from recipient object
 recipientRouter.post(
   "/",
+  optionalAuth,
   validateFileUpload("profilePicture", "Images"),
   validateRequestBody(RecipientSchema),
   async (req: Request, res: Response): Promise<void> => {
@@ -223,7 +229,7 @@ recipientRouter.post(
 
 recipientRouter.delete(
   "/:id",
-  requireAuthentication,
+  requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const recipientId = validateUuidParam(req.params.id);
     const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";

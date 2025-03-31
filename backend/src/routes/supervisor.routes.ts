@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { AnyZodObject } from "zod";
 
-import { requireAuthentication } from "../middleware/auth.middleware.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 import { validateUuidParam } from "../utils/utils.js";
 import { getUserRole } from "../services/user.service.js";
 import { ProblemDetails } from "../errors/error.types.js";
@@ -27,7 +27,7 @@ const updateableSupervisorSchema: AnyZodObject = SupervisorSchema.omit(
 
 supervisorRouter.put(
   "/:id",
-  requireAuthentication,
+  requireAuth,
   validateRequestBody(updateableSupervisorSchema),
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) === "Supervisor") {
@@ -66,7 +66,7 @@ supervisorRouter.put(
 
 supervisorRouter.get(
   "/:id",
-  requireAuthentication,
+  requireAuth,
   async (req: Request, res: Response): Promise<void> => {
     const supervisorId = validateUuidParam(req.params.id);
     let supervisor: Supervisor;

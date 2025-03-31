@@ -120,13 +120,14 @@ export async function getCampaigns(
     `;
   values.push(limit, pageNo);
 
-  const campaigns: Campaign[] = (await query(queryString, values)).rows.map(
-    (campaign) => {
+  const campaigns: Campaign[] = await Promise.all(
+    (await query(queryString, values)).rows.map(async (campaign) => {
       const { paymentMethod, phoneNo, bankAccountNo, bankName, ...rest } =
         campaign;
 
       return {
         ...rest,
+        documents: await getDocumentUrls(campaign.id),
         paymentInfo: {
           paymentMethod,
           phoneNo,
@@ -134,7 +135,7 @@ export async function getCampaigns(
           bankName,
         },
       };
-    }
+    })
   );
 
   return {
@@ -194,8 +195,13 @@ export async function insertCampaign(
       );
     }
 
-    const insertedCampaign = result.rows[0] as Omit<Campaign, "paymentInfo"> &
-      PaymentInfo;
+    const {
+      paymentMethod,
+      phoneNo,
+      bankAccountNo,
+      bankName,
+      ...insertedCampaign
+    } = result.rows[0] as Omit<Campaign, "paymentInfo"> & PaymentInfo;
 
     // Insert document urls if they exist
     if (campaign.documents && campaign.documents.length > 0) {
@@ -203,7 +209,7 @@ export async function insertCampaign(
 
       for (const document of campaign.documents) {
         const insertedDocument = (
-          await insertDocumentUrls({
+          await insertDocumentUrl({
             ...document,
             campaignId: insertedCampaign.id,
           })
@@ -216,10 +222,10 @@ export async function insertCampaign(
     return {
       ...insertedCampaign,
       paymentInfo: {
-        paymentMethod: insertedCampaign.paymentMethod,
-        phoneNo: insertedCampaign.phoneNo,
-        bankAccountNo: insertedCampaign.bankAccountNo,
-        bankName: insertedCampaign.bankName,
+        paymentMethod,
+        phoneNo,
+        bankAccountNo,
+        bankName,
       },
     };
   } catch (error) {
@@ -245,7 +251,7 @@ export async function insertCampaign(
   }
 }
 
-async function insertDocumentUrls(document: {
+async function insertDocumentUrl(document: {
   campaignId: UUID;
   documentUrl: string;
   redactedDocumentUrl?: string;
@@ -312,4 +318,32 @@ async function insertDocumentUrls(document: {
         throw error;
     }
   }
+}
+
+async function getDocumentUrls(campaignId: UUID): Promise<
+  {
+    campaignId: UUID;
+    documentUrl: string;
+    redactedDocumentUrl: string;
+  }[]
+> {
+  const result = await query(
+    `
+    SELECT 
+      "campaignId",
+      "documentUrl",
+      "redactedDocumentUrl"
+    FROM
+      "CampaignDocuments"
+    WHERE
+      "campaignId" = $1
+    `,
+    [campaignId]
+  );
+
+  if (!result || result.rows.length === 0) {
+    return [];
+  }
+
+  return result.rows;
 }

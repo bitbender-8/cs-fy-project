@@ -563,7 +563,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 7
+    # DONE
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes | No) => Full access
     # (Role: Anon, Owner: No) => No access

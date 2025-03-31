@@ -21,13 +21,17 @@ import { getCampaigns, insertCampaign } from "../repositories/campaign.repo.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
-import { requireAuthentication } from "../middleware/auth.middleware.js";
+import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
+
+type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
+  redactedDocumentUrls?: string[];
+};
 
 export const campaignRouter: Router = Router();
 
 campaignRouter.post(
   "/",
-  requireAuthentication,
+  requireAuth,
   validateFileUpload("documents", "Both"),
   validateRequestBody(
     CampaignSchema.omit({
@@ -83,94 +87,109 @@ campaignRouter.post(
   }
 );
 
-campaignRouter.put(
-  "/:id",
-  async (req: Request, res: Response): Promise<void> => {}
-);
+campaignRouter.get(
+  "/",
+  optionalAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const parsedQueryParams = CampaignFilterSchema.safeParse(req.query);
 
-campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {
-  const parsedQueryParams = CampaignFilterSchema.safeParse(req.query);
+    if (!parsedQueryParams.success) {
+      const problemDetails: ProblemDetails = {
+        title: "Validation Failure",
+        status: 400,
+        detail: "One or more query params failed validation",
+        fieldFailures: parsedQueryParams.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          uiMessage: issue.message,
+        })),
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
 
-  if (!parsedQueryParams.success) {
-    const problemDetails: ProblemDetails = {
-      title: "Validation Failure",
-      status: 400,
-      detail: "One or more query params failed validation",
-      fieldFailures: parsedQueryParams.error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        uiMessage: issue.message,
-      })),
-    };
-    res.status(problemDetails.status).json(problemDetails);
-    return;
-  }
+    // Create filter params with sensitive filters omitted
+    const queryParams = parsedQueryParams.data;
+    const publicQueryParams = excludeProperties(
+      queryParams,
+      SENSITIVE_CAMPAIGN_FILTERS
+    );
 
-  // Create filter params with sensitive filters omitted
-  const queryParams = parsedQueryParams.data;
-  const publicQueryParams = excludeProperties(
-    queryParams,
-    SENSITIVE_CAMPAIGN_FILTERS
-  );
+    let campaigns: PaginatedList<RedactedCampaign> | PaginatedList<Campaign>;
+    const userRole = getUserRole(req.auth);
+    const userIdFromJwt =
+      userRole === "Recipient"
+        ? await getUuidFromAuth0Id(req.auth?.payload.sub ?? "")
+        : null;
 
-  let campaigns:
-    | PaginatedList<Campaign>
-    | PaginatedList<Omit<Campaign, SensitiveCampaignFields>>;
-  const recipientIdFromParam = queryParams.ownerRecipientId;
-  const userIdFromJwt = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
-
-  switch (getUserRole(req.auth)) {
-    case "Supervisor":
-      // Supervisor: full access
-      campaigns = await getCampaigns(queryParams);
-      break;
-    case "Recipient":
-      if (recipientIdFromParam && userIdFromJwt === recipientIdFromParam) {
-        // Recipient: own campaigns, full access
-        campaigns = await getCampaigns({
-          ...queryParams,
-          ownerRecipientId: recipientIdFromParam,
-        });
-      } else {
-        // Recipient: public campaigns, partial access
-        const result = await getCampaigns({
-          ...publicQueryParams,
-          isPublic: true,
-        });
-
-        campaigns = {
-          ...result,
-          items: result.items.map((campaign) =>
-            excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS)
-          ),
-        };
-      }
-      break;
-
-    default: {
-      // Public campaigns
+    const getPublicCampaigns = async (): Promise<
+      PaginatedList<RedactedCampaign>
+    > => {
       const result = await getCampaigns({
         ...publicQueryParams,
         isPublic: true,
       });
-
-      campaigns = {
+      return {
         ...result,
-        items: result.items.map((campaign) =>
-          excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS)
-        ),
+        items: result.items.map((campaign) => ({
+          ...excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS),
+          redactedDocumentUrls: campaign.documents
+            .map((doc) => doc.redactedDocumentUrl)
+            .filter((url): url is string => url !== undefined),
+        })),
       };
-    }
-  }
+    };
 
-  res.status(200).json(campaigns);
-  return;
-});
+    switch (userRole) {
+      case "Supervisor":
+        campaigns = await getCampaigns(queryParams);
+        break;
+
+      case "Recipient":
+        if (
+          queryParams.ownerRecipientId &&
+          userIdFromJwt === queryParams.ownerRecipientId
+        ) {
+          campaigns = await getCampaigns({
+            ...queryParams,
+            ownerRecipientId: queryParams.ownerRecipientId,
+          });
+        } else {
+          campaigns = await getPublicCampaigns();
+        }
+        break;
+      default:
+        campaigns = await getPublicCampaigns();
+    }
+
+    res.status(200).json(campaigns);
+    return;
+  }
+);
+
+campaignRouter.put(
+  "/:id",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {}
+);
 
 campaignRouter.get(
   "/:id",
+  optionalAuth,
   async (req: Request, res: Response): Promise<void> => {
     const campaignId = validateUuidParam(req.params.id);
-    let campaign: Campaign | Omit<Campaign, SensitiveCampaignFields>;
+    let campaign: Campaign | RedactedCampaign;
+
+    // Helper function to get public campaign
+    const getPublicCampaign = async (): Promise<RedactedCampaign> => {
+      const result = (await getCampaigns({ id: campaignId, isPublic: true }))
+        .items[0];
+      return {
+        ...excludeProperties(result, SENSITIVE_CAMPAIGN_FIELDS),
+        redactedDocumentUrls: result.documents
+          .map((doc) => doc.redactedDocumentUrl)
+          .filter((url): url is string => url !== undefined),
+      };
+    };
 
     switch (getUserRole(req.auth)) {
       case "Supervisor":
@@ -178,34 +197,23 @@ campaignRouter.get(
         campaign = (await getCampaigns({ id: campaignId })).items[0];
         break;
       case "Recipient": {
-        const recipientIdFromJwt = await getUuidFromAuth0Id(
+        const userIdFromJwt = await getUuidFromAuth0Id(
           req.auth?.payload.sub ?? ""
         );
+
         const tempCampaign = (
           await getCampaigns({
             id: campaignId,
-            ownerRecipientId: recipientIdFromJwt,
+            ownerRecipientId: userIdFromJwt,
           })
         ).items[0];
 
-        if (tempCampaign) {
-          // Recipient: Own campaign
-          campaign = tempCampaign;
-        } else {
-          // Recipient: Public campaigns
-          campaign = excludeProperties(
-            (await getCampaigns({ id: campaignId, isPublic: true })).items[0],
-            SENSITIVE_CAMPAIGN_FIELDS
-          );
-        }
+        campaign = tempCampaign ? tempCampaign : await getPublicCampaign();
         break;
       }
       default:
         // Public campaigns
-        campaign = excludeProperties(
-          (await getCampaigns({ id: campaignId, isPublic: true })).items[0],
-          SENSITIVE_CAMPAIGN_FIELDS
-        );
+        campaign = await getPublicCampaign();
     }
 
     if (!campaign || Object.keys(campaign).length === 0) {
