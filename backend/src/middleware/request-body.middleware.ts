@@ -17,11 +17,12 @@ import { ProblemDetails } from "../errors/error.types.js";
 export function validateRequestBody(schema: AnyZodObject) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log(req.body)
       if (!req.body) {
         const problemDetails: ProblemDetails = {
           title: "Validation Failure",
           status: 400,
-          detail: "Recipient body cannot be empty",
+          detail: "Request body cannot be empty",
         };
         res.status(problemDetails.status).json(problemDetails);
         return;

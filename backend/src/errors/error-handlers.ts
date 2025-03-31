@@ -1,11 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { AppError, ProblemDetails } from "./error.types.js";
+import {
+  InvalidTokenError,
+  UnauthorizedError,
+} from "express-oauth2-jwt-bearer";
 
 export function errorHandler(
   err: Error,
   req: Request,
   res: Response,
-  _next: NextFunction,
+  _next: NextFunction
 ): void {
   void _next;
 
@@ -22,6 +26,29 @@ export function errorHandler(
       detail: err.uiMessage,
     };
     console.error(`Fail: ${err.internalMessage ?? err.uiMessage}`);
+    console.error(err);
+    res.status(problemDetails.status).json(problemDetails);
+    return;
+  }
+
+  if (err instanceof UnauthorizedError) {
+    if (
+      err instanceof InvalidTokenError &&
+      err.message === "Failed to fetch authorization server metadata"
+    ) {
+      const problemDetails: ProblemDetails = {
+        title: "Internal Server Error",
+        status: 503,
+        detail: "Failed to contact authorization servers. Try again later",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+    const problemDetails: ProblemDetails = {
+      title: "Authentication Required",
+      status: 401,
+      detail: "You must be authenticated to access this resource.",
+    };
     res.status(problemDetails.status).json(problemDetails);
     return;
   }

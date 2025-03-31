@@ -28,6 +28,7 @@ export const campaignRouter: Router = Router();
 campaignRouter.post(
   "/",
   requireAuthentication,
+  validateFileUpload("documents", "Both"),
   validateRequestBody(
     CampaignSchema.omit({
       id: true,
@@ -41,25 +42,31 @@ campaignRouter.post(
       documents: true,
     })
   ),
-  await validateFileUpload("documents"),
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) === "Recipient") {
       const recipientId = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
       const campaignData = req.body;
 
       const documentUrls: string[] = [];
-
-      if (req.files && Array.isArray(req.files)) {
+      if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
         for (const file of req.files) {
           documentUrls.push(`${process.env.UPLOAD_DIR}/${file.filename}`);
         }
+      } else {
+        const problemDetails: ProblemDetails = {
+          title: "Validation Failure",
+          status: 400,
+          detail: "Supporting documents for campaign are required",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
       }
 
       const insertedCampaign = await insertCampaign(recipientId, {
         ...campaignData,
-        documents: {
-          documentUrls,
-        },
+        documents: documentUrls.map((url) => ({
+          documentUrl: url,
+        })),
       });
 
       res.status(201).json(insertedCampaign);
@@ -74,6 +81,11 @@ campaignRouter.post(
       return;
     }
   }
+);
+
+campaignRouter.put(
+  "/:id",
+  async (req: Request, res: Response): Promise<void> => {}
 );
 
 campaignRouter.get("/", async (req: Request, res: Response): Promise<void> => {

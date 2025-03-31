@@ -63,23 +63,18 @@ export const validUrl = () =>
 
 export const validBankAccountNo = () =>
   z
-    .string()
-    .trim() // Trim whitespace
+    .string({
+      message: "Bank account number must be a string",
+    })
+    .regex(/^\d+$/, {
+      message: "Bank account number must be numeric",
+    })
     .min(10, {
       message: "Must be at least 10 digits",
     })
     .max(16, {
       message: "Must be at most 16 digits",
-    })
-    .refine(
-      (val) => {
-        const parsedValue = parseInt(val);
-        return !isNaN(parsedValue) && parsedValue >= 0;
-      },
-      {
-        message: "Must be a numeric bank account number",
-      }
-    );
+    });
 
 export const validUuid = () => z.string().uuid({ message: "Invalid UUID" });
 
@@ -88,22 +83,21 @@ export const validMoneyAmount = () =>
     .string()
     .refine(
       (val) => {
-        const parsedValue = parseFloat(val);
-        return (
-          !isNaN(parsedValue) &&
-          parsedValue >= 0 &&
-          Number.isFinite(parsedValue) &&
-          parsedValue.toFixed(2).replace(/\.0+$/, "") ===
-            val.replace(/\.0+$/, "")
-        );
+        const num = Number(val);
+        return !isNaN(num) && num >= 0 && Number.isFinite(num);
       },
-      {
-        message:
-          "Money field must be a non-negative number with up to two decimal places.",
-      }
+      { message: "Must be a valid non-negative number." }
     )
-    .refine((val) => parseFloat(val) < config.ALLOWED_MAX_MONEY_AMOUNT, {
-      message: `Money amount specified is too large. Maximum amount allowed is ${config.ALLOWED_FILE_EXTENSIONS}.`,
+    .refine(
+      (val) => {
+        const [integer, decimal] = val.split(".");
+        void integer;
+        return !decimal || decimal.length <= 2;
+      },
+      { message: "Must have up to two decimal places." }
+    )
+    .refine((val) => Number(val) < config.MAX_MONEY_AMOUNT, {
+      message: `Amount must be less than ${config.MAX_MONEY_AMOUNT}.`,
     });
 
 export const validCurrency = () =>

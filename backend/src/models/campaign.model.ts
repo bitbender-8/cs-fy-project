@@ -54,7 +54,8 @@ export interface Campaign {
   verificationDate?: Date | string;
   denialDate?: Date | string;
   // TODO On the admin client-side, make sure to require that every redacted document is matched to a normal document.
-  documents?: {
+  documents: {
+    campaignId: UUID;
     documentUrl: string;
     redactedDocumentUrl?: string;
   }[];
@@ -64,8 +65,8 @@ export interface Campaign {
 export interface PaymentInfo {
   paymentMethod: string;
   phoneNo: string;
-  bankAccountNo: string;
-  bankName: string;
+  bankAccountNo?: string;
+  bankName?: string;
 }
 
 export interface CampaignDonation {
@@ -91,8 +92,8 @@ export interface CampaignPost {
 export const PaymentInfoSchema = z.object({
   paymentMethod: validNonEmptyString(MIN_STRING_LENGTH, 50),
   phoneNo: validPhoneNo(),
-  bankAccountNo: validBankAccountNo(),
-  bankName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  bankAccountNo: validBankAccountNo().optional(),
+  bankName: validNonEmptyString(MIN_STRING_LENGTH, 50).optional(),
 });
 
 // FIXME Add more specific validation logic. Like min and max length of campaign, things like submissionDate < verificationDate.

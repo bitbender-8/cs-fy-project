@@ -5,13 +5,16 @@ export const config = {
   UPLOAD_DIR: process.env.UPLOAD_DIR ?? "./uploads",
   MAX_FILE_NO: parseInt(process.env.MAX_FILE_NO ?? "5"),
   MAX_FILE_SIZE_MB: process.env.MAX_FILE_SIZE_MB ?? 10,
-  ALLOWED_MIME_TYPES:
-    process.env.ALLOWED_MIME_TYPES ?? "image/jpeg;image/png;image/gif",
-  ALLOWED_FILE_EXTENSIONS:
-    process.env.ALLOWED_FILE_EXTENSIONS ?? ".jpg;.jpeg;.png;.gif",
+  FILE_EXTENSIONS: process.env.FILE_EXTENSIONS ?? ".pdf;.doc;.docx",
+  IMG_EXTENSIONS: process.env.IMG_EXTENSIONS ?? ".jpg;.jpeg;.png;.gif",
+  IMG_MIME_TYPES:
+    process.env.IMG_MIME_TYPES ?? "image/jpeg;image/png;image/gif",
+  FILE_MIME_TYPES:
+    process.env.FILE_MIME_TYPES ??
+    "application/pdf;application/msword;application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   PAGE_SIZE: parseInt(process.env.PAGE_SIZE ?? "10"),
-  ALLOWED_MAX_MONEY_AMOUNT: parseInt(
-    process.env.ALLOWED_MAX_MONEY_AMOUNT ?? "100_000"
+  MAX_MONEY_AMOUNT: parseInt(
+    process.env.MAX_MONEY_AMOUNT ?? "100_000"
   ),
 
   // Database config

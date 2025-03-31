@@ -1,7 +1,7 @@
 import pg from "pg";
 
 import { config } from "../config.js";
-import { Campaign } from "../models/campaign.model.js";
+import { Campaign, PaymentInfo } from "../models/campaign.model.js";
 import { PaginatedList } from "../utils/utils.js";
 import { query } from "../db.js";
 import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
@@ -149,7 +149,6 @@ export async function insertCampaign(
   campaign: Campaign
 ): Promise<Campaign> {
   try {
-    // TEST What does the returning * return? all fields or those listed here?
     const result = await query(
       ` INSERT INTO "Campaign" (
           "id",
@@ -180,8 +179,7 @@ export async function insertCampaign(
         campaign.paymentInfo.phoneNo,
         campaign.paymentInfo.bankAccountNo,
         campaign.paymentInfo.bankName,
-        campaign.paymentInfo.bankName,
-        Date.now(),
+        new Date(),
         false,
         ownerRecipientId,
       ]
@@ -196,8 +194,8 @@ export async function insertCampaign(
       );
     }
 
-    const insertedCampaign = result.rows[0] as Campaign;
-    console.log(insertedCampaign);
+    const insertedCampaign = result.rows[0] as Omit<Campaign, "paymentInfo"> &
+      PaymentInfo;
 
     // Insert document urls if they exist
     if (campaign.documents && campaign.documents.length > 0) {
@@ -205,14 +203,25 @@ export async function insertCampaign(
 
       for (const document of campaign.documents) {
         const insertedDocument = (
-          await insertDocumentUrls(insertedCampaign.id, document)
+          await insertDocumentUrls({
+            ...document,
+            campaignId: insertedCampaign.id,
+          })
         ).document;
 
         insertedCampaign.documents.push(insertedDocument);
       }
     }
 
-    return insertedCampaign;
+    return {
+      ...insertedCampaign,
+      paymentInfo: {
+        paymentMethod: insertedCampaign.paymentMethod,
+        phoneNo: insertedCampaign.phoneNo,
+        bankAccountNo: insertedCampaign.bankAccountNo,
+        bankName: insertedCampaign.bankName,
+      },
+    };
   } catch (error) {
     if (!(error instanceof pg.DatabaseError)) {
       throw error;
@@ -236,16 +245,13 @@ export async function insertCampaign(
   }
 }
 
-async function insertDocumentUrls(
-  campaignId: UUID,
-  document: {
-    documentUrl: string;
-    redactedDocumentUrl?: string;
-  }
-): Promise<{
+async function insertDocumentUrls(document: {
   campaignId: UUID;
+  documentUrl: string;
+  redactedDocumentUrl?: string;
+}): Promise<{
   document: {
-    // Filenames must be randomly generated uuids
+    campaignId: UUID;
     documentUrl: string;
     redactedDocumentUrl?: string;
   };
@@ -261,7 +267,11 @@ async function insertDocumentUrls(
         ) VALUES (
          $1, $2, $3
         ) RETURNING *`,
-      [document.documentUrl, document.redactedDocumentUrl ?? null, campaignId]
+      [
+        document.documentUrl,
+        document.redactedDocumentUrl ?? null,
+        document.campaignId,
+      ]
     );
 
     if (!result || result.rows.length === 0) {
@@ -273,9 +283,15 @@ async function insertDocumentUrls(
       );
     }
 
-    return result.rows[0];
+    return {
+      document: {
+        campaignId: result.rows[0].campaignId,
+        documentUrl: result.rows[0].documentUrl,
+        redactedDocumentUrl: result.rows[0].redactedDocumentUrl,
+      },
+    };
   } catch (error) {
-    // There is no need to handle the case where the document url is not unique, because every document url has a name that is randomly generated.
+    // There is no need to handle the case where the document url is not unique, because every document url has a name that contains a randomly generated uuid.
     if (!(error instanceof pg.DatabaseError)) {
       throw error;
     }

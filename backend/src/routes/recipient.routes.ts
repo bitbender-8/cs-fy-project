@@ -44,7 +44,7 @@ const updateableRecipientSchema: AnyZodObject = RecipientSchema.omit(
 
 recipientRouter.put(
   "/:id",
-  await validateFileUpload("profilePicture"),
+  validateFileUpload("profilePicture", "Images"),
   validateRequestBody(updateableRecipientSchema),
   requireAuthentication,
   async (req: Request, res: Response): Promise<void> => {
@@ -195,7 +195,7 @@ recipientRouter.get(
 // Ignores email from recipient object
 recipientRouter.post(
   "/",
-  await validateFileUpload("profilePicture"),
+  validateFileUpload("profilePicture", "Images"),
   validateRequestBody(RecipientSchema),
   async (req: Request, res: Response): Promise<void> => {
     // Validated recipient data from middleware
