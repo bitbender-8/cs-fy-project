@@ -1,4 +1,7 @@
-import { campaigns, campaignTableColumns } from "@/components/campaigns-table/columns";
+import {
+  campaigns,
+  campaignTableColumns,
+} from "@/components/campaigns-table/columns";
 import { DataTable } from "@/components/data-table";
 
 export default function BroswseCampaignsHomePage() {

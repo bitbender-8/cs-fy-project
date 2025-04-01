@@ -104,7 +104,7 @@ export const campaigns: Campaign[] = [
     id: "3",
     title: "Campaign 2 Campaign 3",
     recipient: "Recipient 3",
-    category: "Environment Environment", 
+    category: "Environment Environment",
     fundraisingGoal: 15000,
     endDate: "2024-02-28",
   },
