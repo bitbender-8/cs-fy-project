@@ -27,7 +27,7 @@ export function errorHandler(
     };
     console.error(
       `Fail: ${err.options?.internalDetails ?? err.message}
-       Cause: ${err.options?.cause}`,
+       Cause: ${err.options?.cause?.message}`,
     );
     res.status(problemDetails.status).json(problemDetails);
     return;

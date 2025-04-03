@@ -38,12 +38,10 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
   if (result.rows.length > 0) {
     return result.rows[0].id as UUID;
   } else {
-    throw new AppError(
-      "Not Found",
-      404,
-      "User not found",
-      "User with the provided Auth0 ID not found in the database.",
-    );
+    throw new AppError("Not Found", 404, "User not found", {
+      internalDetails:
+        "User with the provided Auth0 ID not found in the database.",
+    });
   }
 }
 
@@ -180,12 +178,9 @@ export async function updateSupervisor(
     const result = await query(updateQuery, updateValues);
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Not Found",
-        404,
-        "Supervisor not found",
-        "A supervisor with the given ID does not exist",
-      );
+      throw new AppError("Not Found", 404, "Supervisor not found", {
+        internalDetails: "A supervisor with the given ID does not exist",
+      });
     }
 
     return result.rows[0] as Supervisor;
@@ -201,21 +196,21 @@ export async function updateSupervisor(
             "Validation Failure",
             409,
             "Phone number is already in use by another supervisor",
-            error.message,
+            { cause: error },
           );
         } else if (error.constraint === "Supervisor_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Auth0 authentication ID is already in use by another supervisor",
-            error.message,
+            { cause: error },
           );
         } else if (error.constraint === "Supervisor_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another supervisor",
-            error.message,
+            { cause: error },
           );
         }
         throw error;
@@ -381,12 +376,9 @@ export async function insertRecipient(
     );
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Internal Server Error",
-        500,
-        "Something went wrong",
-        "Recipient insertion failed.",
-      );
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: "Recipient insertion failed.",
+      });
     }
 
     const insertedRecipient = result.rows[0] as Recipient;
@@ -421,20 +413,21 @@ export async function insertRecipient(
             "Validation Failure",
             409,
             "Phone number is already in use by another recipient",
-            error.message,
+            { cause: error },
           );
         } else if (error.constraint === "Recipient_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Auth0 authentication ID is already in use by another recipient",
-            error.message,
+            { cause: error },
           );
         } else if (error.constraint === "Recipient_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another recipient",
+            { cause: error },
           );
         }
         throw error;
@@ -474,12 +467,9 @@ export async function updateRecipient(
     const result = await query(updateQuery, updateValues);
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Not Found",
-        404,
-        "Recipient not found",
-        "A recipient with the given ID does not exist",
-      );
+      throw new AppError("Not Found", 404, "Recipient not found", {
+        internalDetails: "A recipient with the given ID does not exist",
+      });
     }
 
     const updatedRecipient = result.rows[0] as Recipient;
@@ -524,21 +514,21 @@ export async function updateRecipient(
             "Validation Failure",
             409,
             "Phone number is already in use by another recipient",
-            error.message,
+            { cause: error },
           );
         } else if (error.constraint === "Recipient_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Auth0 authentication ID is already in use by another recipient",
-            error.message,
+            { cause: error },
           );
         } else if (error.constraint === "Recipient_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another recipient",
-            error.message,
+            { cause: error },
           );
         }
         throw error;
@@ -576,12 +566,9 @@ async function updateSocialMediaHandle(
     );
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Internal Server Error",
-        500,
-        "Something went wrong",
-        "Failed to update recipient's social handle",
-      );
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: "Failed to update recipient's social handle",
+      });
     }
 
     return result.rows[0];
@@ -599,7 +586,10 @@ async function updateSocialMediaHandle(
             "Internal Server Error",
             500,
             "Something went wrong",
-            `The recipient ID specified in the social media handle does not exist. Message: ${error.message}`,
+            {
+              internalDetails: `The recipient ID specified in the social media handle does not exist.`,
+              cause: error,
+            },
           );
         }
         throw error;
@@ -625,12 +615,9 @@ async function insertSocialMediaHandle(
     );
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Internal Server Error",
-        500,
-        "Something went wrong",
-        "Failed to insert recipient's social handle",
-      );
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: "Failed to insert recipient's social handle",
+      });
     }
 
     return result.rows[0];
@@ -648,7 +635,11 @@ async function insertSocialMediaHandle(
             "Internal Server Error",
             500,
             "Something went wrong",
-            `The recipient ID specified for the social media handle does not exist. Message: ${error.message}`,
+            {
+              internalDetails:
+                "The recipient ID specified for the social media handle does not exist.",
+              cause: error,
+            },
           );
         }
         throw error;

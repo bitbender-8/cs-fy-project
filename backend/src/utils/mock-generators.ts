@@ -172,6 +172,7 @@ export function generateCampaigns(
   }
 
   for (let i = 0; i < noOfCampaigns; i++) {
+    const campaignId = randomUUID();
     const submissionDate = faker.date
       .past({ years: 1, refDate: new Date() })
       .toISOString();
@@ -197,6 +198,7 @@ export function generateCampaigns(
       .future({ years: 0.5, refDate: launchDate })
       .toISOString();
     const documents: {
+      campaignId: UUID;
       documentUrl: string;
       redactedDocumentUrl: string;
     }[] = [];
@@ -204,11 +206,11 @@ export function generateCampaigns(
     for (let i = 0; i < faker.number.int({ min: 0, max: 5 }); i++) {
       const documentUrl = faker.internet.url();
       const redactedDocumentUrl = faker.internet.url();
-      documents.push({ documentUrl, redactedDocumentUrl });
+      documents.push({ campaignId, documentUrl, redactedDocumentUrl });
     }
 
     const campaign: Campaign = {
-      id: randomUUID(),
+      id: campaignId,
       ownerRecipientId: faker.helpers.arrayElement(recipients).id as UUID,
       title: faker.lorem.words(),
       description: faker.lorem.sentences({ min: 2, max: 4 }),
@@ -227,8 +229,10 @@ export function generateCampaigns(
       denialDate,
       launchDate,
       endDate,
-      documents,
+      documents: [],
     };
+
+    campaign.documents = [...documents];
 
     campiagns.push(campaign);
   }
