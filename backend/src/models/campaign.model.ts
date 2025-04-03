@@ -15,40 +15,62 @@ import {
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+/** These fields cannot be updated manually by a user. */
+export const LOCKED_CAMPAIGN_FIELDS = [
+  "id",
+  "ownerRecipientId",
+  "launchDate",
+  "isPublic",
+  "submissionDate",
+  "verificationDate",
+  "denialDate",
+  "paymentInfo",
+] as const;
+export type LockedCampaignFields = (typeof LOCKED_CAMPAIGN_FIELDS)[number];
+
+/** These fields must not be exposed to public users. */
+export const SENSITIVE_CAMPAIGN_FIELDS = [
+  "submissionDate",
+  "verificationDate",
+  "denialDate",
+  "documents",
+  "paymentInfo",
+  "isPublic",
+] as const;
+export type SensitiveCampaignFields =
+  (typeof SENSITIVE_CAMPAIGN_FIELDS)[number];
+
 /** Schema defined at {@link CampaignSchema} */
 export interface Campaign {
-  id: UUID;
-  ownerRecipientId: UUID;
-  title: string;
-  description: string;
-  fundraisingGoal: string;
+  id: UUID; // Locked
+  ownerRecipientId: UUID; // Locked
+  title: string; // Normal
+  description: string; // Normal
+  fundraisingGoal: string; // Request, just replace old
+  // Request, there are valid and invalid state transitions.
   status: CampaignStatus;
-  category: string;
-  launchDate?: Date | string;
-  endDate: Date | string;
-  redactedDocumentUrls?: string[];
+  category: string; // Normal
+  launchDate?: Date | string; // Locked
+  endDate: Date | string; // Request, check that it is later
 
   // Sensitive fields: Available to Supervisors and Campaign owners
-  submissionDate?: Date | string;
-  verificationDate?: Date | string;
-  denialDate?: Date | string;
-  documentUrls?: string[];
-  paymentInfo?: PaymentInfo;
+  isPublic?: boolean; // Locked
+  submissionDate?: Date | string; // Locked
+  verificationDate?: Date | string; // Locked
+  denialDate?: Date | string; // Locked
+  documents: {
+    campaignId: UUID;
+    documentUrl: string;
+    redactedDocumentUrl?: string;
+  }[]; // Normal, replace both the files and their url.
+  paymentInfo: PaymentInfo; // Locked
 }
-
-/** For use with the Omit utility type on {@link Campaign} */
-export type SensitiveCampaignFields =
-  | "submissionDate"
-  | "verificationDate"
-  | "denialDate"
-  | "documentUrls"
-  | "paymentInfo";
 
 export interface PaymentInfo {
   paymentMethod: string;
   phoneNo: string;
-  bankAccountNo: string;
-  bankName: string;
+  bankAccountNo?: string;
+  bankName?: string;
 }
 
 export interface CampaignDonation {
@@ -74,8 +96,8 @@ export interface CampaignPost {
 export const PaymentInfoSchema = z.object({
   paymentMethod: validNonEmptyString(MIN_STRING_LENGTH, 50),
   phoneNo: validPhoneNo(),
-  bankAccountNo: validBankAccountNo(),
-  bankName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  bankAccountNo: validBankAccountNo().optional(),
+  bankName: validNonEmptyString(MIN_STRING_LENGTH, 50).optional(),
 });
 
 // FIXME Add more specific validation logic. Like min and max length of campaign, things like submissionDate < verificationDate.
@@ -89,14 +111,21 @@ export const CampaignSchema = z.object({
   category: validNonEmptyString(MIN_STRING_LENGTH, 50),
   launchDate: validDate(false).optional(),
   endDate: validDate(false),
-  redactedDocumentUrls: z.array(validUrl()).optional(),
 
   // Sensitive fields
+  isPublic: z.boolean().optional(),
   submissionDate: validDate(true).optional(),
   verificationDate: validDate(true).optional(),
   denialDate: validDate(true).optional(),
-  documentUrls: z.array(validUrl()).optional(),
-  paymentInfo: PaymentInfoSchema.optional(),
+  documents: z
+    .array(
+      z.object({
+        documentUrls: validUrl(),
+        redactedDocumentUrls: validUrl().optional(),
+      }),
+    )
+    .optional(),
+  paymentInfo: PaymentInfoSchema,
 });
 
 export const CampaignDonationSchema = z.object({

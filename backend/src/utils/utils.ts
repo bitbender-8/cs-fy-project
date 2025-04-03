@@ -1,9 +1,13 @@
 import { z } from "zod";
+
 import {
   CURRENCY_CODES,
   validCurrency,
   validMoneyAmount,
+  validUuid,
 } from "./zod-helpers.js";
+import { AppError } from "../errors/error.types.js";
+import { UUID } from "crypto";
 
 export interface PaginatedList<T> {
   items: T[];
@@ -12,11 +16,11 @@ export interface PaginatedList<T> {
 }
 
 export type CurrencyCode = (typeof CURRENCY_CODES)[number];
-
-export interface Money {
-  amount: number;
-  currency: CurrencyCode;
-}
+export const MoneySchema = z.object({
+  amount: validMoneyAmount(),
+  currency: validCurrency(),
+});
+export type Money = z.infer<typeof MoneySchema>;
 
 /**
  * Converts a money string (e.g., "123.45") to a bigint representing the amount in cents.
@@ -81,9 +85,29 @@ export function fromIntToMoneyStr(moneyAmount: bigint): string | null {
   return `${integerPart}.${decimalPart}`;
 }
 
-// ================= Zod schemas ====================
+export function validateUuidParam(id: string): UUID {
+  const parsedId = validUuid().safeParse(id);
 
-export const moneySchema = z.object({
-  amount: validMoneyAmount(),
-  currency: validCurrency(),
-});
+  if (!parsedId.success) {
+    throw new AppError(
+      "Validation Failure",
+      400,
+      "The provided Recipient ID is not a valid UUID",
+    );
+  }
+
+  return parsedId.data as UUID;
+}
+
+export function excludeProperties<T, K extends keyof T>(
+  object: T,
+  sensitiveFields: readonly K[],
+): Omit<T, K> {
+  const newObject: T = { ...object };
+
+  for (const field of sensitiveFields) {
+    delete newObject[field];
+  }
+
+  return newObject;
+}

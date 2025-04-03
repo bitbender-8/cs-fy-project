@@ -22,13 +22,23 @@ export interface ProblemDetails {
  */
 export class AppError extends Error {
   constructor(
-    public errorType: AppErrorType,
+    public readonly errorType: AppErrorType,
     public httpCode: number,
-    public uiMessage: string,
+    public message: string,
+    public options?: {
+      cause?: Error;
+      internalDetails?: string | object;
+    },
   ) {
-    super();
+    super(message, { cause: options?.cause });
   }
 }
 
 /** Application-wide error types. Safe to show in a UI. */
-export type AppErrorType = "Internal Server Error" | "Validation Failure";
+export type AppErrorType =
+  | "Internal Server Error"
+  | "Validation Failure"
+  | "Not Found"
+  | "Permission Denied"
+  | "Service Unavailable"
+  | "Authentication Required";

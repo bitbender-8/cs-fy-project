@@ -1,4 +1,6 @@
-# Setting up a post-login action
+# Configuring auth0
+
+## Setting up a post-login action
 
 1. Create an action called, "Add roles to payload", then copy and paste the following code:
 

@@ -33,18 +33,17 @@ export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
         .past({ years: 30, refDate: new Date() })
         .toISOString()
         .split("T")[0],
+      email: "",
       phoneNo: faker.phone.number({ style: "international" }),
       bio: faker.lorem.sentence(),
       profilePictureUrl:
         Math.random() >= 0.5 ? faker.image.avatar() : undefined,
     };
 
-    if (Math.random() >= 0.5) {
-      recipient.email = faker.internet.email({
-        firstName: recipient.firstName,
-        lastName: recipient.lastName,
-      });
-    }
+    recipient.email = faker.internet.email({
+      firstName: recipient.firstName,
+      lastName: recipient.lastName,
+    });
 
     recipients.push(recipient);
   }
@@ -173,6 +172,7 @@ export function generateCampaigns(
   }
 
   for (let i = 0; i < noOfCampaigns; i++) {
+    const campaignId = randomUUID();
     const submissionDate = faker.date
       .past({ years: 1, refDate: new Date() })
       .toISOString();
@@ -197,18 +197,20 @@ export function generateCampaigns(
     const endDate = faker.date
       .future({ years: 0.5, refDate: launchDate })
       .toISOString();
-    const documentUrls: string[] = [];
-    const redactedDocumentUrls: string[] = [];
+    const documents: {
+      campaignId: UUID;
+      documentUrl: string;
+      redactedDocumentUrl: string;
+    }[] = [];
 
-    for (let i = 0; i < faker.number.int({ min: 0, max: 10 }); i++) {
+    for (let i = 0; i < faker.number.int({ min: 0, max: 5 }); i++) {
       const documentUrl = faker.internet.url();
       const redactedDocumentUrl = faker.internet.url();
-      documentUrls.push(documentUrl);
-      redactedDocumentUrls.push(redactedDocumentUrl);
+      documents.push({ campaignId, documentUrl, redactedDocumentUrl });
     }
 
     const campaign: Campaign = {
-      id: randomUUID(),
+      id: campaignId,
       ownerRecipientId: faker.helpers.arrayElement(recipients).id as UUID,
       title: faker.lorem.words(),
       description: faker.lorem.sentences({ min: 2, max: 4 }),
@@ -221,14 +223,16 @@ export function generateCampaigns(
         bankAccountNo: faker.finance.accountNumber(16),
         bankName: faker.helpers.arrayElement(bankNames),
       },
+      isPublic: faker.datatype.boolean(),
       submissionDate,
       verificationDate,
       denialDate,
       launchDate,
       endDate,
-      documentUrls,
-      redactedDocumentUrls,
+      documents: [],
     };
+
+    campaign.documents = [...documents];
 
     campiagns.push(campaign);
   }

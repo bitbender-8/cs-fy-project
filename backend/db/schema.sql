@@ -11,10 +11,12 @@ CREATE TABLE
         "lastName" VARCHAR(50) NOT NULL,
         -- Recipient's date of birth.
         "dateOfBirth" DATE NOT NULL,
+        /* Added a unique constraint on the recipient's email. */
         -- Recipient's email address. This is not required.
-        "email" VARCHAR(100) NULL,
+        "email" VARCHAR(100) NULL UNIQUE,
+        /* FIXME(bitbender-8): Made phone nullable for mvp. Will have to get it from auth0, after customizing the signup page. */
         -- Recipient's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
+        "phoneNo" VARCHAR(20) NULL UNIQUE,
         /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
         -- The auth0 user id
         "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
@@ -42,6 +44,9 @@ CREATE TABLE
     "Supervisor" (
         -- Unique identifier for each supervisor.
         "id" UUID PRIMARY KEY,
+        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
+        -- The auth0 user id
+        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
         -- Supervisor's first name.
         "firstName" VARCHAR(50) NOT NULL,
         -- Supervisor's middle name (father's name).
@@ -51,12 +56,9 @@ CREATE TABLE
         -- Supervisor's date of birth.
         "dateOfBirth" DATE NOT NULL,
         -- Supervisor's email address.
-        "email" VARCHAR(100) NOT NULL,
+        "email" VARCHAR(100) NOT NULL UNIQUE,
         -- Supervisor's phone number.
-        "phoneNo" VARCHAR(20) NOT NULL,
-        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
-        -- The auth0 user id
-        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE
+        "phoneNo" VARCHAR(20) NOT NULL UNIQUE
     );
 
 -- Stores notifications sent to recipients or supervisors.
@@ -74,9 +76,9 @@ CREATE TABLE
         -- Timestamp when the notification was issued with time zone.
         "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Foreign key referencing the Recipient table.
-        "recipientId" UUID REFERENCES "Recipient" ("id"),
+        "recipientId" UUID REFERENCES "Recipient" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- Foreign key referencing the Supervisor table.
-        "supervisorId" UUID REFERENCES "Supervisor" ("id"),
+        "supervisorId" UUID REFERENCES "Supervisor" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- A notification can belong either to a recipient or a supervisor. (i.e. recipientId or supervisorId must be set, but not both).
         CHECK (
             (
@@ -92,12 +94,12 @@ CREATE TABLE
 
 -- Encapsulates the possible statuses of a campaign.
 CREATE TYPE "CampaignStatus" AS ENUM (
-    'PENDING_REVIEW',
-    'VERIFIED',
-    'DENIED',
-    'LIVE',
-    'PAUSED',
-    'COMPLETED'
+    'Pending Review',
+    'Verified',
+    'Denied',
+    'Live',
+    'Paused',
+    'Completed'
 );
 
 -- Stores information about campaigns.
@@ -118,36 +120,28 @@ CREATE TABLE
         -- Payment method used (e.g., TeleBirr, CBEBirr, Phone transfer, etc.).
         "paymentMethod" VARCHAR(100) NOT NULL,
         -- Phone number associated with the payment method (if applicable).
-        "phoneNo" VARCHAR(20),
+        "phoneNo" VARCHAR(20) NULL,
         -- Bank account number (if applicable).
-        "bankAccountNo" VARCHAR(16),
+        "bankAccountNo" VARCHAR(16) NULL,
         -- Bank name (if applicable).
-        "bankName" VARCHAR(50),
+        "bankName" VARCHAR(50) NULL,
         -- Timestamp when the campaign was submitted with time zone.
         "submissionDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
         -- Timestamp when the campaign was verified with time zone.
-        "verificationDate" TIMESTAMPTZ,
+        "verificationDate" TIMESTAMPTZ NULL,
         -- Timestamp when the campaign was denied with time zone.
-        "denialDate" TIMESTAMPTZ,
+        "denialDate" TIMESTAMPTZ NULL,
         -- Timestamp when the campaign was launched with time zone.
-        "launchDate" TIMESTAMPTZ,
+        "launchDate" TIMESTAMPTZ NULL,
         -- End date of the campaign with time zone.
-        "endDate" TIMESTAMPTZ,
+        "endDate" TIMESTAMPTZ NULL,
+        /* DOC-UPDATE Determines whether the campaign is publicly available. Removes the need to rely on launchDate implicitly. */
+        "isPublic" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Recipient table (campaign owner).
-        "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id")
+        "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id") ON UPDATE CASCADE ON DELETE CASCADE
         /* DOC-UPDATE: Remove managing supervisor id. All recipients are managed by a single supervisor for now. */
         -- Foreign key referencing the Supervisor table (managing supervisor).
         -- "managingSupervisorId" UUID NOT NULL REFERENCES "Supervisor" ("id")
-    );
-
--- Stores URLs of redacted campaign documents.
-CREATE TABLE
-    "RedactedCampaignDocuments" (
-        /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
-        -- URL of the redacted document.
-        "url" TEXT PRIMARY KEY,
-        -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
     );
 
 -- Stores URLs of original campaign documents.
@@ -155,9 +149,12 @@ CREATE TABLE
     "CampaignDocuments" (
         /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
         -- URL of the document.
-        "url" TEXT PRIMARY KEY,
+        "documentUrl" TEXT PRIMARY KEY,
+        /* DOC-UPDATE Removed the table 'RedactedCampaignDocuments' in favor of this column. */
+        -- URL of the redacted document.
+        "redactedDocumentUrl" TEXT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Records a campaign's donation transactions.
@@ -175,7 +172,7 @@ CREATE TABLE
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE RESTRICT
     );
 
 -- Stores posts related to a campaign.
@@ -190,7 +187,7 @@ CREATE TABLE
         -- Timestamp when the post became AVAILABLE TO THE PUBLIC. If this attribute is null, then the post is not available to the public. 
         "publicPostDate" TIMESTAMPTZ,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to update a campaign post.
@@ -207,9 +204,9 @@ CREATE TABLE
         /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id"),
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- Foreign key referencing the CampaignPost table.
-        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id")
+        "newPostId" UUID NOT NULL UNIQUE REFERENCES "CampaignPost" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to extend the end date of a campaign.
@@ -228,7 +225,7 @@ CREATE TABLE
         -- The new proposed end date with time zone.
         "newEndDate" TIMESTAMPTZ NOT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to adjust the fundraising goal of a campaign.
@@ -247,7 +244,7 @@ CREATE TABLE
         -- The new proposed fundraising goal.
         "newGoal" BIGINT NOT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 -- Stores requests to change the status of a campaign.
@@ -266,5 +263,5 @@ CREATE TABLE
         -- The new proposed status.
         "newStatus" "CampaignStatus" NOT NULL,
         -- Foreign key referencing the Campaign table.
-        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id")
+        "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );

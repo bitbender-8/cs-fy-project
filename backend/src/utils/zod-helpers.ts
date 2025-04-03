@@ -3,12 +3,12 @@ import { config } from "../config.js";
 
 // Possible campaign statuses
 export const CAMPAIGN_STATUSES = [
-  "PENDING_REVIEW",
-  "VERIFIED",
-  "DENIED",
-  "LIVE",
-  "PAUSED",
-  "COMPLETED",
+  "Pending Review",
+  "Verified",
+  "Denied",
+  "Live",
+  "Paused",
+  "Completed",
 ] as const;
 
 // Supported currencies
@@ -24,11 +24,11 @@ export const validNonEmptyString = (min: number, max: number) =>
       message: "Cannot be empty or contain only whitespace",
     });
 
-const E164_PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
+const E164_PHONE_REGEX = /^\+[1-9]\d{7,14}$/;
 export const validPhoneNo = () =>
   z.string().regex(E164_PHONE_REGEX, {
     message:
-      "Phone number must be in E.164 format (e.g., +1234567890, max 15 digits)",
+      "Phone number must be in E.164 format (e.g., +1234567890, 8 to 15 digits)",
   });
 
 export const validDate = (isPast: boolean) => {
@@ -45,6 +45,7 @@ export const validDate = (isPast: boolean) => {
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "Invalid date format",
     })
+    .transform((val) => new Date(val))
     .refine((val) => comparison(new Date(val)), {
       message,
     });
@@ -62,23 +63,18 @@ export const validUrl = () =>
 
 export const validBankAccountNo = () =>
   z
-    .string()
-    .trim() // Trim whitespace
+    .string({
+      message: "Bank account number must be a string",
+    })
+    .regex(/^\d+$/, {
+      message: "Bank account number must be numeric",
+    })
     .min(10, {
       message: "Must be at least 10 digits",
     })
     .max(16, {
       message: "Must be at most 16 digits",
-    })
-    .refine(
-      (val) => {
-        const parsedValue = parseInt(val);
-        return !isNaN(parsedValue) && parsedValue >= 0;
-      },
-      {
-        message: "Must be a numeric bank account number",
-      },
-    );
+    });
 
 export const validUuid = () => z.string().uuid({ message: "Invalid UUID" });
 
@@ -87,22 +83,21 @@ export const validMoneyAmount = () =>
     .string()
     .refine(
       (val) => {
-        const parsedValue = parseFloat(val);
-        return (
-          !isNaN(parsedValue) &&
-          parsedValue >= 0 &&
-          Number.isFinite(parsedValue) &&
-          parsedValue.toFixed(2).replace(/\.0+$/, "") ===
-            val.replace(/\.0+$/, "")
-        );
+        const num = Number(val);
+        return !isNaN(num) && num >= 0 && Number.isFinite(num);
       },
-      {
-        message:
-          "Money field must be a non-negative number with up to two decimal places.",
-      },
+      { message: "Must be a valid non-negative number." },
     )
-    .refine((val) => parseFloat(val) < config.ALLOWED_MAX_MONEY_AMOUNT, {
-      message: `Money amount specified is too large. Maximum amount allowed is ${config.ALLOWED_FILE_EXTENSIONS}.`,
+    .refine(
+      (val) => {
+        const [integer, decimal] = val.split(".");
+        void integer;
+        return !decimal || decimal.length <= 2;
+      },
+      { message: "Must have up to two decimal places." },
+    )
+    .refine((val) => Number(val) < config.MAX_MONEY_AMOUNT, {
+      message: `Amount must be less than ${config.MAX_MONEY_AMOUNT}.`,
     });
 
 export const validCurrency = () =>

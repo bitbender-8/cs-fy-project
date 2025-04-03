@@ -25,15 +25,18 @@ tags:
     description: Posts that provide updates on a campaign's progress.
 paths:
   # TODO: Add sortBy and sortOrder to routes with list returns.
+  # TODO: Add a 503 response for all endpoitns that need to access the authentication server.
+
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
-  /supervisors/{supervisorId}:
+  /supervisors/{id}:
+    # DONE
     get:
       tags:
         - Supervisors
       summary: Retrieves the supervisor by ID, works only for authenticated supervisor.
       parameters:
-        - name: supervisorId
+        - name: id
           in: path
           required: true
           description: The unique id of the supervisor.
@@ -67,12 +70,13 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # DONE
     put:
       tags:
         - Supervisors
       summary: Updates the supervisor's details, works only for authenticated supervisor.
       parameters:
-        - name: supervisorId
+        - name: id
           in: path
           required: true
           description: The unique id of the supervisor.
@@ -110,7 +114,9 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /recipients:
+    # TODO: Possible differences with implementation, needs to be updated
     # (Role: Anon | Recipient | Supervisor, Owner: N/A) => Full access
+    # DONE
     post:
       tags:
         - Recipients
@@ -118,21 +124,19 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
-              allOf:
-                - $ref: "#/components/schemas/Recipient"
               properties:
-                password:
+                recipient:
+                  type: object
+                  $ref: "#/components/schemas/Recipient"
+                profilePicture:
                   type: string
-                  description: The user's password.
-                passwordConfirmation:
-                  type: string
-                  description: The user's password confirmation.
+                  format: binary
               required:
-                - password
-                - passwordConfirmation
+                - recipientData
+                - profilePicture
       responses:
         "201":
           description: Recipient created successfully
@@ -158,19 +162,112 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: The authentication service is temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => Partial access (sensitive fields not vsisible)
+    # (Role: Anon | Recipient, Owner: No) => Partial access (sensitive fields not visible)
+    # DONE
+    get:
+      tags:
+        - Recipients
+      summary: Retrieves recipients using filter params, hides data and parameters based on user's authorization level.
+      parameters:
+        - name: name
+          in: query
+          description: Filter by recipient's name (applies to first, middle, or last name).
+          schema:
+            type: string
+        - name: minBirthDate
+          description: The minimum birth date of the recipient (inclusive). This option is restricted to authorized supervisors.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: maxBirthDate
+          description: The maximum birth date of the recipient (inclusive). This option is restricted to authorized supervisors.
+          in: query
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+        - name: email
+          in: query
+          schema:
+            type: string
+            format: email
+        - name: phoneNo
+          description: The phone number of the recipient. This option is restricted to supervisors.
+          in: query
+          schema:
+            type: string
+        - name: page
+          description: Page number for pagination. Must be a positive integer.
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          description: Maximum number of items per page. Must be a positive integer.
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginatedList"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Campaign"
+        "400":
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No recipients found matching the criteria (also used instead of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
   # Permissions differ by method
-  /recipients/{recipientId}:
+  /recipients/{id}:
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => Full access
+    # (Role: Anon | Recipient, Owner: No) => Partial access (selected fields not visible)
+    # DONE
     get:
       tags:
         - Recipients
       summary: Retrieves the recipient by ID, based on user's authorization permissions.
       parameters:
-        - name: recipientId
+        - name: id
           in: path
           required: true
           description: The unique id of the recipient.
@@ -207,12 +304,13 @@ paths:
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
+    # DONE
     put:
       tags:
         - Recipients
       summary: Updates an existing recipient.
       parameters:
-        - name: recipientId
+        - name: id
           in: path
           required: true
           description: The unique id of the recipient to update.
@@ -234,6 +332,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden - User is not allowed access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "404":
           description: Recipient with given ID not found.
           content:
@@ -251,12 +355,13 @@ paths:
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
+    # DONE
     delete:
       tags:
         - Recipients
       summary: Deletes a Recipient by ID, works only for authenticated Recipient.
       parameters:
-        - name: recipientId
+        - name: id
           in: path
           required: true
           description: The unique id of the recipient to update.
@@ -288,9 +393,10 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaigns:
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns & Sensitive fields hidden
+    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns with ensitive fields hidden
     get:
       tags:
         - Campaigns
@@ -403,7 +509,7 @@ paths:
               - type: string
                 format: date
         - name: isPublic
-          description: Filter public campaigns.
+          description: Filters public campaigns.
           in: query
           schema:
             type: boolean
@@ -457,6 +563,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # DONE
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes | No) => Full access
     # (Role: Anon, Owner: No) => No access
@@ -510,11 +617,11 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method.
-  /campaigns/{campaignId}:
+  /campaigns/{id}:
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns & Sensitive fields hidden
-    # # A campaign is no public if the `launchDate` property is falsy.
+    # (Role: Anon | Recipient, Owner: No) => Access to public campaigns with ensitive fields hidden
     get:
       tags:
         - Campaigns
@@ -522,7 +629,7 @@ paths:
       description: |
         Retrieves a campaign by ID, respecting requester authorization: public campaign (unauthenticated), Recipient's campaign (authenticated), or all campaigns (Supervisor).
       parameters:
-        - name: campaignId
+        - name: id
           in: path
           required: true
           description: The unique id of the campaign.
@@ -562,6 +669,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 8
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => No access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -571,7 +679,7 @@ paths:
       summary: Updates the campaign data. Available only for supervisors.
       description: This is used exclusively by supervisors to update a campaign (without recipient involvement), or when they approve the campaign application.
       parameters:
-        - name: campaignId
+        - name: id
           in: path
           required: true
           description: The unique id of the campaign to update.
@@ -609,6 +717,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaign-posts/:
+    # NEXT 15
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Access to public posts.
@@ -705,6 +814,7 @@ paths:
   # TODO: Add the donation route with /campaigns/{campaignId}/donate
   # Permissions differ by method
   /campaign-requests:
+    # NEXT 10
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -832,6 +942,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 9
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -894,7 +1005,8 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method
-  /campaign-requests/{campaignRequestId}:
+  /campaign-requests/{id}:
+    # NEXT 11
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -903,7 +1015,7 @@ paths:
         - Campaign Requests
       summary: Retrieves a campaign request by ID. Access depends on user's role.
       parameters:
-        - name: campaignRequestId
+        - name: id
           in: path
           required: true
           description: The ID of the campaign request
@@ -943,6 +1055,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 13
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -951,7 +1064,7 @@ paths:
         - Campaign Request
       summary: Deletes a campaign request. Access depends on user's role.
       parameters:
-        - name: campaignRequestId
+        - name: id
           in: path
           required: true
           description: The ID of the campaign request
@@ -988,7 +1101,8 @@ paths:
       security:
         - bearerHttpAuth: []
   # Permissions differ by method
-  /campaign-request/{campaignRequestId}/resolve:
+  /campaign-request/{id}/resolve:
+    # NEXT 12
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => No access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -997,7 +1111,7 @@ paths:
         - Campaign Requests
       summary: Resolves a campaign request by approving or denying it.
       parameters:
-        - name: campaignRequestId
+        - name: id
           in: path
           required: true
           description: The ID of the campaign request to resolve.
@@ -1068,6 +1182,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /notifications:
+    # NEXT 14
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Supervisor, Owner: Yes) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
@@ -1159,13 +1274,14 @@ paths:
   # For all methods:
   # # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
   # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
-  /notifications/{notificationId}:
+  /notifications/{id}:
+    # NEXT 16
     get:
       tags:
         - Notifications
       summary: Fetches a notification by its ID. Access depends on the user's role.
       parameters:
-        - name: notificationId
+        - name: id
           in: path
           required: true
           description: The unique ID of the notification.
@@ -1205,12 +1321,13 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 17
     patch:
       tags:
         - Notifications
       summary: Updates a notification, mainly used for updating `isRead`.
       parameters:
-        - name: notificationId
+        - name: id
           in: path
           required: true
           description: The unique ID of the notification.
@@ -1252,12 +1369,13 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+    # NEXT 18
     delete:
       tags:
         - Notifications
       summary: Deletes a notification by its ID. Access depends on user's role.
       parameters:
-        - name: notificationId
+        - name: id
           in: path
           required: true
           description: The unique ID of the notification.
@@ -1295,6 +1413,7 @@ paths:
         - bearerHttpAuth: []
 components:
   schemas:
+    # TODO: Update schemas with latest changes.
     PaginatedList:
       type: object
       properties:

@@ -7,7 +7,7 @@ const pool = new pg.Pool({
   host: config.DB_HOST,
   database: config.DB_NAME,
   password: config.DB_PASSWORD,
-  port: Number(config.DB_PORT),
+  port: config.DB_PORT,
 });
 
 /**
@@ -24,8 +24,9 @@ export const query = async <T extends QueryResultRow = any>(
   try {
     const result = await pool.query<T>(text, params);
     return result;
-  } catch (error) {
-    console.error("Database query error:", error);
+  } catch (err) {
+    const error = err as Error;
+    error.message = "Database query error: " + error.message;
     throw error;
   }
 };
@@ -39,8 +40,9 @@ export const getClient = async (): Promise<PoolClient> => {
   try {
     const client = await pool.connect();
     return client;
-  } catch (error) {
-    console.error("Error connecting to database:", error);
+  } catch (err: unknown) {
+    const error = err as Error;
+    error.message = "Error connecting to the database: " + error.message;
     throw error;
   }
 };

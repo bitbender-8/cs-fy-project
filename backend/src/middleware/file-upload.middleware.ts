@@ -1,59 +1,136 @@
-import path from "path";
 import fs from "fs";
+import path from "path";
+import multer, { MulterError } from "multer";
+import { randomUUID } from "crypto";
 import * as fileType from "file-type";
-import multer from "multer";
 import { NextFunction, Request, Response } from "express";
 
 import { AppError } from "../errors/error.types.js";
 import { config } from "../config.js";
 
-const upload = multer({ dest: config.UPLOAD_DIR });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, config.UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      cb(null, `${randomUUID()}${ext}`);
+    },
+  }),
+});
 
-export async function validateFileUpload(fileFieldName: string) {
+/**
+ * Middleware to validate and handle multiple file uploads.
+ *
+ * @param fileFieldName - The field name for the file uploads (e.g., 'images', 'documents').
+ * @param expectedFileTypes - "Images" | "Files" | "Both"
+ * @param maxFileCount - The maximum number of files allowed to be uploaded.
+ * @returns - An Express middleware function.
+ */
+export function validateFileUpload(
+  fileFieldName: string,
+  expectedFileTypes: "Images" | "Files" | "Both",
+  maxFileCount: number = config.MAX_FILE_NO,
+) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // If there is a file upload
+    // Check if request contains multipart/form-data
     if (
       req.headers["content-type"] &&
       req.headers["content-type"].startsWith("multipart/form-data")
     ) {
-      try {
-        const fileHandler = upload.single(fileFieldName);
-        fileHandler(req, res, async (err) => {
-          if (err) {
-            next(
+      // Setup multer file handler based on file count
+      const fileHandler =
+        maxFileCount > 1
+          ? upload.array(fileFieldName, maxFileCount)
+          : upload.single(fileFieldName);
+
+      fileHandler(req, res, async (err: unknown) => {
+        if (
+          err instanceof MulterError &&
+          err.code === "LIMIT_UNEXPECTED_FILE"
+        ) {
+          next(
+            new AppError(
+              "Validation Failure",
+              500,
+              `A file was uploaded in the unexpected field '${err.field}'`,
+              {
+                internalDetails: `Unexpected upload file field: '${err.field}'`,
+                cause: err,
+              },
+            ),
+          );
+        } else if (err instanceof Error) {
+          next(
+            new AppError(
+              "Internal Server Error",
+              500,
+              "An error occurred during file upload",
+              {
+                cause: err,
+              },
+            ),
+          );
+        }
+
+        // If no file(s) were uploaded, move to next middleware
+        if (!req.files && !req.file) {
+          next();
+        }
+
+        // Combine single file and multiple files into one array
+        const files =
+          (req.files as Express.Multer.File[]) || (req.file ? [req.file] : []);
+
+        // Build allowed extensions and MIME types based on expectedFileTypes
+        let allowedExtensions: string[] = [];
+        let allowedMimeTypes: string[] = [];
+
+        switch (expectedFileTypes) {
+          case "Images":
+            allowedExtensions = config.IMG_EXTENSIONS.split(";");
+            allowedMimeTypes = config.IMG_MIME_TYPES.split(";");
+            break;
+          case "Files":
+            allowedExtensions = config.FILE_EXTENSIONS.split(";");
+            allowedMimeTypes = config.FILE_MIME_TYPES.split(";");
+            break;
+          case "Both":
+            allowedExtensions = config.IMG_EXTENSIONS.split(";").concat(
+              config.FILE_EXTENSIONS.split(";"),
+            );
+            allowedMimeTypes = config.IMG_MIME_TYPES.split(";").concat(
+              config.FILE_MIME_TYPES.split(";"),
+            );
+            break;
+          default:
+            // if none match, we can pass along without further validation or throw an error.
+            return next(
               new AppError(
-                "Internal Server Error",
-                500,
-                "An error occurred during file upload",
+                "Validation Failure",
+                400,
+                "Invalid expectedFileTypes parameter",
               ),
             );
+        }
 
-            return;
-          }
-
-          // If no file was actually uploaded, move on to next middleware
-          if (!req.file) {
-            next();
-            return;
-          }
-
-          // File type validation (MIME type)
-          const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif"];
-          if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        for (const file of files) {
+          // Validate MIME type
+          if (!allowedMimeTypes.includes(file.mimetype)) {
             next(
               new AppError(
                 "Validation Failure",
                 400,
-                "The uploaded file has an invalid MIME type. Allowed types are JPEG, PNG, and GIF.",
+                `The MIME file type ${file.mimetype} is invalid. Allowed type(s) are ${allowedMimeTypes.join(", ")}.`,
               ),
             );
-            return;
           }
 
-          // File size validation
+          // Validate file size
           const maxSizeMb = Number(config.MAX_FILE_SIZE_MB);
-          const maxSize = maxSizeMb * 1024 * 1024;
-          if (req.file.size > maxSize) {
+          const maxSizeBytes = maxSizeMb * 1024 * 1024;
+          if (file.size > maxSizeBytes) {
             next(
               new AppError(
                 "Validation Failure",
@@ -61,60 +138,43 @@ export async function validateFileUpload(fileFieldName: string) {
                 `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`,
               ),
             );
-            return;
           }
 
-          // File extension validation
-          const allowedExtensions = config.ALLOWED_FILE_EXTENSIONS?.split(
-            ";",
-          ) ?? [".jpeg", ".jpg"];
-          const ext = path.extname(req.file.originalname).toLowerCase();
-          const formattedExtensions =
-            allowedExtensions.length === 1
-              ? allowedExtensions[0]
-              : allowedExtensions.slice(0, -1).join(", ") +
-                ` and ${allowedExtensions[allowedExtensions.length - 1]}`;
-
+          // Validate file extension
+          const ext = path.extname(file.originalname).toLowerCase();
           if (!allowedExtensions.includes(ext)) {
             next(
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${formattedExtensions}.`,
+                `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`,
               ),
             );
-            return;
           }
 
-          // File Magic Number Validation
-          // Remove leading dot
-          const allowedFileTypes = allowedExtensions.map((ext) => ext.slice(1));
-          const buffer = fs.readFileSync(req.file.path);
+          // Validate file content using magic number
+          // Remove leading dot from each allowed extension for content check
+          const allowedFileTypes = allowedExtensions.map((ext) =>
+            ext.replace(".", ""),
+          );
+          const buffer = fs.readFileSync(file.path);
           const type = await fileType.fileTypeFromBuffer(buffer);
           if (!type || !allowedFileTypes.includes(type.ext)) {
             next(
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file has invalid content or is corrupted. Allowed file types include ${formattedExtensions}.`,
+                `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`,
               ),
             );
-            return;
           }
-        });
-      } catch (error: unknown) {
-        console.error("File validation error:", error);
-        next(
-          new AppError(
-            "Internal Server Error",
-            500,
-            "An unexpectd error occurred during file validation",
-          ),
-        );
-        return;
-      }
+        }
+
+        // All file validations passed; move to the next middleware.
+        next();
+      });
     } else {
-      // No file upload, proceed to next middleware or route handler.
+      // If content-type is not 'multipart/form-data', pass along without processing.
       next();
     }
   };

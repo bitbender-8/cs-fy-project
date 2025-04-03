@@ -10,7 +10,7 @@ import {
   CampaignDonation,
   CampaignPost,
 } from "../models/campaign.model.js";
-import { fromMoneyStrToBigInt } from "./util.types.js";
+import { fromMoneyStrToBigInt } from "./utils.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
@@ -30,6 +30,7 @@ import {
   generateStatusChangeRequests,
   generateSupervisors,
 } from "./mock-generators.js";
+import { exit } from "process";
 
 // You have to creae these manually in the auth0 dashboard, and assign them their roles
 const auth0RecipientIds = process.env.AUTH0_TEST_RECIPIENTS?.split(";");
@@ -194,26 +195,20 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       "verificationDate",
       "denialDate",
       "launchDate",
-      "endDate"
+      "endDate",
+      "isPublic"
     ) VALUES (
-       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
     )
   `;
 
   const docUrlQueryString = `
     INSERT INTO "CampaignDocuments" (
-      "url",
+      "documentUrl",
+      "redactedDocumentUrl",
       "campaignId"
     ) VALUES (
-      $1, $2
-    )
-  `;
-  const redDocUrlQueryString = `
-    INSERT into "RedactedCampaignDocuments" (
-      "url",
-      "campaignId"
-    ) VALUES (
-      $1, $2 
+      $1, $2, $3
     )
   `;
 
@@ -235,16 +230,16 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       campaign.denialDate,
       campaign.launchDate,
       campaign.endDate,
+      campaign.isPublic,
     ]);
 
-    if (campaign.documentUrls) {
-      for (const url of campaign.documentUrls) {
-        await query(docUrlQueryString, [url, campaign.id]);
-      }
-    }
-    if (campaign.redactedDocumentUrls) {
-      for (const url of campaign.redactedDocumentUrls) {
-        await query(redDocUrlQueryString, [url, campaign.id]);
+    if (campaign.documents) {
+      for (const document of campaign.documents) {
+        await query(docUrlQueryString, [
+          document.documentUrl,
+          document.redactedDocumentUrl,
+          campaign.id,
+        ]);
       }
     }
   }
@@ -417,6 +412,7 @@ async function seedStatusChangeRequests(
 }
 
 async function seedDatabase({
+  clearTables,
   auth0RecipientIds,
   auth0SupervisorIds,
   avgDonationPerCampaign,
@@ -426,6 +422,7 @@ async function seedDatabase({
   noOfCampaigns,
   noOfCampaignCategories = 5, // Default value for optional parameter
 }: {
+  clearTables: boolean;
   auth0RecipientIds: string[];
   auth0SupervisorIds: string[];
   avgDonationPerCampaign: number;
@@ -435,6 +432,25 @@ async function seedDatabase({
   noOfCampaigns: number;
   noOfCampaignCategories?: number;
 }): Promise<void> {
+  // Clear tables if necessary
+  if (clearTables) {
+    await query(`
+    DO $$
+    DECLARE
+        rec RECORD;
+    BEGIN
+        -- Loop through all tables in the public schema
+        FOR rec IN
+            SELECT tablename
+            FROM pg_tables
+            WHERE schemaname = 'public'
+        LOOP
+            EXECUTE 'TRUNCATE TABLE public.' || quote_ident(rec.tablename) || ' CASCADE;';
+        END LOOP;
+    END $$;
+    `);
+  }
+
   // Generate data
   const recipients = generateRecipients(auth0RecipientIds);
   const socialHandles = generateSocialHandles(recipients);
@@ -487,17 +503,19 @@ async function seedDatabase({
     .then(() => seedStatusChangeRequests(statusChangeRequests))
     .then(() => {
       console.log("Database seeding completed.");
+      exit(0);
     })
     .catch((error) => console.error("Error seeding database: ", error));
 }
 
 seedDatabase({
+  clearTables: true,
   auth0RecipientIds,
   auth0SupervisorIds,
   avgDonationPerCampaign: 5,
-  avgPostPerCampaign: 3,
-  noOfRequestsPerRequestType: 2,
-  noOfNotifications: 10,
-  noOfCampaigns: 5,
+  avgPostPerCampaign: 4,
+  noOfRequestsPerRequestType: 4,
+  noOfNotifications: 15,
+  noOfCampaigns: 25,
   noOfCampaignCategories: 6,
 });
