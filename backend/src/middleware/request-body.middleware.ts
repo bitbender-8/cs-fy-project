@@ -17,7 +17,7 @@ import { ProblemDetails } from "../errors/error.types.js";
 export function validateRequestBody(schema: AnyZodObject) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body)
+      console.log(req.body);
       if (!req.body) {
         const problemDetails: ProblemDetails = {
           title: "Validation Failure",

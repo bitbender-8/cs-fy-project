@@ -10,7 +10,7 @@ import { AppError } from "../errors/error.types.js";
 
 /** Validate filter params before passing */
 export async function getCampaigns(
-  filterParams: CampaignFilterParams & { id?: UUID }
+  filterParams: CampaignFilterParams & { id?: UUID },
 ): Promise<PaginatedList<Campaign>> {
   let queryString = `
         SELECT
@@ -104,7 +104,7 @@ export async function getCampaigns(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Campaign"${whereClause}`,
-    values
+    values,
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -135,7 +135,7 @@ export async function getCampaigns(
           bankName,
         },
       };
-    })
+    }),
   );
 
   return {
@@ -147,7 +147,7 @@ export async function getCampaigns(
 
 export async function insertCampaign(
   ownerRecipientId: UUID,
-  campaign: Campaign
+  campaign: Campaign,
 ): Promise<Campaign> {
   try {
     const result = await query(
@@ -183,7 +183,7 @@ export async function insertCampaign(
         new Date(),
         false,
         ownerRecipientId,
-      ]
+      ],
     );
 
     if (!result || result.rows.length === 0) {
@@ -241,7 +241,7 @@ export async function insertCampaign(
               internalDetails:
                 "The recipient ID specified for the campaign does not exist.",
               cause: error,
-            }
+            },
           );
         }
         throw error;
@@ -277,7 +277,7 @@ async function insertDocumentUrl(document: {
         document.documentUrl,
         document.redactedDocumentUrl ?? null,
         document.campaignId,
-      ]
+      ],
     );
 
     if (!result || result.rows.length === 0) {
@@ -309,7 +309,7 @@ async function insertDocumentUrl(document: {
             {
               internalDetails: `The campaign ID specified for the document url does not exist.`,
               cause: error,
-            }
+            },
           );
         }
         throw error;
@@ -337,7 +337,7 @@ async function getDocumentUrls(campaignId: UUID): Promise<
     WHERE
       "campaignId" = $1
     `,
-    [campaignId]
+    [campaignId],
   );
 
   if (!result || result.rows.length === 0) {

@@ -18,7 +18,7 @@ export async function deleteFiles(filePaths: string[]): Promise<void> {
         {
           cause: error as Error,
           internalDetails: `Failed to delete file at path ${filePath}`,
-        }
+        },
       );
     }
   });
@@ -27,7 +27,7 @@ export async function deleteFiles(filePaths: string[]): Promise<void> {
 }
 
 export async function getFiles(
-  fileUrls: string[]
+  fileUrls: string[],
 ): Promise<Map<string, Buffer>> {
   if (!fileUrls || fileUrls.length === 0) {
     return new Map();

@@ -9,7 +9,7 @@ export function errorHandler(
   err: Error,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): void {
   void _next;
 
@@ -27,7 +27,7 @@ export function errorHandler(
     };
     console.error(
       `Fail: ${err.options?.internalDetails ?? err.message}
-       Cause: ${err.options?.cause}`
+       Cause: ${err.options?.cause}`,
     );
     res.status(problemDetails.status).json(problemDetails);
     return;

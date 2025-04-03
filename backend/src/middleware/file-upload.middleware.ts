@@ -31,7 +31,7 @@ const upload = multer({
 export function validateFileUpload(
   fileFieldName: string,
   expectedFileTypes: "Images" | "Files" | "Both",
-  maxFileCount: number = config.MAX_FILE_NO
+  maxFileCount: number = config.MAX_FILE_NO,
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     // Check if request contains multipart/form-data
@@ -58,8 +58,8 @@ export function validateFileUpload(
               {
                 internalDetails: `Unexpected upload file field: '${err.field}'`,
                 cause: err,
-              }
-            )
+              },
+            ),
           );
         } else if (err instanceof Error) {
           next(
@@ -69,8 +69,8 @@ export function validateFileUpload(
               "An error occurred during file upload",
               {
                 cause: err,
-              }
-            )
+              },
+            ),
           );
         }
 
@@ -98,10 +98,10 @@ export function validateFileUpload(
             break;
           case "Both":
             allowedExtensions = config.IMG_EXTENSIONS.split(";").concat(
-              config.FILE_EXTENSIONS.split(";")
+              config.FILE_EXTENSIONS.split(";"),
             );
             allowedMimeTypes = config.IMG_MIME_TYPES.split(";").concat(
-              config.FILE_MIME_TYPES.split(";")
+              config.FILE_MIME_TYPES.split(";"),
             );
             break;
           default:
@@ -110,8 +110,8 @@ export function validateFileUpload(
               new AppError(
                 "Validation Failure",
                 400,
-                "Invalid expectedFileTypes parameter"
-              )
+                "Invalid expectedFileTypes parameter",
+              ),
             );
         }
 
@@ -122,8 +122,8 @@ export function validateFileUpload(
               new AppError(
                 "Validation Failure",
                 400,
-                `The MIME file type ${file.mimetype} is invalid. Allowed type(s) are ${allowedMimeTypes.join(", ")}.`
-              )
+                `The MIME file type ${file.mimetype} is invalid. Allowed type(s) are ${allowedMimeTypes.join(", ")}.`,
+              ),
             );
           }
 
@@ -135,8 +135,8 @@ export function validateFileUpload(
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`
-              )
+                `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`,
+              ),
             );
           }
 
@@ -147,15 +147,15 @@ export function validateFileUpload(
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`
-              )
+                `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`,
+              ),
             );
           }
 
           // Validate file content using magic number
           // Remove leading dot from each allowed extension for content check
           const allowedFileTypes = allowedExtensions.map((ext) =>
-            ext.replace(".", "")
+            ext.replace(".", ""),
           );
           const buffer = fs.readFileSync(file.path);
           const type = await fileType.fileTypeFromBuffer(buffer);
@@ -164,8 +164,8 @@ export function validateFileUpload(
               new AppError(
                 "Validation Failure",
                 400,
-                `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`
-              )
+                `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`,
+              ),
             );
           }
         }

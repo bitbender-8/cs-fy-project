@@ -86,7 +86,7 @@ export const validMoneyAmount = () =>
         const num = Number(val);
         return !isNaN(num) && num >= 0 && Number.isFinite(num);
       },
-      { message: "Must be a valid non-negative number." }
+      { message: "Must be a valid non-negative number." },
     )
     .refine(
       (val) => {
@@ -94,7 +94,7 @@ export const validMoneyAmount = () =>
         void integer;
         return !decimal || decimal.length <= 2;
       },
-      { message: "Must have up to two decimal places." }
+      { message: "Must have up to two decimal places." },
     )
     .refine((val) => Number(val) < config.MAX_MONEY_AMOUNT, {
       message: `Amount must be less than ${config.MAX_MONEY_AMOUNT}.`,
@@ -103,6 +103,6 @@ export const validMoneyAmount = () =>
 export const validCurrency = () =>
   z.enum(CURRENCY_CODES, {
     message: `Invalid currency code. Must be one of: ${CURRENCY_CODES.filter(
-      (val) => val !== "XXX"
+      (val) => val !== "XXX",
     ).join(", ")}.`,
   });

@@ -28,7 +28,7 @@ export class AppError extends Error {
     public options?: {
       cause?: Error;
       internalDetails?: string | object;
-    }
+    },
   ) {
     super(message, { cause: options?.cause });
   }

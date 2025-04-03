@@ -2,7 +2,7 @@ import { CampaignStatus } from "../models/campaign.model.js";
 
 export function validateStatusTransitions(
   oldStatus: CampaignStatus,
-  newStatus: CampaignStatus
+  newStatus: CampaignStatus,
 ): { isValid: boolean; message?: string } {
   if (oldStatus === newStatus) {
     return { isValid: true };

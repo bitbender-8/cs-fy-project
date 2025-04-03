@@ -71,7 +71,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
             "Validation Failure",
             400,
             "Failed to verify user ID",
-            `The authentication server could not find the user with the id '${auth0UserId}'`
+            `The authentication server could not find the user with the id '${auth0UserId}'`,
           );
         case 400:
         case 401:
@@ -82,7 +82,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
             "Something went wrong",
             `User deletion from the authentication server failed due to a bad request.
              Status: ${error.response.status},
-             Message: ${JSON.stringify(error.response.data)}`
+             Message: ${JSON.stringify(error.response.data)}`,
           );
         case 500:
         case 503:
@@ -92,7 +92,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
             "Authentication service is temporarily unavailable",
             `User deletion failed due to an unexpected error from the authentication server.  
              Status: ${error.response.status},
-             Message: ${JSON.stringify(error.response.data)}`
+             Message: ${JSON.stringify(error.response.data)}`,
           );
         default:
           throw new AppError(
@@ -101,7 +101,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
             "Something went wrong",
             `User deletion from the authentication server failed due to an unexpected error.
              Status: ${error.response.status},
-             Message: ${JSON.stringify(error.response.data)}`
+             Message: ${JSON.stringify(error.response.data)}`,
           );
       }
     } else if (error.request) {
@@ -111,7 +111,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
         503,
         "Authentication service is temporarily unavailable",
         `No response was received from the Auth0 authentication server. 
-         Message: ${error.message}`
+         Message: ${error.message}`,
       );
     } else {
       // Something went wrong while setting up the request
@@ -120,14 +120,14 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
         500,
         "Something went wrong",
         `An error occurred while setting up the deletion request for the authentication server. 
-         Message: ${error.message}`
+         Message: ${error.message}`,
       );
     }
   }
 }
 
 export async function verifyAuth0UserId(
-  auth0UserId: string
+  auth0UserId: string,
 ): Promise<Auth0UserResponse> {
   const options = {
     method: "GET",
@@ -153,7 +153,7 @@ export async function verifyAuth0UserId(
             "Validation Failure",
             400,
             "Failed to verify user ID",
-            `The authentication server could not find the user with the ID '${auth0UserId}'`
+            `The authentication server could not find the user with the ID '${auth0UserId}'`,
           );
         case 400:
         case 401:
@@ -164,7 +164,7 @@ export async function verifyAuth0UserId(
             "Something went wrong",
             `User ID verification failed due to a bad request.
              Status: ${error.response.status},
-             Message: ${JSON.stringify(error.response.data)}`
+             Message: ${JSON.stringify(error.response.data)}`,
           );
         case 500:
         case 503:
@@ -173,7 +173,7 @@ export async function verifyAuth0UserId(
             503,
             "Authentication service is temporarily unavailable",
             `Status: ${error.response.status},
-             Message: ${JSON.stringify(error.response.data)}`
+             Message: ${JSON.stringify(error.response.data)}`,
           );
         default:
           throw new AppError(
@@ -182,7 +182,7 @@ export async function verifyAuth0UserId(
             "Something went wrong",
             `User ID verification failed due to an unexpected error from the authentication server.
              Status: ${error.response.status},
-             Message: ${JSON.stringify(error.response.data)}`
+             Message: ${JSON.stringify(error.response.data)}`,
           );
       }
     } else if (error.request) {
@@ -192,7 +192,7 @@ export async function verifyAuth0UserId(
         503,
         "Authentication service is temporarily unavailable",
         `No response was received from the authentication server.
-         Message: ${error.message}`
+         Message: ${error.message}`,
       );
     } else {
       // Something went wrong while setting up the request
@@ -201,7 +201,7 @@ export async function verifyAuth0UserId(
         500,
         "Something went wrong",
         `An error occurred while setting up the verification request for the authentication server.
-         Message: ${error.message}`
+         Message: ${error.message}`,
       );
     }
   }

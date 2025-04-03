@@ -92,7 +92,7 @@ export function validateUuidParam(id: string): UUID {
     throw new AppError(
       "Validation Failure",
       400,
-      "The provided Recipient ID is not a valid UUID"
+      "The provided Recipient ID is not a valid UUID",
     );
   }
 
@@ -101,7 +101,7 @@ export function validateUuidParam(id: string): UUID {
 
 export function excludeProperties<T, K extends keyof T>(
   object: T,
-  sensitiveFields: readonly K[]
+  sensitiveFields: readonly K[],
 ): Omit<T, K> {
   const newObject: T = { ...object };
 

@@ -48,7 +48,7 @@ export interface Campaign {
   description: string; // Normal
   fundraisingGoal: string; // Request, just replace old
   // Request, there are valid and invalid state transitions.
-  status: CampaignStatus; 
+  status: CampaignStatus;
   category: string; // Normal
   launchDate?: Date | string; // Locked
   endDate: Date | string; // Request, check that it is later
@@ -122,7 +122,7 @@ export const CampaignSchema = z.object({
       z.object({
         documentUrls: validUrl(),
         redactedDocumentUrls: validUrl().optional(),
-      })
+      }),
     )
     .optional(),
   paymentInfo: PaymentInfoSchema,

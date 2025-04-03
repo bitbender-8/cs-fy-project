@@ -25,7 +25,7 @@ import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
-import { validateStatusTransitions } from "../services/campaign.service.js";
+// import { validateStatusTransitions } from "../services/campaign.service.js";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
@@ -53,7 +53,7 @@ const campaignCreateSchema = CampaignSchema.omit(
   [
     ...LOCKED_CAMPAIGN_FIELDS.filter(
       (field): field is Exclude<LockedCampaignFields, "paymentInfo"> =>
-        field !== "paymentInfo"
+        field !== "paymentInfo",
     ),
     "status",
   ].reduce(
@@ -61,12 +61,15 @@ const campaignCreateSchema = CampaignSchema.omit(
       ...acc,
       [field]: true,
     }),
-    {} as { [key in CreatableCampaignFields]: true }
-  )
+    {} as { [key in CreatableCampaignFields]: true },
+  ),
 );
 
 const campaignUpdateSchema: AnyZodObject = CampaignSchema.omit(
-  LOCKED_CAMPAIGN_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {})
+  LOCKED_CAMPAIGN_FIELDS.reduce(
+    (acc, field) => ({ ...acc, [field]: true }),
+    {},
+  ),
 );
 
 export const campaignRouter: Router = Router();
@@ -123,7 +126,7 @@ campaignRouter.put(
     //   res.status(problemDetails.status).json(problemDetails);
     //   return;
     // }
-  }
+  },
 );
 
 campaignRouter.post(
@@ -169,7 +172,7 @@ campaignRouter.post(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
-  }
+  },
 );
 
 campaignRouter.get(
@@ -196,7 +199,7 @@ campaignRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_CAMPAIGN_FILTERS
+      SENSITIVE_CAMPAIGN_FILTERS,
     );
 
     let campaigns: PaginatedList<RedactedCampaign> | PaginatedList<Campaign>;
@@ -248,7 +251,7 @@ campaignRouter.get(
 
     res.status(200).json(campaigns);
     return;
-  }
+  },
 );
 
 campaignRouter.get(
@@ -277,7 +280,7 @@ campaignRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? ""
+          req.auth?.payload.sub ?? "",
         );
 
         const tempCampaign = (
@@ -307,5 +310,5 @@ campaignRouter.get(
     }
 
     return;
-  }
+  },
 );
