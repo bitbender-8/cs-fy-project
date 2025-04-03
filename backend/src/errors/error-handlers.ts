@@ -23,10 +23,12 @@ export function errorHandler(
     problemDetails = {
       title: err.errorType,
       status: err.httpCode,
-      detail: err.uiMessage,
+      detail: err.message,
     };
-    console.error(`Fail: ${err.internalMessage ?? err.uiMessage}`);
-    console.error(err);
+    console.error(
+      `Fail: ${err.options?.internalDetails ?? err.message}
+       Cause: ${err.options?.cause}`
+    );
     res.status(problemDetails.status).json(problemDetails);
     return;
   }

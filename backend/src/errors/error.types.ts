@@ -22,13 +22,15 @@ export interface ProblemDetails {
  */
 export class AppError extends Error {
   constructor(
-    public errorType: AppErrorType,
+    public readonly errorType: AppErrorType,
     public httpCode: number,
-    public uiMessage: string,
-    public internalMessage?: string,
-    public causeErr?: Error
+    public message: string,
+    public options?: {
+      cause?: Error;
+      internalDetails?: string | object;
+    }
   ) {
-    super();
+    super(message, { cause: options?.cause });
   }
 }
 

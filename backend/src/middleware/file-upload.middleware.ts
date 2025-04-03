@@ -23,7 +23,7 @@ const upload = multer({
 /**
  * Middleware to validate and handle multiple file uploads.
  *
- * @param fileFieldName - The field name(s) for the file uploads (e.g., 'images', 'documents').
+ * @param fileFieldName - The field name for the file uploads (e.g., 'images', 'documents').
  * @param expectedFileTypes - "Images" | "Files" | "Both"
  * @param maxFileCount - The maximum number of files allowed to be uploaded.
  * @returns - An Express middleware function.
@@ -55,8 +55,10 @@ export function validateFileUpload(
               "Validation Failure",
               500,
               `A file was uploaded in the unexpected field '${err.field}'`,
-              `MulterError: LIMIT_UNEXPECTED_FILE. Uploaded file field: '${err.field}'`,
-              err
+              {
+                internalDetails: `Unexpected upload file field: '${err.field}'`,
+                cause: err,
+              }
             )
           );
         } else if (err instanceof Error) {
@@ -65,7 +67,9 @@ export function validateFileUpload(
               "Internal Server Error",
               500,
               "An error occurred during file upload",
-              err.message
+              {
+                cause: err,
+              }
             )
           );
         }

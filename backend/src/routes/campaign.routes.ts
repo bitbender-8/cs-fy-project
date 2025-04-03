@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { AnyZodObject } from "zod";
 
 import {
   CampaignFilterSchema,
@@ -12,6 +13,8 @@ import {
 import {
   Campaign,
   CampaignSchema,
+  LOCKED_CAMPAIGN_FIELDS,
+  LockedCampaignFields,
   SENSITIVE_CAMPAIGN_FIELDS,
   SensitiveCampaignFields,
 } from "../models/campaign.model.js";
@@ -22,30 +25,112 @@ import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
+import { validateStatusTransitions } from "../services/campaign.service.js";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
 };
 
+type CreatableCampaignFields =
+  | Exclude<LockedCampaignFields, "paymentInfo">
+  | "status";
+
+/**
+ * Schema used for validating campaign creation requests.
+ *
+ * The schema makes several important modifications to the base CampaignSchema:
+ *
+ * 1. It allows "paymentInfo" to be specified, unlike other locked fields.
+ *    Payment information must be collected during campaign creation.
+ *
+ * 2. It excludes the "status" field to enforce that new campaigns
+ *    always start with "Pending Review" status.
+ *
+ * 3. It transforms the list of fields to omit into the object format
+ *    required by Zod's .omit() method, where each key maps to true.
+ */
+const campaignCreateSchema = CampaignSchema.omit(
+  [
+    ...LOCKED_CAMPAIGN_FIELDS.filter(
+      (field): field is Exclude<LockedCampaignFields, "paymentInfo"> =>
+        field !== "paymentInfo"
+    ),
+    "status",
+  ].reduce(
+    (acc, field) => ({
+      ...acc,
+      [field]: true,
+    }),
+    {} as { [key in CreatableCampaignFields]: true }
+  )
+);
+
+const campaignUpdateSchema: AnyZodObject = CampaignSchema.omit(
+  LOCKED_CAMPAIGN_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {})
+);
+
 export const campaignRouter: Router = Router();
+
+// Used by supervisors when they respond to campaign requests or update a campaign.
+// Some fields need to be set based on how other fields have changed.
+// Need to do some comparisons with the original state of a campaign.
+campaignRouter.put(
+  "/:id",
+  requireAuth,
+  validateFileUpload("redactedDocuments", "Both"),
+  validateRequestBody(campaignUpdateSchema),
+  async (req: Request, res: Response): Promise<void> => {
+    void req;
+    res.status(500).json({ message: "Route not Implemented" });
+    // if (getUserRole(req.auth) === "Supervisor") {
+    //   const campaignId = validateUuidParam(req.params.id);
+    //   const updatedCampaign: Omit<Campaign, LockedCampaignFields> = req.body;
+    //   const originalCampaign: Campaign = (
+    //     await getCampaigns({ id: campaignId })
+    //   ).items[0];
+
+    //   const validationResult = validateStatusTransitions(
+    //     originalCampaign.status,
+    //     updatedCampaign.status
+    //   );
+
+    //   if (!validationResult.isValid) {
+    //     const problemDetails: ProblemDetails = {
+    //       title: "Validation Failure",
+    //       status: 400,
+    //       detail: validationResult.message as string,
+    //     };
+
+    //     res.status(problemDetails.status).json(problemDetails);
+    //     return;
+    //   }
+
+    //   if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
+    //     for (const file of req.files) {
+    //       updatedCampaign.documents.push({
+    //         campaignId,
+    //         documentUrl: originalCampaign.documents.find((document) => document.)
+    //         redactedDocumentUrl: `${process.env.UPLOAD_DIR}/${file.filename}`,
+    //       });
+    //     }
+    //   }
+    // } else {
+    //   const problemDetails: ProblemDetails = {
+    //     title: "Permission Denied",
+    //     status: 403,
+    //     detail: "You do not have permission to access this resource",
+    //   };
+    //   res.status(problemDetails.status).json(problemDetails);
+    //   return;
+    // }
+  }
+);
 
 campaignRouter.post(
   "/",
   requireAuth,
   validateFileUpload("documents", "Both"),
-  validateRequestBody(
-    CampaignSchema.omit({
-      id: true,
-      status: true,
-      isPublic: true,
-      denialDate: true,
-      launchDate: true,
-      submissionDate: true,
-      verificationDate: true,
-      ownerRecipientId: true,
-      documents: true,
-    })
-  ),
+  validateRequestBody(campaignCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) === "Recipient") {
       const recipientId = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
@@ -164,12 +249,6 @@ campaignRouter.get(
     res.status(200).json(campaigns);
     return;
   }
-);
-
-campaignRouter.put(
-  "/:id",
-  requireAuth,
-  async (req: Request, res: Response): Promise<void> => {}
 );
 
 campaignRouter.get(

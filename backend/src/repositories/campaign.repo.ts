@@ -187,12 +187,9 @@ export async function insertCampaign(
     );
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Internal Server Error",
-        500,
-        "Something went wrong",
-        "Campaign insertion failed"
-      );
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: "Campaign insertion failed",
+      });
     }
 
     const {
@@ -240,8 +237,11 @@ export async function insertCampaign(
             "Internal Server Error",
             500,
             "Something went wrong",
-            `The recipient ID specified for the campaign does not exist. 
-            Message: ${error.message}`
+            {
+              internalDetails:
+                "The recipient ID specified for the campaign does not exist.",
+              cause: error,
+            }
           );
         }
         throw error;
@@ -281,12 +281,9 @@ async function insertDocumentUrl(document: {
     );
 
     if (!result || result.rows.length === 0) {
-      throw new AppError(
-        "Internal Server Error",
-        500,
-        "Something went wrong",
-        "Failed to insert campaign's document urls"
-      );
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: `Failed to insert document urls of the campaign with id ${document.campaignId}`,
+      });
     }
 
     return {
@@ -309,8 +306,10 @@ async function insertDocumentUrl(document: {
             "Internal Server Error",
             500,
             "Something went wrong",
-            `The campaign ID specified for the document url does not exist. 
-            Message: ${error.message}`
+            {
+              internalDetails: `The campaign ID specified for the document url does not exist.`,
+              cause: error,
+            }
           );
         }
         throw error;

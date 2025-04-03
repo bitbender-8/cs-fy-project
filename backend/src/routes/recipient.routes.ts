@@ -38,7 +38,7 @@ import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
 export const recipientRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
-const updateableRecipientSchema: AnyZodObject = RecipientSchema.omit(
+const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
   LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}) // Add {} as initial value
 );
 
@@ -46,14 +46,14 @@ recipientRouter.put(
   "/:id",
   requireAuth,
   validateFileUpload("profilePicture", "Images"),
-  validateRequestBody(updateableRecipientSchema),
+  validateRequestBody(recipientUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
-    if (req.auth && getUserRole(req.auth) === "Recipient") {
+    if (getUserRole(req.auth) === "Recipient") {
       const recipientId = validateUuidParam(req.params.id);
       const recipient: Omit<Recipient, LockedUserFields> = req.body;
 
       const recipientIdFromJwt = await getUuidFromAuth0Id(
-        req.auth.payload.sub ?? ""
+        req.auth?.payload.sub ?? ""
       );
 
       // Check that the authenticated recipient owns the data they are trying to modify

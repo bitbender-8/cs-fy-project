@@ -15,16 +15,20 @@ import {
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+/** These fields cannot be updated manually by a user. */
 export const LOCKED_CAMPAIGN_FIELDS = [
   "id",
   "ownerRecipientId",
   "launchDate",
+  "isPublic",
   "submissionDate",
   "verificationDate",
   "denialDate",
+  "paymentInfo",
 ] as const;
 export type LockedCampaignFields = (typeof LOCKED_CAMPAIGN_FIELDS)[number];
 
+/** These fields must not be exposed to public users. */
 export const SENSITIVE_CAMPAIGN_FIELDS = [
   "submissionDate",
   "verificationDate",
@@ -38,28 +42,28 @@ export type SensitiveCampaignFields =
 
 /** Schema defined at {@link CampaignSchema} */
 export interface Campaign {
-  id: UUID;
-  ownerRecipientId: UUID;
-  title: string;
-  description: string;
-  fundraisingGoal: string;
-  status: CampaignStatus;
-  category: string;
-  launchDate?: Date | string;
-  endDate: Date | string;
+  id: UUID; // Locked
+  ownerRecipientId: UUID; // Locked
+  title: string; // Normal
+  description: string; // Normal
+  fundraisingGoal: string; // Request, just replace old
+  // Request, there are valid and invalid state transitions.
+  status: CampaignStatus; 
+  category: string; // Normal
+  launchDate?: Date | string; // Locked
+  endDate: Date | string; // Request, check that it is later
 
   // Sensitive fields: Available to Supervisors and Campaign owners
-  isPublic?: boolean;
-  submissionDate?: Date | string;
-  verificationDate?: Date | string;
-  denialDate?: Date | string;
-  // TODO On the admin client-side, make sure to require that every redacted document is matched to a normal document.
+  isPublic?: boolean; // Locked
+  submissionDate?: Date | string; // Locked
+  verificationDate?: Date | string; // Locked
+  denialDate?: Date | string; // Locked
   documents: {
     campaignId: UUID;
     documentUrl: string;
     redactedDocumentUrl?: string;
-  }[];
-  paymentInfo: PaymentInfo;
+  }[]; // Normal, replace both the files and their url.
+  paymentInfo: PaymentInfo; // Locked
 }
 
 export interface PaymentInfo {
