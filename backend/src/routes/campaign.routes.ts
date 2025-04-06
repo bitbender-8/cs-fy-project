@@ -77,6 +77,7 @@ export const campaignRouter: Router = Router();
 // Used by supervisors when they respond to campaign requests or update a campaign.
 // Some fields need to be set based on how other fields have changed.
 // Need to do some comparisons with the original state of a campaign.
+// TODO Based on the way the status changed certain date fields and other properties need to be updated. (verificationDate, isPublic, etc.)
 campaignRouter.put(
   "/:id",
   requireAuth,
