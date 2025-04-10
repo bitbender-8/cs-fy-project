@@ -11,15 +11,27 @@ export async function deleteFiles(filePaths: string[]): Promise<void> {
       await fs.unlink(filePath);
       console.log(`Successfully deleted: ${filePath}`);
     } catch (error: unknown) {
-      throw new AppError(
-        "Internal Server Error",
-        500,
-        `Failed to delete file`,
-        {
-          cause: error as Error,
-          internalDetails: `Failed to delete file at path ${filePath}`,
-        },
-      );
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        throw new AppError(
+          "Not Found",
+          404,
+          `File not found at path: ${filePath}`,
+          {
+            cause: error as Error,
+            internalDetails: `Attempted to delete non-existent file: ${filePath}`,
+          }
+        );
+      } else {
+        throw new AppError(
+          "Internal Server Error",
+          500,
+          `Failed to delete file`,
+          {
+            cause: error as Error,
+            internalDetails: `Failed to delete file at path ${filePath}`,
+          }
+        );
+      }
     }
   });
 
@@ -27,7 +39,7 @@ export async function deleteFiles(filePaths: string[]): Promise<void> {
 }
 
 export async function getFiles(
-  fileUrls: string[],
+  fileUrls: string[]
 ): Promise<Map<string, Buffer>> {
   if (!fileUrls || fileUrls.length === 0) {
     return new Map();

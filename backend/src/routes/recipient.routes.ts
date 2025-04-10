@@ -39,7 +39,7 @@ export const recipientRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
 const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
-  LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}), // Add {} as initial value
+  LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}) // Add {} as initial value
 );
 
 recipientRouter.put(
@@ -53,7 +53,7 @@ recipientRouter.put(
       const recipient: Omit<Recipient, LockedUserFields> = req.body;
 
       const recipientIdFromJwt = await getUuidFromAuth0Id(
-        req.auth?.payload.sub ?? "",
+        req.auth?.payload.sub ?? ""
       );
 
       // Check that the authenticated recipient owns the data they are trying to modify
@@ -68,8 +68,8 @@ recipientRouter.put(
       }
 
       await updateRecipient(recipientId, recipient);
-
       res.status(204).send();
+
       return;
     } else {
       const problemDetails: ProblemDetails = {
@@ -80,7 +80,7 @@ recipientRouter.put(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
-  },
+  }
 );
 
 recipientRouter.get(
@@ -107,7 +107,7 @@ recipientRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_USER_FILTERS,
+      SENSITIVE_USER_FILTERS
     );
 
     let recipients:
@@ -123,14 +123,14 @@ recipientRouter.get(
       recipients = {
         ...result,
         items: result.items.map((recipient) =>
-          excludeProperties(recipient, SENSITIVE_USER_FIELDS),
+          excludeProperties(recipient, SENSITIVE_USER_FIELDS)
         ),
       };
     }
 
     res.status(200).json(recipients);
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -147,7 +147,7 @@ recipientRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         if (userIdFromJwt === recipientId) {
@@ -165,7 +165,7 @@ recipientRouter.get(
                 id: recipientId,
               })
             ).items[0],
-            SENSITIVE_USER_FIELDS,
+            SENSITIVE_USER_FIELDS
           );
         }
         break;
@@ -178,7 +178,7 @@ recipientRouter.get(
               id: recipientId,
             })
           ).items[0],
-          SENSITIVE_USER_FIELDS,
+          SENSITIVE_USER_FIELDS
         );
     }
 
@@ -194,7 +194,7 @@ recipientRouter.get(
     }
 
     return;
-  },
+  }
 );
 
 // Ignores email from recipient object
@@ -219,12 +219,12 @@ recipientRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`,
+        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
       )
       .status(201)
       .json(insertedRecipient);
     return;
-  },
+  }
 );
 
 recipientRouter.delete(
@@ -268,5 +268,5 @@ recipientRouter.delete(
     }
 
     res.status(204).send();
-  },
+  }
 );

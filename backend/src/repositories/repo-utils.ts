@@ -18,7 +18,7 @@ export interface UpdateResult {
  * @param {number} startValueIndex - Starting index for parameter values (defaults to 1).
  * @returns {UpdateResult} - Object containing SET clause fragments and parameter values.
  */
-export function buildUpdateQueryData(
+export function buildUpdateQueryString(
   updateData: UpdateObject,
   startValueIndex: number = 1,
 ): UpdateResult {

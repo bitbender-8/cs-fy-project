@@ -1,16 +1,22 @@
 import pg from "pg";
 
 import { config } from "../config.js";
-import { Campaign, PaymentInfo } from "../models/campaign.model.js";
-import { PaginatedList } from "../utils/utils.js";
+import {
+  Campaign,
+  CampaignDocument,
+  CreateableCampaignFields,
+  PaymentInfo,
+} from "../models/campaign.model.js";
+import { excludeProperties, PaginatedList } from "../utils/utils.js";
 import { query } from "../db.js";
 import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
 import { randomUUID, UUID } from "crypto";
 import { AppError } from "../errors/error.types.js";
+import { buildUpdateQueryString } from "./repo-utils.js";
 
 /** Validate filter params before passing */
 export async function getCampaigns(
-  filterParams: CampaignFilterParams & { id?: UUID },
+  filterParams: CampaignFilterParams & { id?: UUID }
 ): Promise<PaginatedList<Campaign>> {
   let queryString = `
         SELECT
@@ -104,7 +110,7 @@ export async function getCampaigns(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Campaign"${whereClause}`,
-    values,
+    values
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -127,7 +133,7 @@ export async function getCampaigns(
 
       return {
         ...rest,
-        documents: await getDocumentUrls(campaign.id),
+        documents: await getCampaignDocuments(campaign.id),
         paymentInfo: {
           paymentMethod,
           phoneNo,
@@ -135,7 +141,7 @@ export async function getCampaigns(
           bankName,
         },
       };
-    }),
+    })
   );
 
   return {
@@ -147,7 +153,7 @@ export async function getCampaigns(
 
 export async function insertCampaign(
   ownerRecipientId: UUID,
-  campaign: Campaign,
+  campaign: Pick<Campaign, CreateableCampaignFields>
 ): Promise<Campaign> {
   try {
     const result = await query(
@@ -183,7 +189,7 @@ export async function insertCampaign(
         new Date(),
         false,
         ownerRecipientId,
-      ],
+      ]
     );
 
     if (!result || result.rows.length === 0) {
@@ -205,12 +211,10 @@ export async function insertCampaign(
       insertedCampaign.documents = [];
 
       for (const document of campaign.documents) {
-        const insertedDocument = (
-          await insertDocumentUrl({
-            ...document,
-            campaignId: insertedCampaign.id,
-          })
-        ).document;
+        const insertedDocument = await insertCampaignDocument({
+          ...document,
+          campaignId: insertedCampaign.id,
+        });
 
         insertedCampaign.documents.push(insertedDocument);
       }
@@ -241,7 +245,7 @@ export async function insertCampaign(
               internalDetails:
                 "The recipient ID specified for the campaign does not exist.",
               cause: error,
-            },
+            }
           );
         }
         throw error;
@@ -251,47 +255,90 @@ export async function insertCampaign(
   }
 }
 
-async function insertDocumentUrl(document: {
-  campaignId: UUID;
-  documentUrl: string;
-  redactedDocumentUrl?: string;
-}): Promise<{
-  document: {
-    campaignId: UUID;
-    documentUrl: string;
-    redactedDocumentUrl?: string;
-  };
-}> {
+export async function updateCampaign(
+  campaignId: UUID,
+  campaignData: Omit<Campaign, "paymentInfo" | "ownerRecipientId" | "id">
+): Promise<Campaign> {
+  // No need for special try-catch wrapper because there are no columns with special constraints..
+  const { fragments, values: updateValues } = buildUpdateQueryString(
+    excludeProperties(campaignData, ["documents"])
+  );
+
+  if (fragments.length === 0) {
+    throw new AppError(
+      "Validation Failure",
+      400,
+      "Campaign body cannot be empty"
+    );
+  }
+
+  const updateQuery = `
+      UPDATE "Campaign"
+      SET
+        ${fragments.join(", ")}
+      WHERE
+        "id" = $${updateValues.length + 1}
+      RETURNING *
+    `;
+
+  updateValues.push(campaignId);
+  const result = await query(updateQuery, updateValues);
+
+  if (!result || result.rows.length === 0) {
+    throw new AppError("Not Found", 404, "Campaign not found", {
+      internalDetails: "A campaign with the given Id does not exist",
+    });
+  }
+
+  const updatedCampaign = result.rows[0] as Campaign;
+  updatedCampaign.documents = [];
+
+  if (campaignData.documents && campaignData.documents.length > 0) {
+    // Only redactedDocumentUrls can be updated. documentUrls can't because they are the ID of the document object.
+    for (const document of campaignData.documents) {
+      await updateCampaignDocument({
+        documentUrl: document.documentUrl,
+        redactedDocumentUrl: document.redactedDocumentUrl,
+      });
+    }
+  }
+
+  updatedCampaign.documents.concat(await getCampaignDocuments(campaignId));
+
+  return updatedCampaign;
+}
+
+export async function insertCampaignDocument(
+  document: CampaignDocument
+): Promise<CampaignDocument> {
   try {
     const result = await query(
-      `
-      INSERT INTO 
+      `INSERT INTO 
         "CampaignDocuments" (
           "documentUrl",
           "redactedDocumentUrl",
           "campaignId"
         ) VALUES (
          $1, $2, $3
-        ) RETURNING *`,
+        ) RETURNING *
+      `,
       [
         document.documentUrl,
         document.redactedDocumentUrl ?? null,
         document.campaignId,
-      ],
+      ]
     );
 
     if (!result || result.rows.length === 0) {
       throw new AppError("Internal Server Error", 500, "Something went wrong", {
-        internalDetails: `Failed to insert document urls of the campaign with id ${document.campaignId}`,
+        internalDetails: `Failed to insert document url of the campaign with id ${document.campaignId}`,
       });
     }
 
     return {
-      document: {
-        campaignId: result.rows[0].campaignId,
-        documentUrl: result.rows[0].documentUrl,
-        redactedDocumentUrl: result.rows[0].redactedDocumentUrl,
-      },
+      campaignId: result.rows[0].campaignId,
+      documentUrl: result.rows[0].documentUrl,
+      redactedDocumentUrl: result.rows[0].redactedDocumentUrl,
     };
   } catch (error) {
     // There is no need to handle the case where the document url is not unique, because every document url has a name that contains a randomly generated uuid.
@@ -309,7 +356,7 @@ async function insertDocumentUrl(document: {
             {
               internalDetails: `The campaign ID specified for the document url does not exist.`,
               cause: error,
-            },
+            }
           );
         }
         throw error;
@@ -319,25 +366,22 @@ async function insertDocumentUrl(document: {
   }
 }
 
-async function getDocumentUrls(campaignId: UUID): Promise<
-  {
-    campaignId: UUID;
-    documentUrl: string;
-    redactedDocumentUrl: string;
-  }[]
-> {
+export async function getCampaignDocuments(
+  campaignId: UUID
+): Promise<CampaignDocument[]> {
   const result = await query(
-    `
-    SELECT 
+    `SELECT 
       "campaignId",
       "documentUrl",
       "redactedDocumentUrl"
-    FROM
+     FROM
       "CampaignDocuments"
-    WHERE
+     WHERE
       "campaignId" = $1
+     ORDER BY
+      "documentUrl" ASC
     `,
-    [campaignId],
+    [campaignId]
   );
 
   if (!result || result.rows.length === 0) {
@@ -345,4 +389,52 @@ async function getDocumentUrls(campaignId: UUID): Promise<
   }
 
   return result.rows;
+}
+
+// Updates only the redactedDocumentUrl
+export async function updateCampaignDocument(
+  document: Omit<CampaignDocument, "campaignId">
+): Promise<CampaignDocument> {
+  try {
+    const result = await query<CampaignDocument>(
+      `UPDATE "CampaignDocuments"
+       SET
+        "redactedDocumentUrl" = $2
+       WHERE
+        "documentUrl" = $1
+       RETURNING *
+      `,
+      [document.documentUrl, document.redactedDocumentUrl]
+    );
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: "Failed to update campaign's redacted document",
+      });
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23503":
+        if (error.constraint === "CampaignDocuments_campaignId_fkey") {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            {
+              internalDetails: `The campaign ID specified for the document url does not exist.`,
+              cause: error,
+            }
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
 }

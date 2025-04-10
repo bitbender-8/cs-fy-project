@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { AnyZodObject } from "zod";
+import { z } from "zod";
 
 import {
   CampaignFilterSchema,
@@ -13,121 +13,243 @@ import {
 import {
   Campaign,
   CampaignSchema,
-  LOCKED_CAMPAIGN_FIELDS,
-  LockedCampaignFields,
+  UPDATABLE_CAMPAIGN_FIELDS,
+  UpdateableCampaignFields,
   SENSITIVE_CAMPAIGN_FIELDS,
   SensitiveCampaignFields,
+  CREATEABLE_CAMPAIGN_FIELDS,
+  CreateableCampaignFields,
+  CampaignDocument,
 } from "../models/campaign.model.js";
 import { getUserRole } from "../services/user.service.js";
 import { ProblemDetails } from "../errors/error.types.js";
-import { getCampaigns, insertCampaign } from "../repositories/campaign.repo.js";
+import {
+  getCampaigns,
+  getCampaignDocuments,
+  insertCampaign,
+  updateCampaign,
+} from "../repositories/campaign.repo.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
-// import { validateStatusTransitions } from "../services/campaign.service.js";
+import { validateStatusTransitions } from "../services/campaign.service.js";
+import { validUrl } from "../utils/zod-helpers.js";
+import { UUID } from "crypto";
+import { deleteFiles } from "../services/fie.service.js";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
 };
 
-type CreatableCampaignFields =
-  | Exclude<LockedCampaignFields, "paymentInfo">
-  | "status";
-
-/**
- * Schema used for validating campaign creation requests.
- *
- * The schema makes several important modifications to the base CampaignSchema:
- *
- * 1. It allows "paymentInfo" to be specified, unlike other locked fields.
- *    Payment information must be collected during campaign creation.
- *
- * 2. It excludes the "status" field to enforce that new campaigns
- *    always start with "Pending Review" status.
- *
- * 3. It transforms the list of fields to omit into the object format
- *    required by Zod's .omit() method, where each key maps to true.
- */
-const campaignCreateSchema = CampaignSchema.omit(
-  [
-    ...LOCKED_CAMPAIGN_FIELDS.filter(
-      (field): field is Exclude<LockedCampaignFields, "paymentInfo"> =>
-        field !== "paymentInfo",
-    ),
-    "status",
-  ].reduce(
+const campaignCreateSchema = CampaignSchema.pick(
+  CREATEABLE_CAMPAIGN_FIELDS.reduce(
     (acc, field) => ({
       ...acc,
       [field]: true,
     }),
-    {} as { [key in CreatableCampaignFields]: true },
-  ),
+    {} as { [key in CreateableCampaignFields]: true }
+  )
 );
 
-const campaignUpdateSchema: AnyZodObject = CampaignSchema.omit(
-  LOCKED_CAMPAIGN_FIELDS.reduce(
-    (acc, field) => ({ ...acc, [field]: true }),
-    {},
-  ),
-);
+const campaignUpdateSchema = CampaignSchema.pick(
+  UPDATABLE_CAMPAIGN_FIELDS.reduce(
+    (acc, field) => ({
+      ...acc,
+      [field]: true,
+    }),
+    {} as { [key in UpdateableCampaignFields]: true }
+  )
+)
+  .extend({ documentIds: z.array(validUrl()) })
+  .partial();
 
 export const campaignRouter: Router = Router();
 
 // Used by supervisors when they respond to campaign requests or update a campaign.
 // Some fields need to be set based on how other fields have changed.
 // Need to do some comparisons with the original state of a campaign.
-// TODO Based on the way the status changed certain date fields and other properties need to be updated. (verificationDate, isPublic, etc.)
+// Based on the way the status changed certain date fields and other properties need to be updated. (verificationDate, isPublic, etc.).
 campaignRouter.put(
   "/:id",
   requireAuth,
   validateFileUpload("redactedDocuments", "Both"),
   validateRequestBody(campaignUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
-    void req;
-    res.status(500).json({ message: "Route not Implemented" });
-    // if (getUserRole(req.auth) === "Supervisor") {
-    //   const campaignId = validateUuidParam(req.params.id);
-    //   const updatedCampaign: Omit<Campaign, LockedCampaignFields> = req.body;
-    //   const originalCampaign: Campaign = (
-    //     await getCampaigns({ id: campaignId })
-    //   ).items[0];
+    if (getUserRole(req.auth) === "Supervisor") {
+      const campaignId = validateUuidParam(req.params.id);
+      const updatedCampaignData: z.infer<typeof campaignUpdateSchema> & {
+        documents: CampaignDocument[];
+      } = req.body;
+      const originalCampaign: Campaign = (
+        await getCampaigns({ id: campaignId })
+      ).items[0];
+      const documentIds = updatedCampaignData.documentIds;
 
-    //   const validationResult = validateStatusTransitions(
-    //     originalCampaign.status,
-    //     updatedCampaign.status
-    //   );
+      // Validate campaign status transitions
+      if (updatedCampaignData.status) {
+        const validationResult = validateStatusTransitions(
+          originalCampaign.status,
+          updatedCampaignData.status
+        );
 
-    //   if (!validationResult.isValid) {
-    //     const problemDetails: ProblemDetails = {
-    //       title: "Validation Failure",
-    //       status: 400,
-    //       detail: validationResult.message as string,
-    //     };
+        if (!validationResult.isValid) {
+          const problemDetails: ProblemDetails = {
+            title: "Validation Failure",
+            status: 400,
+            detail: validationResult.message as string,
+          };
 
-    //     res.status(problemDetails.status).json(problemDetails);
-    //     return;
-    //   }
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+      }
 
-    //   if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
-    //     for (const file of req.files) {
-    //       updatedCampaign.documents.push({
-    //         campaignId,
-    //         documentUrl: originalCampaign.documents.find((document) => document.)
-    //         redactedDocumentUrl: `${process.env.UPLOAD_DIR}/${file.filename}`,
-    //       });
-    //     }
-    //   }
-    // } else {
-    //   const problemDetails: ProblemDetails = {
-    //     title: "Permission Denied",
-    //     status: 403,
-    //     detail: "You do not have permission to access this resource",
-    //   };
-    //   res.status(problemDetails.status).json(problemDetails);
-    //   return;
-    // }
-  },
+      // Handle updated files
+      if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
+        // Files must each have a corresponding documentId
+        if (!documentIds || documentIds.length !== req.files.length) {
+          const problemDetails: ProblemDetails = {
+            title: "Validation Failure",
+            status: 400,
+            detail:
+              "The number of uploaded files does not match the number of provided document IDs.",
+          };
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+
+        // Validating each documentId to make sure that it exists and belongs to this campaign
+        const validDocumentUrls = (await getCampaignDocuments(campaignId)).map(
+          (result) => result.documentUrl
+        );
+        const invalidDocumentIds = documentIds.filter(
+          (id) => !validDocumentUrls.includes(id)
+        );
+
+        if (invalidDocumentIds.length > 0) {
+          const problemDetails: ProblemDetails = {
+            title: "Validation Failure",
+            status: 400,
+            detail: `The following document IDs are invalid or do not belong to this campaign: ${invalidDocumentIds.join(", ")}`,
+          };
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+
+        // The documentIds and their corresponding updated documentUrls must match
+        updatedCampaignData.documents = [];
+
+        for (let i = 0; i < req.files.length; i++) {
+          updatedCampaignData.documents.push({
+            campaignId: originalCampaign.id,
+            documentUrl: documentIds[i],
+            redactedDocumentUrl: `${process.env.UPLOAD_DIR}/${req.files[i].filename}`,
+          });
+        }
+      } else if (documentIds && documentIds.length !== 0) {
+        // TODO (bitbender-8): Update openapi-docs - If a file is not provided but a documentId is, that means that the redactedDocumentUrl at that path will be deleted.
+        updatedCampaignData.documents = [];
+        for (let i = 0; i < documentIds.length; i++) {
+          updatedCampaignData.documents.push({
+            campaignId: originalCampaign.id,
+            documentUrl: documentIds[i],
+            redactedDocumentUrl: undefined,
+          });
+        }
+      }
+
+      let campaignWithUpdates: Campaign = {
+        ...originalCampaign,
+        ...excludeProperties(updatedCampaignData, ["documentIds"]),
+      };
+
+      const newStatus = updatedCampaignData.status;
+      if (newStatus) {
+        const oldStatus = originalCampaign.status;
+
+        // Use state transition to set fields
+        switch (oldStatus) {
+          case "Pending Review":
+            if (newStatus === "Verified") {
+              campaignWithUpdates = {
+                ...campaignWithUpdates,
+                verificationDate: new Date(),
+              };
+            } else if (newStatus === "Denied") {
+              campaignWithUpdates = {
+                ...campaignWithUpdates,
+                denialDate: new Date(),
+              };
+            }
+            break;
+          case "Verified":
+            if (newStatus === "Live") {
+              campaignWithUpdates = {
+                ...campaignWithUpdates,
+                launchDate: new Date(),
+                isPublic: true,
+              };
+            } else if (newStatus === "Denied") {
+              campaignWithUpdates = {
+                ...campaignWithUpdates,
+                denialDate: new Date(),
+              };
+            }
+            break;
+          case "Live":
+            if (newStatus === "Completed") {
+              campaignWithUpdates = {
+                ...campaignWithUpdates,
+                endDate: new Date(),
+              };
+            }
+            break;
+          case "Paused":
+            if (newStatus === "Completed") {
+              campaignWithUpdates = {
+                ...campaignWithUpdates,
+                endDate: new Date(),
+              };
+            }
+            break;
+          default:
+            campaignWithUpdates = {
+              ...campaignWithUpdates,
+            };
+            break;
+        }
+      }
+
+      await updateCampaign(
+        campaignId,
+        excludeProperties(campaignWithUpdates, [
+          "id",
+          "ownerRecipientId",
+          "paymentInfo",
+        ])
+      );
+
+      // Delete old redacted files *after* update to prevent data inconsistencies if update fails.
+      const oldRedactedDocUrls = originalCampaign.documents
+        .filter((document) => documentIds?.includes(document.documentUrl))
+        .map((document) => document.redactedDocumentUrl)
+        .filter((url) => url !== undefined && url !== null);
+
+      await deleteFiles(oldRedactedDocUrls);
+      res.status(204).send();
+
+      return;
+    } else {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail: "You do not have permission to access this resource",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+  }
 );
 
 campaignRouter.post(
@@ -138,7 +260,7 @@ campaignRouter.post(
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) === "Recipient") {
       const recipientId = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
-      const campaignData = req.body;
+      const campaignData: z.infer<typeof campaignCreateSchema> = req.body;
 
       const documentUrls: string[] = [];
       if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
@@ -157,9 +279,13 @@ campaignRouter.post(
 
       const insertedCampaign = await insertCampaign(recipientId, {
         ...campaignData,
-        documents: documentUrls.map((url) => ({
-          documentUrl: url,
-        })),
+        documents: documentUrls.map(
+          (url) =>
+            ({
+              documentUrl: url,
+              // Suppressing errors since insertCampaign handles campaignId creation on its own
+            }) as { campaignId: UUID; documentUrl: string }
+        ),
       });
 
       res.status(201).json(insertedCampaign);
@@ -173,7 +299,7 @@ campaignRouter.post(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
-  },
+  }
 );
 
 campaignRouter.get(
@@ -200,7 +326,7 @@ campaignRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_CAMPAIGN_FILTERS,
+      SENSITIVE_CAMPAIGN_FILTERS
     );
 
     let campaigns: PaginatedList<RedactedCampaign> | PaginatedList<Campaign>;
@@ -252,7 +378,7 @@ campaignRouter.get(
 
     res.status(200).json(campaigns);
     return;
-  },
+  }
 );
 
 campaignRouter.get(
@@ -281,7 +407,7 @@ campaignRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         const tempCampaign = (
@@ -311,5 +437,5 @@ campaignRouter.get(
     }
 
     return;
-  },
+  }
 );
