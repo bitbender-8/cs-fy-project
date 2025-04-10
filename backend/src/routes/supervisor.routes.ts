@@ -30,29 +30,7 @@ supervisorRouter.put(
   requireAuth,
   validateRequestBody(updateableSupervisorSchema),
   async (req: Request, res: Response): Promise<void> => {
-    if (getUserRole(req.auth) === "Supervisor") {
-      const supervisorId = validateUuidParam(req.params.id);
-      const supervisor: Omit<Supervisor, LockedUserFields> = req.body;
-
-      const supervisorIdFromJwt = await getUuidFromAuth0Id(
-        req.auth?.payload.sub ?? "",
-      );
-
-      // Check that the authenticated supervisor owns the data they are trying to modify
-      if (supervisorId !== supervisorIdFromJwt) {
-        const problemDetails: ProblemDetails = {
-          title: "Permission Denied",
-          status: 403,
-          detail: "You do not have permission to update this supervisor",
-        };
-        res.status(problemDetails.status).json(problemDetails);
-        return;
-      }
-
-      await updateSupervisor(supervisorId, supervisor);
-      res.status(204).send();
-      return;
-    } else {
+    if (getUserRole(req.auth) !== "Supervisor") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
         status: 403,
@@ -61,6 +39,28 @@ supervisorRouter.put(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
+
+    const supervisorId = validateUuidParam(req.params.id);
+    const supervisor: Omit<Supervisor, LockedUserFields> = req.body;
+
+    const supervisorIdFromJwt = await getUuidFromAuth0Id(
+      req.auth?.payload.sub ?? "",
+    );
+
+    // Check that the authenticated supervisor owns the data they are trying to modify
+    if (supervisorId !== supervisorIdFromJwt) {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail: "You do not have permission to update this supervisor",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    await updateSupervisor(supervisorId, supervisor);
+    res.status(204).send();
+    return;
   },
 );
 
@@ -68,14 +68,7 @@ supervisorRouter.get(
   "/:id",
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    const supervisorId = validateUuidParam(req.params.id);
-    let supervisor: Supervisor;
-
-    if (getUserRole(req.auth) === "Supervisor") {
-      // Supervisors: Full access
-      supervisor = (await getSupervisors({ id: supervisorId })).items[0];
-      res.status(200).json(supervisor);
-    } else {
+    if (getUserRole(req.auth) !== "Supervisor") {
       // Everyone else has no access
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
@@ -85,5 +78,11 @@ supervisorRouter.get(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
+    // Supervisors: Full access
+
+    const supervisorId = validateUuidParam(req.params.id);
+    const supervisor: Supervisor = (await getSupervisors({ id: supervisorId }))
+      .items[0];
+    res.status(200).json(supervisor);
   },
 );

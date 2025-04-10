@@ -16,7 +16,7 @@ import { buildUpdateQueryString } from "./repo-utils.js";
 
 /** Validate filter params before passing */
 export async function getCampaigns(
-  filterParams: CampaignFilterParams & { id?: UUID }
+  filterParams: CampaignFilterParams & { id?: UUID },
 ): Promise<PaginatedList<Campaign>> {
   let queryString = `
         SELECT
@@ -110,7 +110,7 @@ export async function getCampaigns(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Campaign"${whereClause}`,
-    values
+    values,
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -141,7 +141,7 @@ export async function getCampaigns(
           bankName,
         },
       };
-    })
+    }),
   );
 
   return {
@@ -153,7 +153,7 @@ export async function getCampaigns(
 
 export async function insertCampaign(
   ownerRecipientId: UUID,
-  campaign: Pick<Campaign, CreateableCampaignFields>
+  campaign: Pick<Campaign, CreateableCampaignFields>,
 ): Promise<Campaign> {
   try {
     const result = await query(
@@ -189,7 +189,7 @@ export async function insertCampaign(
         new Date(),
         false,
         ownerRecipientId,
-      ]
+      ],
     );
 
     if (!result || result.rows.length === 0) {
@@ -245,7 +245,7 @@ export async function insertCampaign(
               internalDetails:
                 "The recipient ID specified for the campaign does not exist.",
               cause: error,
-            }
+            },
           );
         }
         throw error;
@@ -257,18 +257,18 @@ export async function insertCampaign(
 
 export async function updateCampaign(
   campaignId: UUID,
-  campaignData: Omit<Campaign, "paymentInfo" | "ownerRecipientId" | "id">
+  campaignData: Omit<Campaign, "paymentInfo" | "ownerRecipientId" | "id">,
 ): Promise<Campaign> {
   // No need for special try-catch wrapper because there are no columns with special constraints..
   const { fragments, values: updateValues } = buildUpdateQueryString(
-    excludeProperties(campaignData, ["documents"])
+    excludeProperties(campaignData, ["documents"]),
   );
 
   if (fragments.length === 0) {
     throw new AppError(
       "Validation Failure",
       400,
-      "Campaign body cannot be empty"
+      "Campaign body cannot be empty",
     );
   }
 
@@ -309,7 +309,7 @@ export async function updateCampaign(
 }
 
 export async function insertCampaignDocument(
-  document: CampaignDocument
+  document: CampaignDocument,
 ): Promise<CampaignDocument> {
   try {
     const result = await query(
@@ -326,7 +326,7 @@ export async function insertCampaignDocument(
         document.documentUrl,
         document.redactedDocumentUrl ?? null,
         document.campaignId,
-      ]
+      ],
     );
 
     if (!result || result.rows.length === 0) {
@@ -356,7 +356,7 @@ export async function insertCampaignDocument(
             {
               internalDetails: `The campaign ID specified for the document url does not exist.`,
               cause: error,
-            }
+            },
           );
         }
         throw error;
@@ -367,7 +367,7 @@ export async function insertCampaignDocument(
 }
 
 export async function getCampaignDocuments(
-  campaignId: UUID
+  campaignId: UUID,
 ): Promise<CampaignDocument[]> {
   const result = await query(
     `SELECT 
@@ -381,7 +381,7 @@ export async function getCampaignDocuments(
      ORDER BY
       "documentUrl" ASC
     `,
-    [campaignId]
+    [campaignId],
   );
 
   if (!result || result.rows.length === 0) {
@@ -393,7 +393,7 @@ export async function getCampaignDocuments(
 
 // Updates only the redactedDocumentUrl
 export async function updateCampaignDocument(
-  document: Omit<CampaignDocument, "campaignId">
+  document: Omit<CampaignDocument, "campaignId">,
 ): Promise<CampaignDocument> {
   try {
     const result = await query<CampaignDocument>(
@@ -404,7 +404,7 @@ export async function updateCampaignDocument(
         "documentUrl" = $1
        RETURNING *
       `,
-      [document.documentUrl, document.redactedDocumentUrl]
+      [document.documentUrl, document.redactedDocumentUrl],
     );
 
     if (!result || result.rows.length === 0) {
@@ -429,7 +429,7 @@ export async function updateCampaignDocument(
             {
               internalDetails: `The campaign ID specified for the document url does not exist.`,
               cause: error,
-            }
+            },
           );
         }
         throw error;

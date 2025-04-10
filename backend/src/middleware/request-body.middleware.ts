@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AnyZodObject, ZodError } from "zod";
+import { ZodError, ZodSchema } from "zod";
 
 import { ProblemDetails } from "../errors/error.types.js";
 
@@ -14,10 +14,10 @@ import { ProblemDetails } from "../errors/error.types.js";
  * @param {AnyZodObject} schema - The Zod schema to validate the request body against.
  * @returns {Function} - An Express middleware function.
  */
-export function validateRequestBody(schema: AnyZodObject) {
+export function validateRequestBody(schema: ZodSchema) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!req.body) {
+      if (!req.body || Object.keys(req.body).length === 0) {
         const problemDetails: ProblemDetails = {
           title: "Validation Failure",
           status: 400,

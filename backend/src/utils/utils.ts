@@ -85,14 +85,26 @@ export function fromIntToMoneyStr(moneyAmount: bigint): string | null {
   return `${integerPart}.${decimalPart}`;
 }
 
-export function validateUuidParam(id: string): UUID {
+export function validateUuidParam(
+  id: string,
+  paramType: "path" | "query" = "path",
+  paramName?: string,
+): UUID {
+  if (!id) {
+    throw new AppError(
+      "Validation Failure",
+      400,
+      `The ${paramType} parameter ${paramName} is required`,
+    );
+  }
+
   const parsedId = validUuid().safeParse(id);
 
   if (!parsedId.success) {
     throw new AppError(
       "Validation Failure",
       400,
-      "The provided Recipient ID is not a valid UUID",
+      `Value provided for ${paramType} parameter ${paramName ? paramName : "ID"} is not a valid UUID`,
     );
   }
 

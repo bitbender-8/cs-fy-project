@@ -27,7 +27,7 @@ export function errorHandler(
     };
     console.error(
       `Fail: ${err.options?.internalDetails ?? err.message}
-       Cause: ${err.options?.cause?.message}`,
+       Cause: ${err.options?.cause?.message}`.replace(/^\s+/gm, ""),
     );
     res.status(problemDetails.status).json(problemDetails);
     return;

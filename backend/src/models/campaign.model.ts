@@ -64,11 +64,11 @@ export const CampaignDonationSchema = z.object({
 
 export type CampaignPost = z.infer<typeof CampaignPostSchema>;
 export const CampaignPostSchema = z.object({
-  id: validUuid().optional(),
+  id: validUuid(),
   title: validNonEmptyString(MIN_STRING_LENGTH, 100),
   content: validNonEmptyString(MIN_STRING_LENGTH, Infinity),
   publicPostDate: validDate(true).optional(),
-  campaingId: validUuid(),
+  campaignId: validUuid(),
 });
 
 /** These fields must not be exposed to public users. */
