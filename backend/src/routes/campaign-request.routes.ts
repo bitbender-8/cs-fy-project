@@ -10,15 +10,23 @@ import {
   PostUpdateRequestSchema,
   StatusChangeRequestSchema,
 } from "../models/campaign-request.model.js";
-import { validateUuidParam } from "../utils/utils.js";
+import { PaginatedList, validateUuidParam } from "../utils/utils.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { getUserRole } from "../services/user.service.js";
 import { ProblemDetails } from "../errors/error.types.js";
-import { insertCampaignRequest } from "../repositories/campaign-request.repo.js";
+import {
+  getCampaignRequests,
+  insertCampaignRequest,
+} from "../repositories/campaign-request.repo.js";
 import { CampaignPostSchema } from "../models/campaign.model.js";
 import { getCampaigns } from "../repositories/campaign.repo.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
+import { validateQueryParams } from "../middleware/query-param.middleware.js";
+import {
+  CampaignRequestFilter,
+  campaignRequestFilterSchema,
+} from "../models/filters/campaign-request-filters.js";
 
 const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
   GoalAdjustmentRequestSchema.omit(
@@ -27,8 +35,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ),
   StatusChangeRequestSchema.omit(
     LOCKED_CAMPAIGN_REQUEST_FIELDS.reduce(
@@ -36,8 +44,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ),
   PostUpdateRequestSchema.omit(
     LOCKED_CAMPAIGN_REQUEST_FIELDS.reduce(
@@ -45,8 +53,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ).extend({
     newPost: CampaignPostSchema.omit({
       id: true,
@@ -60,8 +68,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ),
 ]);
 
@@ -85,7 +93,7 @@ campaignRequestRouter.post(
     const campaignId = validateUuidParam(
       req.query.campaignId as string,
       "query",
-      "campaignId",
+      "campaignId"
     );
 
     // Check that the recipient owns the campaign they are trying to create campaign requests for
@@ -120,10 +128,48 @@ campaignRequestRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/campaign-requests/${insertedCampaignRequest.id}`,
+        `${req.protocol}://${req.get("host")}/campaign-requests/${insertedCampaignRequest.id}`
       )
       .status(201)
       .json(insertedCampaignRequest);
     return;
-  },
+  }
+);
+
+campaignRequestRouter.get(
+  "/",
+  requireAuth,
+  validateQueryParams(campaignRequestFilterSchema),
+  async (req: Request, res: Response): Promise<void> => {
+    const queryParams = req.validatedParams as CampaignRequestFilter;
+    let campaignRequests: PaginatedList<CampaignRequest>;
+
+    switch (getUserRole(req.auth)) {
+      case "Recipient": {
+        const userUuid = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
+
+        campaignRequests = await getCampaignRequests({
+          ...queryParams,
+          ownerRecipientId: userUuid,
+        });
+        break;
+      }
+      case "Supervisor": {
+        campaignRequests = await getCampaignRequests(queryParams);
+        break;
+      }
+      default: {
+        const problemDetails: ProblemDetails = {
+          title: "Permission Denied",
+          status: 403,
+          detail: "You do not have permission to access this resource",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+    }
+
+    res.status(200).json(campaignRequests);
+    return;
+  }
 );

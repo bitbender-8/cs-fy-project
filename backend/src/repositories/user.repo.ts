@@ -9,7 +9,7 @@ import {
   SocialMediaHandle,
   Supervisor,
 } from "../models/user.model.js";
-import { UserFilterParams } from "../models/filters/user-filters.js";
+import { UserFilter } from "../models/filters/user-filters.js";
 import { excludeProperties, PaginatedList } from "../utils/utils.js";
 import { config } from "../config.js";
 import { buildUpdateQueryString } from "./repo-utils.js";
@@ -46,7 +46,7 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
 }
 
 export async function getSupervisors(
-  filterParams: UserFilterParams & { id: UUID },
+  filterParams: UserFilter & { id: UUID },
 ): Promise<PaginatedList<Supervisor>> {
   let queryString = `
     SELECT 
@@ -221,7 +221,7 @@ export async function updateSupervisor(
 }
 
 export async function getRecipients(
-  filterParams: UserFilterParams & { id?: UUID },
+  filterParams: UserFilter & { id?: UUID },
 ): Promise<PaginatedList<Recipient>> {
   let queryString = `
     SELECT 

@@ -12,12 +12,13 @@ import {
   validUuid,
 } from "../utils/zod-helpers.js";
 
-// TODO(bitbender-8): Update the class diagram, add the new property as an enum. No change needed for the er diagram and relational schema.
+// TODO(bitbender-8): Update the class diagram, add the requestType property as an enum, and the ownerRecipientId as a UUID. No change needed for the er diagram and relational schema.
 export type CampaignRequestType = (typeof CAMPAIGN_REQUEST_TYPES)[number];
 
 export type CampaignRequest = z.infer<typeof CampaignRequestUnionSchema>;
 const CampaignRequestSchema = z.object({
   id: validUuid(),
+  ownerRecipientId: validUuid().optional(),
   title: validNonEmptyString(MIN_STRING_LENGTH, 100),
   requestDate: validDate(true),
   justification: validNonEmptyString(MIN_STRING_LENGTH, 500),

@@ -825,6 +825,12 @@ paths:
       description: |
         Retrieves campaign requests, granting access based on Recipient or Supervisor authorization. Provides optional filtering and pagination.
       parameters:
+        - name: ownerRecipientId
+          in: query
+          description: Filter results to include only the campaign requests associated with the specified campaign’s owner ID (recipient id)
+          schema:
+            type: string
+            format: uuid
         - name: campaignId
           in: query
           description: The ID of the campaign.
@@ -836,12 +842,7 @@ paths:
           schema:
             type: string
             enum:
-              [
-                GOAL_ADJUSTMENT_REQUEST,
-                STATUS_CHANGE_REQUEST,
-                POST_UPDATE_REQUEST,
-                END_EXTENSION_REQUEST,
-              ]
+              [Goal Adjustment, Status Change, Post Update, End Date Extension]
         - name: isResolved
           in: query
           description: Filter by resolution status (true/false).
@@ -942,7 +943,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 9
+    # DONE
     # (Role: Supervisor, Owner: No) => No access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -1373,7 +1374,7 @@ paths:
     delete:
       tags:
         - Notifications
-      summary: Deletes a notification by its ID. Access depends on user's role.
+      summary: Deletes a notification by its ID. Access depends on user's role and ownership.
       parameters:
         - name: id
           in: path
