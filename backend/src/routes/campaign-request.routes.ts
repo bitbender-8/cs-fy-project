@@ -173,3 +173,46 @@ campaignRequestRouter.get(
     return;
   }
 );
+
+campaignRequestRouter.get(
+  "/:id",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const campaignRequestId = validateUuidParam(req.params.id);
+    let campaignRequest: CampaignRequest;
+
+    switch (getUserRole(req.auth)) {
+      case "Recipient": {
+        const userUuid = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
+
+        campaignRequest = (
+          await getCampaignRequests({
+            id: campaignRequestId,
+            ownerRecipientId: userUuid,
+          })
+        ).items[0];
+        break;
+      }
+      case "Supervisor": {
+        campaignRequest = (
+          await getCampaignRequests({
+            id: campaignRequestId,
+          })
+        ).items[0];
+        break;
+      }
+      default: {
+        const problemDetails: ProblemDetails = {
+          title: "Permission Denied",
+          status: 403,
+          detail: "You do not have permission to access this resource",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+    }
+
+    res.status(200).json(campaignRequest);
+    return;
+  }
+);

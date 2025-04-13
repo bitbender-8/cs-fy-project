@@ -814,7 +814,7 @@ paths:
   # TODO: Add the donation route with /campaigns/{campaignId}/donate
   # Permissions differ by method
   /campaign-requests:
-    # NEXT 10
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access

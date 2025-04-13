@@ -193,7 +193,6 @@ export async function getCampaignRequests(
   }
 
   if (filterParams.isResolved !== undefined) {
-    console.log(filterParams.isResolved);
     whereClauses.push(
       `req."resolutionDate" ${filterParams.isResolved ? "IS NOT NULL" : "IS NULL"}`
     );
@@ -264,7 +263,9 @@ export async function getCampaignRequests(
       columns.push('req."newStatus"');
       break;
     default: {
-      const subQueryCols = columns.join(", ");
+      const subQueryCols = columns
+        .filter((val) => val !== 'c."ownerRecipientId"')
+        .join(", ");
       tableName = `
       ((
         SELECT 
