@@ -176,7 +176,7 @@ export async function getCampaignRequests(
   // Identify which filter params to applyl
   if (filterParams.id) {
     whereClauses.push(`req."id" = $${paramIndex}`);
-    values.push(filterParams.campaignId);
+    values.push(filterParams.id);
     paramIndex++;
   }
 

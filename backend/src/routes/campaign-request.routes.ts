@@ -212,7 +212,16 @@ campaignRequestRouter.get(
       }
     }
 
-    res.status(200).json(campaignRequest);
+    if (!campaignRequest || Object.keys(campaignRequest).length === 0) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: "Campaign request not found",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+    } else {
+      res.status(200).json(campaignRequest);
+    }
     return;
   }
 );
