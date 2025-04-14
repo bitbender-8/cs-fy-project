@@ -10,6 +10,7 @@ import {
 } from "../models/campaign-request.model.js";
 import { CampaignStatus } from "../models/campaign.model.js";
 import { fromIntToMoneyStr } from "../utils/utils.js";
+import { getCampaignPosts } from "../repositories/campaign-request.repo.js";
 
 export function validateStatusTransitions(
   oldStatus: CampaignStatus,
@@ -137,6 +138,11 @@ export async function transformCampaignRequest(
       } = {
         ...val,
         requestType: "Post Update" as const,
+        newPost: (
+          await getCampaignPosts({
+            id: val.newPostId,
+          })
+        ).items[0],
       };
 
       transformedRequest = goalAdjustmentRequest;

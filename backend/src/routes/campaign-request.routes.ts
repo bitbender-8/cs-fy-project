@@ -18,9 +18,11 @@ import { ProblemDetails } from "../errors/error.types.js";
 import {
   getCampaignRequests,
   insertCampaignRequest,
+  resolveCampaignRequest,
+  updateCampaignPost,
 } from "../repositories/campaign-request.repo.js";
 import { CampaignPostSchema } from "../models/campaign.model.js";
-import { getCampaigns } from "../repositories/campaign.repo.js";
+import { getCampaigns, updateCampaign } from "../repositories/campaign.repo.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { validateQueryParams } from "../middleware/query-param.middleware.js";
 import {
@@ -28,6 +30,7 @@ import {
   campaignRequestFilterSchema,
 } from "../models/filters/campaign-request-filters.js";
 import { validCampaignRequestDecision } from "../utils/zod-helpers.js";
+import { validateStatusTransitions } from "../services/campaign.service.js";
 
 const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
   GoalAdjustmentRequestSchema.omit(
@@ -241,7 +244,7 @@ campaignRequestRouter.put(
       return;
     }
 
-    const campaignRequestId = validateUuidParam(req.params.id);
+    // Validate decision
     const decision = validCampaignRequestDecision().safeParse(
       req.params.decision
     );
@@ -256,13 +259,110 @@ campaignRequestRouter.put(
       return;
     }
 
-    switch (decision.data) {
-      case "Approve":
-        break;
-      case "Deny":
-        break;
-      default:
-        break;
+    const campaignRequestId = validateUuidParam(req.params.id);
+    const campaignRequest = (
+      await getCampaignRequests({ id: campaignRequestId })
+    ).items[0];
+
+    if (!campaignRequest || Object.keys(campaignRequest).length === 0) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Campaign request with id ${campaignRequestId} was not found.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
     }
+
+    if (campaignRequest.resolutionDate) {
+      const problemDetails: ProblemDetails = {
+        title: "Validation Failure",
+        status: 404,
+        detail: `Campaign request with id ${campaignRequestId} has already been resolved.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    const campaign = (await getCampaigns({ id: campaignRequest.id })).items[0];
+
+    // Apply changes from campaignRequest to underlying campaign
+    switch (campaignRequest.requestType) {
+      case "Goal Adjustment": {
+        await updateCampaign(campaign.id, {
+          ...campaign,
+          fundraisingGoal: campaignRequest.newGoal,
+        });
+        break;
+      }
+      case "Post Update": {
+        await updateCampaignPost(campaignRequest.newPost.id, {
+          publicPostDate: new Date(),
+        });
+        break;
+      }
+      case "End Date Extension": {
+        await updateCampaign(campaign.id, {
+          ...campaign,
+          endDate: campaignRequest.newEndDate,
+        });
+        break;
+      }
+      case "Status Change": {
+        const validationResult = validateStatusTransitions(
+          campaign.status,
+          campaignRequest.newStatus
+        );
+
+        if (!validationResult.isValid) {
+          const problemDetails: ProblemDetails = {
+            title: "Validation Failure",
+            status: 400,
+            detail: validationResult.message as string,
+          };
+
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+
+        // Since the transitions are already validated, we can apply changes that come with campaignRequest.newStatus blindly
+        if (campaignRequest.newStatus === "Completed") {
+          await updateCampaign(campaign.id, {
+            ...campaign,
+            status: campaignRequest.newStatus,
+            endDate: new Date(),
+          });
+        } else if (campaignRequest.newStatus === "Verified") {
+          await updateCampaign(campaign.id, {
+            ...campaign,
+            status: campaignRequest.newStatus,
+            verificationDate: new Date(),
+          });
+        } else if (campaignRequest.newStatus === "Denied") {
+          await updateCampaign(campaign.id, {
+            ...campaign,
+            status: campaignRequest.newStatus,
+            denialDate: new Date(),
+          });
+        } else if (campaignRequest.newStatus === "Live") {
+          await updateCampaign(campaign.id, {
+            ...campaign,
+            status: campaignRequest.newStatus,
+            launchDate: new Date(),
+            isPublic: true,
+          });
+        } else if (campaignRequest.newStatus === "Paused") {
+          await updateCampaign(campaign.id, {
+            ...campaign,
+            status: campaignRequest.newStatus,
+          });
+        }
+        break;
+      }
+    }
+
+    // Resolve campaign request
+    await resolveCampaignRequest(campaignRequestId);
+    res.status(204).send();
   }
 );

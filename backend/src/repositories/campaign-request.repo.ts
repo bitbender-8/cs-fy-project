@@ -13,13 +13,18 @@ import { AppError } from "../errors/error.types.js";
 import { query } from "../db.js";
 import { CampaignPost } from "../models/campaign.model.js";
 import { CampaignRequestFilter } from "../models/filters/campaign-request-filters.js";
-import { fromMoneyStrToBigInt, PaginatedList } from "../utils/utils.js";
+import {
+  excludeProperties,
+  fromMoneyStrToBigInt,
+  PaginatedList,
+} from "../utils/utils.js";
 import { config } from "../config.js";
 import { CampaignPostFilter } from "../models/filters/campaign-post-filters.js";
 import {
   CombinedRequestType,
   transformCampaignRequest,
 } from "../services/campaign.service.js";
+import { buildUpdateQueryString } from "./repo-utils.js";
 
 export async function insertCampaignRequest(
   campaignId: UUID,
@@ -340,7 +345,6 @@ export async function getCampaignRequests(
   const offset = (pageNo - 1) * limit;
   values.push(limit, offset);
 
-  console.log(queryString);
   const result = await query(queryString, values);
 
   const countQueryString = `
@@ -557,4 +561,44 @@ export async function resolveCampaignRequest(
   }
 
   return result.rows[0] as CampaignRequest;
+}
+
+export async function updateCampaignPost(
+  postId: UUID,
+  postData: Partial<CampaignPost>
+): Promise<CampaignPost> {
+  const { fragments, values } = buildUpdateQueryString(
+    excludeProperties(postData, ["id", "campaignId"])
+  );
+
+  if (fragments.length === 0) {
+    // If no fields to update, just return the existing post.
+    const getResult = await query(
+      `SELECT * FROM "CampaignPost" WHERE "id" = $1`,
+      [postId]
+    );
+    if (getResult.rows.length === 0) {
+      throw new AppError("Not Found", 404, "Campaign post not found.", {
+        internalDetails: `Campaign post with id ${postId} not found`,
+      });
+    }
+    return getResult.rows[0] as CampaignPost;
+  }
+
+  const updateQuery = `
+      UPDATE "CampaignPost"
+      SET ${fragments.join(", ")}
+      WHERE "id" = $${values.length + 1}
+      RETURNING *
+    `;
+
+  const result = await query(updateQuery, [...values, postId]);
+
+  if (result.rows.length === 0) {
+    throw new AppError("Not Found", 404, "Campaign post not found.", {
+      internalDetails: `Campaign post with id ${postId} not found`,
+    });
+  }
+
+  return result.rows[0] as CampaignPost;
 }

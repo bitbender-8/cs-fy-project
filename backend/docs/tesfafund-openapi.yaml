@@ -1101,73 +1101,10 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 12
-    # (Role: Supervisor, Owner: No) => Full access
-    # (Role: Recipient, Owner: Yes) => No access
-    # (Role: Anon | Recipient, Owner: No) => No access
-    put:
-      tags:
-        - Campaign Requests
-      summary: Updates a campaign request with new details.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The ID of the campaign request to update.
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              description: The updated campaign details.
-              oneOf:
-                - $ref: "#/components/schemas/GoalAdjustmentRequest"
-                - $ref: "#/components/schemas/StatusChangeRequest"
-                - $ref: "#/components/schemas/PostUpdateRequest"
-                - allOf:
-                    - $ref: "#/components/schemas/EndDateExtensionRequest"
-                    - description: The updated post is stored in the newPost property.
-      responses:
-        "200":
-          description: Campaign request updated successfully.
-          content:
-            application/json:
-              schema:
-                description: The updated campaign details.
-                oneOf:
-                  - $ref: "#/components/schemas/GoalAdjustmentRequest"
-                  - $ref: "#/components/schemas/StatusChangeRequest"
-                  - $ref: "#/components/schemas/PostUpdateRequest"
-                  - allOf:
-                      - $ref: "#/components/schemas/EndDateExtensionRequest"
-                      - description: The updated post is stored in the newPost property.
-        "400":
-          description: Bad request - Invalid parameters or request body.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "404":
-          description: Campaign request not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-      security:
-        - bearerHttpAuth: []
-
+   
   # Permissions differ by method
   /campaign-requests/{id}/decision/{decision}:
-    # NEXT 12
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => No access
     # (Role: Anon | Recipient, Owner: No) => No access
