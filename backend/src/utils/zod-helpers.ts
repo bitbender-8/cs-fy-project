@@ -23,6 +23,9 @@ export const CAMPAIGN_REQUEST_TYPES = [
 // Supported currencies
 export const CURRENCY_CODES = ["ETB", "XXX"] as const;
 
+// Campaign resolution types
+export const CAMPAIGN_REQUEST_DECISIONS = ["Approve", "Deny"] as const;
+
 export const MIN_STRING_LENGTH = 3;
 export const validNonEmptyString = (min: number, max: number) =>
   z
@@ -59,6 +62,11 @@ export const validDate = (isPast: boolean) => {
       message,
     });
 };
+
+export const validCampaignRequestDecision = () =>
+  z.enum(CAMPAIGN_REQUEST_DECISIONS, {
+    message: `Invalid campaign request decision type. Must be one of: ${CAMPAIGN_REQUEST_DECISIONS.join(", ")}.`,
+  });
 
 export const validCampaignStatus = () =>
   z.enum(CAMPAIGN_STATUSES, {

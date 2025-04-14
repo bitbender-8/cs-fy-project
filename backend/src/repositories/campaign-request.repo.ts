@@ -13,13 +13,13 @@ import { AppError } from "../errors/error.types.js";
 import { query } from "../db.js";
 import { CampaignPost } from "../models/campaign.model.js";
 import { CampaignRequestFilter } from "../models/filters/campaign-request-filters.js";
-import {
-  fromIntToMoneyStr,
-  fromMoneyStrToBigInt,
-  PaginatedList,
-} from "../utils/utils.js";
+import { fromMoneyStrToBigInt, PaginatedList } from "../utils/utils.js";
 import { config } from "../config.js";
 import { CampaignPostFilter } from "../models/filters/campaign-post-filters.js";
+import {
+  CombinedRequestType,
+  transformCampaignRequest,
+} from "../services/campaign.service.js";
 
 export async function insertCampaignRequest(
   campaignId: UUID,
@@ -239,6 +239,7 @@ export async function getCampaignRequests(
     'req."justification"',
     'req."requestDate"',
     'req."resolutionDate"',
+    'req."requestType"',
     'c."ownerRecipientId"',
   ];
   const joinClause: string = `JOIN "Campaign" c ON req."campaignId" = c."id"`;
@@ -249,36 +250,50 @@ export async function getCampaignRequests(
     case "End Date Extension":
       tableName = '"EndDateExtensionRequest" req';
       columns.push('req."newEndDate"');
+      columns.push(`'End Date Extension' AS "requestType"`);
       break;
     case "Goal Adjustment":
       tableName = '"GoalAdjustmentRequest" req';
       columns.push('req."newGoal"');
+      columns.push(`'Goal Adjustment' AS "requestType"`);
       break;
     case "Post Update":
       tableName = '"PostUpdateRequest" req';
       columns.push('req."newPostId"');
+      columns.push(`'Post Update' AS "requestType"`);
       break;
     case "Status Change":
       tableName = '"StatusChangeRequest" req';
       columns.push('req."newStatus"');
+      columns.push(`'Status Change' AS "requestType"`);
       break;
     default: {
       const subQueryCols = columns
-        .filter((val) => val !== 'c."ownerRecipientId"')
+        .filter(
+          (val) => val !== 'c."ownerRecipientId"' && val !== 'req."requestType"'
+        )
         .join(", ");
+
+      columns.push('req."newStatus"');
+      columns.push('req."newPostId"');
+      columns.push('req."newGoal"');
+      columns.push('req."newEndDate"');
+
       tableName = `
       ((
-        SELECT 
+        SELECT
+            'End Date Extension' AS "requestType",
             ${subQueryCols},
             "newEndDate"::TIMESTAMPTZ AS "newEndDate", 
             NULL::BIGINT AS "newGoal", 
             NULL::UUID AS "newPostId", 
-            NULL::"CampaignStatus" AS "newStatus" 
+            NULL::"CampaignStatus" AS "newStatus"
         FROM "EndDateExtensionRequest" req
       )
       UNION ALL
       (
-        SELECT 
+        SELECT
+            'Goal Adjustment' AS "requestType",
             ${subQueryCols},
             NULL::TIMESTAMPTZ AS "newEndDate", 
             "newGoal", 
@@ -289,6 +304,7 @@ export async function getCampaignRequests(
       UNION ALL
       (
         SELECT
+            'Post Update' AS "requestType",
             ${subQueryCols},
             NULL::TIMESTAMPTZ AS "newEndDate",
             NULL::BIGINT AS "newGoal",
@@ -299,6 +315,7 @@ export async function getCampaignRequests(
       UNION ALL
       (
         SELECT
+            'Status Change' AS "requestType",
             ${subQueryCols},
             NULL::TIMESTAMPTZ as "newEndDate",
             NULL::BIGINT as "newGoal",
@@ -323,6 +340,7 @@ export async function getCampaignRequests(
   const offset = (pageNo - 1) * limit;
   values.push(limit, offset);
 
+  console.log(queryString);
   const result = await query(queryString, values);
 
   const countQueryString = `
@@ -336,48 +354,9 @@ export async function getCampaignRequests(
     values.slice(0, values.length - 2)
   );
 
-  const items = (result.rows as CampaignRequest[]).map(async (val) => {
-    const campaignRequest = val as
-      | CampaignRequest
-      | (PostUpdateRequest & { newPostId?: UUID });
-
-    switch (filterParams.requestType) {
-      case "Goal Adjustment":
-        if ("newGoal" in campaignRequest && campaignRequest.newGoal) {
-          campaignRequest.newGoal = fromIntToMoneyStr(
-            BigInt(campaignRequest.newGoal)
-          ) as string;
-        }
-        break;
-      case "Post Update":
-        if ("newPostId" in campaignRequest && campaignRequest.newPostId) {
-          campaignRequest.newPost = (
-            await getCampaignPosts({
-              id: campaignRequest.newPostId,
-            })
-          ).items[0];
-
-          // Remove this property
-          delete campaignRequest.newPostId;
-        }
-        break;
-      default:
-        // In case filterParams.requestType is empty or undefined
-        if ("newGoal" in campaignRequest && campaignRequest.newGoal) {
-          campaignRequest.newGoal = fromIntToMoneyStr(
-            BigInt(campaignRequest.newGoal)
-          ) as string;
-        }
-        if ("newPostId" in campaignRequest && campaignRequest.newPostId) {
-          campaignRequest.newPost = (
-            await getCampaignPosts({
-              id: campaignRequest.newPostId,
-            })
-          ).items[0];
-        }
-    }
-    return campaignRequest;
-  });
+  const items = (result.rows as CombinedRequestType[]).map(
+    transformCampaignRequest
+  );
 
   const resolvedItems = await Promise.all(items);
   const totalCount = parseInt(countResult.rows[0].count, 10);
@@ -524,4 +503,58 @@ export async function insertCampaignPost(
         throw error;
     }
   }
+}
+
+export async function resolveCampaignRequest(
+  campaignRequestId: UUID
+): Promise<CampaignRequest> {
+  const campaignRequest = (await getCampaignRequests({ id: campaignRequestId }))
+    .items[0];
+
+  if (!campaignRequest) {
+    throw new AppError("Not Found", 404, "Campaign request not found.", {
+      internalDetails: `Campaign request with ID ${campaignRequestId} not found.`,
+    });
+  }
+
+  let tableName: string;
+
+  switch (campaignRequest.requestType) {
+    case "End Date Extension":
+      tableName = "EndDateExtensionRequest";
+      break;
+    case "Goal Adjustment":
+      tableName = "GoalAdjustmentRequest";
+      break;
+    case "Post Update":
+      tableName = "PostUpdateRequest";
+      break;
+    case "Status Change":
+      tableName = "StatusChangeRequest";
+      break;
+    default:
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails:
+          "Invalid campaign request type encountered while processing results",
+      });
+  }
+
+  const result = await query(
+    `UPDATE "${tableName}"
+       SET
+        "resolutionDate" = $1
+       WHERE
+        "id" = $2
+       RETURNING *
+      `,
+    [new Date(), campaignRequestId]
+  );
+
+  if (result.rows.length === 0) {
+    throw new AppError("Not Found", 404, "Campaign request not found.", {
+      internalDetails: `Campaign request with ID ${campaignRequestId} not found in ${tableName}.`,
+    });
+  }
+
+  return result.rows[0] as CampaignRequest;
 }

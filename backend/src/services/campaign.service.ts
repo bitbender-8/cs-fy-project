@@ -1,8 +1,19 @@
+import { UUID } from "crypto";
+import { AppError } from "../errors/error.types.js";
+import {
+  CampaignRequest,
+  CampaignRequestType,
+  EndDateExtensionRequest,
+  GoalAdjustmentRequest,
+  PostUpdateRequest,
+  StatusChangeRequest,
+} from "../models/campaign-request.model.js";
 import { CampaignStatus } from "../models/campaign.model.js";
+import { fromIntToMoneyStr } from "../utils/utils.js";
 
 export function validateStatusTransitions(
   oldStatus: CampaignStatus,
-  newStatus: CampaignStatus,
+  newStatus: CampaignStatus
 ): { isValid: boolean; message?: string } {
   if (oldStatus === newStatus) {
     return { isValid: true };
@@ -63,4 +74,97 @@ export function validateStatusTransitions(
   }
 
   return { isValid: true };
+}
+
+export type CombinedRequestType = {
+  newPostId?: UUID;
+  requestType: CampaignRequestType;
+} & Omit<PostUpdateRequest, "requestType"> &
+  Omit<StatusChangeRequest, "requestType"> &
+  Omit<EndDateExtensionRequest, "requestType"> &
+  Omit<GoalAdjustmentRequest, "requestType">;
+
+export async function transformCampaignRequest(
+  val: CombinedRequestType
+): Promise<CampaignRequest> {
+  let transformedRequest: CampaignRequest;
+
+  switch (val.requestType) {
+    case "Goal Adjustment": {
+      const {
+        /* eslint-disable @typescript-eslint/no-unused-vars */
+        newPostId,
+        newPost,
+        newEndDate,
+        newStatus,
+        /* eslint-enable @typescript-eslint/no-unused-vars */
+        ...goalAdjustmentRequest
+      } = {
+        ...val,
+        newGoal: fromIntToMoneyStr(BigInt(val.newGoal)) as string,
+        requestType: "Goal Adjustment" as const,
+      };
+
+      transformedRequest = goalAdjustmentRequest;
+      break;
+    }
+    case "End Date Extension": {
+      const {
+        /* eslint-disable @typescript-eslint/no-unused-vars */
+        newPostId,
+        newPost,
+        newGoal,
+        newStatus,
+        /* eslint-enable @typescript-eslint/no-unused-vars */
+        ...endDateExtensionRequest
+      } = {
+        ...val,
+        requestType: "End Date Extension" as const,
+      };
+
+      transformedRequest = endDateExtensionRequest;
+      break;
+    }
+    case "Post Update": {
+      const {
+        /* eslint-disable @typescript-eslint/no-unused-vars */
+        newPostId,
+        newGoal,
+        newEndDate,
+        newStatus,
+        /* eslint-enable @typescript-eslint/no-unused-vars */
+        ...goalAdjustmentRequest
+      } = {
+        ...val,
+        requestType: "Post Update" as const,
+      };
+
+      transformedRequest = goalAdjustmentRequest;
+      break;
+    }
+    case "Status Change": {
+      const {
+        /* eslint-disable @typescript-eslint/no-unused-vars */
+        newPostId,
+        newPost,
+        newGoal,
+        newEndDate,
+        /* eslint-enable @typescript-eslint/no-unused-vars */
+        ...goalAdjustmentRequest
+      } = {
+        ...val,
+        requestType: "Status Change" as const,
+      };
+
+      transformedRequest = goalAdjustmentRequest;
+      break;
+    }
+    default:
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails:
+          "Invalid campaign request type encountered while transforming campaign request",
+      });
+  }
+
+  return transformedRequest;
 }

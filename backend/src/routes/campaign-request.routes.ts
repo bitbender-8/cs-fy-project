@@ -27,6 +27,7 @@ import {
   CampaignRequestFilter,
   campaignRequestFilterSchema,
 } from "../models/filters/campaign-request-filters.js";
+import { validCampaignRequestDecision } from "../utils/zod-helpers.js";
 
 const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
   GoalAdjustmentRequestSchema.omit(
@@ -223,5 +224,45 @@ campaignRequestRouter.get(
       res.status(200).json(campaignRequest);
     }
     return;
+  }
+);
+
+campaignRequestRouter.put(
+  "/:id/decision/:decision",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (getUserRole(req.auth) !== "Supervisor") {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail: "You do not have permission to access this resource",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    const campaignRequestId = validateUuidParam(req.params.id);
+    const decision = validCampaignRequestDecision().safeParse(
+      req.params.decision
+    );
+
+    if (!decision.success) {
+      const problemDetails: ProblemDetails = {
+        title: "Validation Failure",
+        status: 400,
+        detail: decision.error.issues[0].message,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    switch (decision.data) {
+      case "Approve":
+        break;
+      case "Deny":
+        break;
+      default:
+        break;
+    }
   }
 );
