@@ -1101,7 +1101,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-   
+
   # Permissions differ by method
   /campaign-requests/{id}/decision/{decision}:
     # DONE

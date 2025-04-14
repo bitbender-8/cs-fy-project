@@ -14,7 +14,7 @@ import { getCampaignPosts } from "../repositories/campaign-request.repo.js";
 
 export function validateStatusTransitions(
   oldStatus: CampaignStatus,
-  newStatus: CampaignStatus
+  newStatus: CampaignStatus,
 ): { isValid: boolean; message?: string } {
   if (oldStatus === newStatus) {
     return { isValid: true };
@@ -86,7 +86,7 @@ export type CombinedRequestType = {
   Omit<GoalAdjustmentRequest, "requestType">;
 
 export async function transformCampaignRequest(
-  val: CombinedRequestType
+  val: CombinedRequestType,
 ): Promise<CampaignRequest> {
   let transformedRequest: CampaignRequest;
 

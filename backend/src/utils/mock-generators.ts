@@ -11,7 +11,7 @@ import {
   CampaignDonation,
   CampaignPost,
 } from "../models/campaign.model.js";
-import { CAMPAIGN_REQUEST_DECISIONS } from "./zod-helpers.js";
+import { CAMPAIGN_STATUSES } from "./zod-helpers.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
@@ -210,7 +210,7 @@ export function generateCampaigns(
       title: faker.lorem.words(),
       description: faker.lorem.sentences({ min: 2, max: 4 }),
       fundraisingGoal: faker.finance.amount({ min: 0, max: 10000, dec: 2 }),
-      status: faker.helpers.arrayElement(CAMPAIGN_REQUEST_DECISIONS),
+      status: faker.helpers.arrayElement(CAMPAIGN_STATUSES),
       category: faker.helpers.arrayElement(categories),
       paymentInfo: {
         paymentMethod: faker.helpers.arrayElement(paymentMethods),
@@ -391,7 +391,7 @@ export function generateStatusChangeRequests(
     const resolutionDate = faker.datatype.boolean()
       ? faker.date.future({ refDate: requestDate })
       : null;
-    const newStatus = faker.helpers.arrayElement(CAMPAIGN_REQUEST_DECISIONS);
+    const newStatus = faker.helpers.arrayElement(CAMPAIGN_STATUSES);
 
     return {
       id: randomUUID(),

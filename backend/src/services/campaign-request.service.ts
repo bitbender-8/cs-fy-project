@@ -4,7 +4,7 @@ import { getCampaigns } from "../repositories/campaign.repo.js";
 
 export async function isCampaignRequestOwner(
   campaignRequest: CampaignRequest,
-  recipientId: UUID
+  recipientId: UUID,
 ): Promise<boolean> {
   const campaign = await getCampaigns({ id: campaignRequest.campaignId });
   if (recipientId === campaign.items[0].ownerRecipientId) {

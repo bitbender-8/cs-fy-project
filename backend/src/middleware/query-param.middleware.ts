@@ -13,7 +13,7 @@ export function validateQueryParams(schema: ZodSchema) {
   return async (
     req: Request<z.infer<typeof schema>>,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     try {
       // Parse the query parameters using the provided schema

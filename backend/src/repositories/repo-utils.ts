@@ -21,7 +21,7 @@ export interface UpdateResult {
  */
 export function buildUpdateQueryString(
   updateData: UpdateObject,
-  startValueIndex: number = 1
+  startValueIndex: number = 1,
 ): UpdateResult {
   const updateFields: string[] = [];
   const updateValues: unknown[] = [];

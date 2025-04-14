@@ -4,7 +4,6 @@ import { CampaignPostSchema } from "./campaign.model.js";
 import {
   CAMPAIGN_REQUEST_TYPES,
   MIN_STRING_LENGTH,
-  validCampaignRequestType,
   validCampaignStatus,
   validDate,
   validMoneyAmount,
