@@ -20,13 +20,14 @@ import {
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight, SearchIcon } from "lucide-react";
 import { Input } from "./ui/input";
+import { useRouter } from "next/navigation";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends { id: string }, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -37,6 +38,8 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
+
+  const router = useRouter();
 
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
@@ -86,7 +89,13 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      onClick={() =>
+                        router.push(`campaigns/${cell.row.original.id}`)
+                      }
+                      className="cursor-pointer"
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
