@@ -39,7 +39,10 @@ export const recipientRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
 const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
-  LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}), // Add {} as initial value
+  LOCKED_USER_FIELDS.reduce(
+    (acc, field) => ({ ...acc, [field]: true }),
+    {} as { [key in LockedUserFields]: true },
+  ),
 );
 
 recipientRouter.put(
@@ -48,30 +51,7 @@ recipientRouter.put(
   validateFileUpload("profilePicture", "Images"),
   validateRequestBody(recipientUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
-    if (getUserRole(req.auth) === "Recipient") {
-      const recipientId = validateUuidParam(req.params.id);
-      const recipient: Omit<Recipient, LockedUserFields> = req.body;
-
-      const recipientIdFromJwt = await getUuidFromAuth0Id(
-        req.auth?.payload.sub ?? "",
-      );
-
-      // Check that the authenticated recipient owns the data they are trying to modify
-      if (recipientId !== recipientIdFromJwt) {
-        const problemDetails: ProblemDetails = {
-          title: "Permission Denied",
-          status: 403,
-          detail: "You do not have permission to update this recipient",
-        };
-        res.status(problemDetails.status).json(problemDetails);
-        return;
-      }
-
-      await updateRecipient(recipientId, recipient);
-
-      res.status(204).send();
-      return;
-    } else {
+    if (getUserRole(req.auth) !== "Recipient") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
         status: 403,
@@ -80,6 +60,40 @@ recipientRouter.put(
       res.status(problemDetails.status).json(problemDetails);
       return;
     }
+
+    const recipientId = validateUuidParam(req.params.id);
+    const checkRecipient = (await getRecipients({ id: recipientId })).items[0];
+    if (!checkRecipient || Object.keys(checkRecipient).length === 0) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Recipient with id ${recipientId} was not found.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    const recipientIdFromJwt = await getUuidFromAuth0Id(
+      req.auth?.payload.sub ?? "",
+    );
+    // Validated recipient update data from middleware
+    const recipient: Omit<Recipient, LockedUserFields> = req.body;
+
+    // Check that the authenticated recipient owns the data they are trying to modify
+    if (recipientId !== recipientIdFromJwt) {
+      const problemDetails: ProblemDetails = {
+        title: "Permission Denied",
+        status: 403,
+        detail: "You do not have permission to update this recipient",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    await updateRecipient(recipientId, recipient);
+    res.status(204).send();
+
+    return;
   },
 );
 
@@ -233,19 +247,18 @@ recipientRouter.delete(
   async (req: Request, res: Response): Promise<void> => {
     const recipientId = validateUuidParam(req.params.id);
     const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+    let deleteResult: boolean;
 
     switch (getUserRole(req.auth)) {
       case "Supervisor":
         // Supervisor: full access
         await deleteAuth0User(auth0UserIdFromJwt);
-        await deleteRecipient(recipientId);
+        deleteResult = await deleteRecipient(recipientId);
+
         break;
       case "Recipient": {
         // Recipient: full access only if they own the data
-        if ((await getUuidFromAuth0Id(auth0UserIdFromJwt)) === recipientId) {
-          await deleteAuth0User(auth0UserIdFromJwt);
-          await deleteRecipient(recipientId);
-        } else {
+        if ((await getUuidFromAuth0Id(auth0UserIdFromJwt)) !== recipientId) {
           const problemDetails: ProblemDetails = {
             title: "Permission Denied",
             status: 403,
@@ -254,6 +267,10 @@ recipientRouter.delete(
           res.status(problemDetails.status).json(problemDetails);
           return;
         }
+
+        await deleteAuth0User(auth0UserIdFromJwt);
+        deleteResult = await deleteRecipient(recipientId);
+
         break;
       }
       default: {
@@ -265,6 +282,16 @@ recipientRouter.delete(
         res.status(problemDetails.status).json(problemDetails);
         return;
       }
+    }
+
+    if (!deleteResult) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Recipient with id '${recipientId}' was not found`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
     }
 
     res.status(204).send();

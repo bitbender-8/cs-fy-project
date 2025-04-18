@@ -27,7 +27,7 @@ export function errorHandler(
     };
     console.error(
       `Fail: ${err.options?.internalDetails ?? err.message}
-       Cause: ${err.options?.cause?.message}`,
+       Cause: ${err.options?.cause?.message}`.replace(/^\s+/gm, ""),
     );
     res.status(problemDetails.status).json(problemDetails);
     return;
@@ -36,12 +36,12 @@ export function errorHandler(
   if (err instanceof UnauthorizedError) {
     if (
       err instanceof InvalidTokenError &&
-      err.message === "Failed to fetch authorization server metadata"
+      err.message === "Failed to fetch authentication server metadata"
     ) {
       const problemDetails: ProblemDetails = {
         title: "Internal Server Error",
         status: 503,
-        detail: "Failed to contact authorization servers. Try again later",
+        detail: "Failed to contact authentication servers. Try again later",
       };
       res.status(problemDetails.status).json(problemDetails);
       return;

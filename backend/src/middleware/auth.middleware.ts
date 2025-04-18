@@ -11,3 +11,4 @@ export const requireAuth = auth({
   issuerBaseURL: config.ISSUER_BASE_URL,
   audience: config.AUDIENCE,
 });
+// CONSIDER: Getting the user uuid from the auth middleware (attaches it to express's request object)

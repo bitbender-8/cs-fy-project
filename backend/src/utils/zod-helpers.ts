@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { config } from "../config.js";
+import { UUID } from "crypto";
+
+// Possible user types
+export const USER_TYPES = ["Supervisor", "Recipient"] as const;
 
 // Possible campaign statuses
 export const CAMPAIGN_STATUSES = [
@@ -11,8 +15,19 @@ export const CAMPAIGN_STATUSES = [
   "Completed",
 ] as const;
 
+// Possible campaign request types
+export const CAMPAIGN_REQUEST_TYPES = [
+  "Goal Adjustment",
+  "Post Update",
+  "End Date Extension",
+  "Status Change",
+] as const;
+
 // Supported currencies
 export const CURRENCY_CODES = ["ETB", "XXX"] as const;
+
+// Campaign resolution types
+export const CAMPAIGN_REQUEST_DECISIONS = ["Approve", "Deny"] as const;
 
 export const MIN_STRING_LENGTH = 3;
 export const validNonEmptyString = (min: number, max: number) =>
@@ -51,6 +66,11 @@ export const validDate = (isPast: boolean) => {
     });
 };
 
+export const validCampaignRequestDecision = () =>
+  z.enum(CAMPAIGN_REQUEST_DECISIONS, {
+    message: `Invalid campaign request decision type. Must be one of: ${CAMPAIGN_REQUEST_DECISIONS.join(", ")}.`,
+  });
+
 export const validCampaignStatus = () =>
   z.enum(CAMPAIGN_STATUSES, {
     message: `Invalid campaign status. Must be one of: ${CAMPAIGN_STATUSES.join(", ")}.`,
@@ -76,7 +96,26 @@ export const validBankAccountNo = () =>
       message: "Must be at most 16 digits",
     });
 
-export const validUuid = () => z.string().uuid({ message: "Invalid UUID" });
+export const validUuid = () =>
+  z
+    .string()
+    .uuid({ message: "Invalid UUID" })
+    .transform((val) => val as UUID);
+
+export const validBoolean = () =>
+  z
+    .string()
+    .refine((val) => val === "true" || val === "false", {
+      message: "Must be either 'true' or 'false'.",
+    })
+    .transform((val) => {
+      switch (val) {
+        case "true":
+          return true;
+        case "false":
+          return false;
+      }
+    });
 
 export const validMoneyAmount = () =>
   z
@@ -96,8 +135,8 @@ export const validMoneyAmount = () =>
       },
       { message: "Must have up to two decimal places." },
     )
-    .refine((val) => Number(val) < config.MAX_MONEY_AMOUNT, {
-      message: `Amount must be less than ${config.MAX_MONEY_AMOUNT}.`,
+    .refine((val) => Number(val) <= config.MAX_MONEY_AMOUNT, {
+      message: `Amount must be less than or equal to ${config.MAX_MONEY_AMOUNT}.`,
     });
 
 export const validCurrency = () =>
@@ -105,4 +144,14 @@ export const validCurrency = () =>
     message: `Invalid currency code. Must be one of: ${CURRENCY_CODES.filter(
       (val) => val !== "XXX",
     ).join(", ")}.`,
+  });
+
+export const validCampaignRequestType = () =>
+  z.enum(CAMPAIGN_REQUEST_TYPES, {
+    message: `Invalid campaign request type. Must be one of: ${CAMPAIGN_REQUEST_TYPES.join(", ")}.`,
+  });
+
+export const validUserType = () =>
+  z.enum(USER_TYPES, {
+    message: `Invalid campaign request type. Must be one of: ${USER_TYPES.join(", ")}.`,
   });

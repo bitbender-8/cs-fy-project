@@ -9,10 +9,10 @@ import {
   SocialMediaHandle,
   Supervisor,
 } from "../models/user.model.js";
-import { UserFilterParams } from "../models/filters/user-filters.js";
+import { UserFilter } from "../models/filters/user-filters.js";
 import { excludeProperties, PaginatedList } from "../utils/utils.js";
 import { config } from "../config.js";
-import { buildUpdateQueryData } from "./repo-utils.js";
+import { buildUpdateQueryString } from "./repo-utils.js";
 
 /**
  * Retrieves the UUID of a user (either Recipient or Supervisor) based on their Auth0 ID.
@@ -46,7 +46,7 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
 }
 
 export async function getSupervisors(
-  filterParams: UserFilterParams & { id: UUID },
+  filterParams: UserFilter & { id: UUID },
 ): Promise<PaginatedList<Supervisor>> {
   let queryString = `
     SELECT 
@@ -155,7 +155,7 @@ export async function updateSupervisor(
 ): Promise<Supervisor> {
   try {
     const { fragments, values: updateValues } =
-      buildUpdateQueryData(supervisor);
+      buildUpdateQueryString(supervisor);
 
     if (fragments.length === 0) {
       throw new AppError(
@@ -221,7 +221,7 @@ export async function updateSupervisor(
 }
 
 export async function getRecipients(
-  filterParams: UserFilterParams & { id?: UUID },
+  filterParams: UserFilter & { id?: UUID },
 ): Promise<PaginatedList<Recipient>> {
   let queryString = `
     SELECT 
@@ -442,7 +442,7 @@ export async function updateRecipient(
   recipient: Omit<Recipient, LockedUserFields>,
 ): Promise<Recipient> {
   try {
-    const { fragments, values: updateValues } = buildUpdateQueryData(
+    const { fragments, values: updateValues } = buildUpdateQueryString(
       excludeProperties(recipient, ["socialMediaHandles"]),
     );
 
@@ -482,27 +482,26 @@ export async function updateRecipient(
       for (const handle of recipient.socialMediaHandles) {
         // If the socialMediaHandle object has an id this means that the query is an update, otherwise it is an insert
         if (handle.id) {
-          const updatedHandle = await updateSocialMediaHandle({
+          await updateSocialMediaHandle({
             id: handle.id,
             recipientId,
             socialMediaHandle: handle.socialMediaHandle,
           });
-          updatedRecipient.socialMediaHandles.push(updatedHandle);
         } else {
-          const insertedHandle = await insertSocialMediaHandle({
+          await insertSocialMediaHandle({
             recipientId,
             socialMediaHandle: handle.socialMediaHandle,
           });
-          updatedRecipient.socialMediaHandles.push(insertedHandle);
         }
       }
-    } else {
-      updatedRecipient.socialMediaHandles =
-        await getSocialMediaHandles(recipientId);
     }
 
+    updatedRecipient.socialMediaHandles.concat(
+      await getSocialMediaHandles(recipientId),
+    );
+
     return updatedRecipient;
-  } catch (error: unknown) {
+  } catch (error) {
     if (!(error instanceof pg.DatabaseError)) {
       throw error;
     }
@@ -559,9 +558,10 @@ async function updateSocialMediaHandle(
   try {
     const result = await query<SocialMediaHandle>(
       `UPDATE "RecipientSocialMediaHandle"
-         SET "socialMediaHandle" = $3
-         WHERE "id" = $1 AND "recipientId" = $2
-         RETURNING *`,
+       SET "socialMediaHandle" = $3
+       WHERE "id" = $1 AND "recipientId" = $2
+       RETURNING *
+      `,
       [handle.id, handle.recipientId, handle.socialMediaHandle],
     );
 

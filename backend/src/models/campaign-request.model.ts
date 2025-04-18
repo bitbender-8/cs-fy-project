@@ -1,12 +1,8 @@
-import { UUID } from "crypto";
 import { z } from "zod";
 
+import { CampaignPostSchema } from "./campaign.model.js";
 import {
-  CampaignPost,
-  CampaignPostSchema,
-  CampaignStatus,
-} from "./campaign.model.js";
-import {
+  CAMPAIGN_REQUEST_TYPES,
   MIN_STRING_LENGTH,
   validCampaignStatus,
   validDate,
@@ -15,54 +11,58 @@ import {
   validUuid,
 } from "../utils/zod-helpers.js";
 
-interface CampaignRequest {
-  id?: UUID;
-  title: string;
-  requestDate: Date | string;
-  justification: string;
-  resolutionDate?: Date | string;
-  campaignId: UUID;
-}
-
-export interface GoalAdjustmentRequest extends CampaignRequest {
-  newGoal: string | bigint;
-}
-
-export interface StatusChangeRequest extends CampaignRequest {
-  newStatus: CampaignStatus;
-}
-
-export interface PostUpdateRequest extends CampaignRequest {
-  newPost: CampaignPost;
-}
-
-export interface EndDateExtensionRequest extends CampaignRequest {
-  newEndDate: Date | string;
-}
-
-// ================= Zod schemas ====================
+// TODO(bitbender-8): Update the class diagram, add the requestType property as an enum, and the ownerRecipientId as a UUID. No change needed for the er diagram and relational schema.
+export type CampaignRequestType = (typeof CAMPAIGN_REQUEST_TYPES)[number];
 
 const CampaignRequestSchema = z.object({
-  id: validUuid().optional(),
+  id: validUuid(),
+  campaignId: validUuid(),
+  ownerRecipientId: validUuid().optional(),
   title: validNonEmptyString(MIN_STRING_LENGTH, 100),
   requestDate: validDate(true),
   justification: validNonEmptyString(MIN_STRING_LENGTH, 500),
-  resolutionDate: validDate(true),
-  campaignId: validUuid(),
+  resolutionDate: validDate(true).optional(),
 });
 
+export type GoalAdjustmentRequest = z.infer<typeof GoalAdjustmentRequestSchema>;
 export const GoalAdjustmentRequestSchema = CampaignRequestSchema.extend({
+  requestType: z.literal("Goal Adjustment"),
   newGoal: validMoneyAmount(),
 });
 
+export type StatusChangeRequest = z.infer<typeof StatusChangeRequestSchema>;
 export const StatusChangeRequestSchema = CampaignRequestSchema.extend({
+  requestType: z.literal("Status Change"),
   newStatus: validCampaignStatus(),
 });
 
+export type PostUpdateRequest = z.infer<typeof PostUpdateRequestSchema>;
 export const PostUpdateRequestSchema = CampaignRequestSchema.extend({
+  requestType: z.literal("Post Update"),
   newPost: CampaignPostSchema,
 });
 
+export type EndDateExtensionRequest = z.infer<
+  typeof EndDateExtensionRequestSchema
+>;
 export const EndDateExtensionRequestSchema = CampaignRequestSchema.extend({
+  requestType: z.literal("End Date Extension"),
   newEndDate: validDate(false),
 });
+
+export type CampaignRequest = z.infer<typeof CampaignRequestUnionSchema>;
+export const CampaignRequestUnionSchema = z.discriminatedUnion("requestType", [
+  GoalAdjustmentRequestSchema,
+  StatusChangeRequestSchema,
+  PostUpdateRequestSchema,
+  EndDateExtensionRequestSchema,
+]);
+
+export const LOCKED_CAMPAIGN_REQUEST_FIELDS = [
+  "id",
+  "resolutionDate",
+  "requestDate",
+  "campaignId",
+] as const;
+export type LockedCampaignRequestFields =
+  (typeof LOCKED_CAMPAIGN_REQUEST_FIELDS)[number];

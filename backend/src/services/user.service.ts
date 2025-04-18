@@ -1,14 +1,14 @@
 import { JWTPayload } from "express-oauth2-jwt-bearer";
 
 import { config } from "../config.js";
-import { UserRole } from "../models/user.model.js";
+import { UserType } from "../models/user.model.js";
 import axios from "axios";
 import { AppError } from "../errors/error.types.js";
 import { objectToCamel } from "ts-case-convert";
 
 export function getUserRole(authToken?: {
   payload: JWTPayload;
-}): UserRole | undefined {
+}): UserType | undefined {
   if (!authToken || !authToken.payload) {
     return undefined; // No auth token or payload, so no role.
   }
@@ -23,7 +23,7 @@ export function getUserRole(authToken?: {
 
   // Validate the type of the first element.
   if (typeof firstRole === "string") {
-    return firstRole as UserRole; // Safe type assertion after validation.
+    return firstRole as UserType; // Safe type assertion after validation.
   }
 
   return undefined; // First element is not a string, hence not a valid role.

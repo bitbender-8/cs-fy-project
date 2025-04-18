@@ -1,10 +1,14 @@
 import express, { Application } from "express";
 import helmet from "helmet";
+
 import { errorHandler } from "./errors/error-handlers.js";
 import { campaignRouter } from "./routes/campaign.routes.js";
 import { config } from "./config.js";
 import { recipientRouter } from "./routes/recipient.routes.js";
 import { supervisorRouter } from "./routes/supervisor.routes.js";
+import { campaignRequestRouter } from "./routes/campaign-request.routes.js";
+import { notificationRouter } from "./routes/notification.routes.js";
+import { campaignPostRouter } from "./routes/campaign-post.routes.js";
 
 const app: Application = express();
 
@@ -27,6 +31,9 @@ app.use(express.json());
 app.use("/campaigns", campaignRouter);
 app.use("/recipients", recipientRouter);
 app.use("/supervisors", supervisorRouter);
+app.use("/campaign-requests", campaignRequestRouter);
+app.use("/notifications", notificationRouter);
+app.use("/campaign-posts", campaignPostRouter);
 
 // Error handlers
 app.use(errorHandler);

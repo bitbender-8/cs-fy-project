@@ -1,24 +1,18 @@
 import { Request, Response, NextFunction } from "express";
-import { AnyZodObject, ZodError } from "zod";
+import { ZodError, ZodSchema } from "zod";
 
 import { ProblemDetails } from "../errors/error.types.js";
 
 /**
  * Middleware to validate the request body against a Zod schema.
  *
- * This middleware parses the request body using the provided Zod schema.
- * If the body is valid, it replaces the original req.body with the parsed result
- * and calls the next middleware or route handler.
- * If the body is invalid, it sends a 400 Validation Failure response with details.
- *
- * @param {AnyZodObject} schema - The Zod schema to validate the request body against.
- * @returns {Function} - An Express middleware function.
+ * @param schema - The Zod schema to validate the request body against.
+ * @returns - An Express middleware function.
  */
-export function validateRequestBody(schema: AnyZodObject) {
+export function validateRequestBody(schema: ZodSchema) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body);
-      if (!req.body) {
+      if (!req.body || Object.keys(req.body).length === 0) {
         const problemDetails: ProblemDetails = {
           title: "Validation Failure",
           status: 400,

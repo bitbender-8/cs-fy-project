@@ -130,10 +130,9 @@ export function generateNotifications(
         subject: faker.lorem.sentence({ min: 1, max: 2 }),
         body: faker.lorem.sentence({ min: 3, max: 5 }),
         isRead: faker.datatype.boolean(),
-        createdAt: faker.date
-          .past({ years: 30, refDate: new Date() })
-          .toISOString(),
-        supervisorId: faker.helpers.arrayElement(supervisors).id as UUID,
+        createdAt: faker.date.past({ years: 30, refDate: new Date() }),
+        userType: "Supervisor",
+        userId: faker.helpers.arrayElement(supervisors).id as UUID,
       };
     } else {
       recipientNotification = {
@@ -141,10 +140,9 @@ export function generateNotifications(
         subject: faker.lorem.sentence({ min: 1, max: 2 }),
         body: faker.lorem.sentence({ min: 3, max: 5 }),
         isRead: faker.datatype.boolean(),
-        createdAt: faker.date
-          .past({ years: 30, refDate: new Date() })
-          .toISOString(),
-        recipientId: faker.helpers.arrayElement(recipients).id as UUID,
+        createdAt: faker.date.past({ years: 30, refDate: new Date() }),
+        userType: "Recipient",
+        userId: faker.helpers.arrayElement(recipients).id as UUID,
       };
     }
 
@@ -173,30 +171,25 @@ export function generateCampaigns(
 
   for (let i = 0; i < noOfCampaigns; i++) {
     const campaignId = randomUUID();
-    const submissionDate = faker.date
-      .past({ years: 1, refDate: new Date() })
-      .toISOString();
-    const verificationDate = faker.date
-      .future({
-        years: 0.5,
-        refDate: submissionDate,
-      })
-      .toISOString();
-    const denialDate = faker.date
-      .future({
-        years: 0.5,
-        refDate: submissionDate,
-      })
-      .toISOString();
-    const launchDate = faker.date
-      .future({
-        years: 0.5,
-        refDate: verificationDate,
-      })
-      .toISOString();
-    const endDate = faker.date
-      .future({ years: 0.5, refDate: launchDate })
-      .toISOString();
+    const submissionDate = faker.date.past({ years: 1, refDate: new Date() });
+
+    const verificationDate = faker.date.future({
+      years: 0.5,
+      refDate: submissionDate,
+    });
+
+    const denialDate = faker.date.future({
+      years: 0.5,
+      refDate: submissionDate,
+    });
+
+    const launchDate = faker.date.future({
+      years: 0.5,
+      refDate: verificationDate,
+    });
+
+    const endDate = faker.date.future({ years: 0.5, refDate: launchDate });
+
     const documents: {
       campaignId: UUID;
       documentUrl: string;
@@ -263,7 +256,7 @@ export function generateCampaignDonations(
         id: randomUUID(),
         grossAmount: grossAmount,
         serviceFee: serviceFee,
-        createdAt: faker.date.recent().toISOString(),
+        createdAt: faker.date.recent(),
         transactionRef: faker.string.alphanumeric(16),
         campaignId: campaign.id,
       };
@@ -292,9 +285,7 @@ export function generateCampaignPosts(
         title: faker.lorem.words({ min: 3, max: 5 }),
         content: faker.lorem.sentences({ min: 5, max: 7 }),
         publicPostDate:
-          Math.random() >= 0.5
-            ? undefined
-            : faker.date.recent({ days: 400 }).toISOString(),
+          Math.random() >= 0.5 ? undefined : faker.date.recent({ days: 400 }),
         campaignId: campaign.id,
       };
 
@@ -327,10 +318,11 @@ export function generatePostUpdateRequests(
 
     return {
       id: randomUUID(),
+      requestType: "Post Update",
       title: faker.lorem.words(),
-      requestDate: requestDate.toISOString(),
+      requestDate: requestDate,
       justification: faker.lorem.sentences(),
-      resolutionDate: resolutionDate ? resolutionDate.toISOString() : undefined,
+      resolutionDate: resolutionDate ? resolutionDate : undefined,
       campaignId: campaign.id,
       newPost: newPost,
     };
@@ -351,12 +343,13 @@ export function generateEndDateExtensionRequests(
 
     return {
       id: randomUUID(),
+      requestType: "End Date Extension",
       title: faker.lorem.words(),
-      requestDate: requestDate.toISOString(),
+      requestDate: requestDate,
       justification: faker.lorem.sentences(),
-      resolutionDate: resolutionDate ? resolutionDate.toISOString() : undefined,
+      resolutionDate: resolutionDate ? resolutionDate : undefined,
       campaignId: campaign.id,
-      newEndDate: newEndDate.toISOString(),
+      newEndDate: newEndDate,
     };
   });
 }
@@ -375,10 +368,11 @@ export function generateGoalAdjustmentRequests(
 
     return {
       id: randomUUID(),
+      requestType: "Goal Adjustment",
       title: faker.lorem.words(),
-      requestDate: requestDate.toISOString(),
+      requestDate: requestDate,
       justification: faker.lorem.sentences(),
-      resolutionDate: resolutionDate ? resolutionDate.toISOString() : undefined,
+      resolutionDate: resolutionDate ? resolutionDate : undefined,
       campaignId: campaign.id,
       newGoal: newGoal,
     };
@@ -399,10 +393,11 @@ export function generateStatusChangeRequests(
 
     return {
       id: randomUUID(),
+      requestType: "Status Change",
       title: faker.lorem.words(),
-      requestDate: requestDate.toISOString(),
+      requestDate: requestDate,
       justification: faker.lorem.sentences(),
-      resolutionDate: resolutionDate ? resolutionDate.toISOString() : undefined,
+      resolutionDate: resolutionDate ? resolutionDate : undefined,
       campaignId: campaign.id,
       newStatus: newStatus,
     };

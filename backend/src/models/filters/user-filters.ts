@@ -6,18 +6,20 @@ import {
   validPhoneNo,
 } from "../../utils/zod-helpers.js";
 
-export type UserFilterParams = z.infer<typeof UserFilterSchema>;
-export const UserFilterSchema = z.object({
-  name: validNonEmptyString(MIN_STRING_LENGTH, 150).optional(),
-  email: z.string().email().optional(),
-  page: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().positive().optional(),
+export type UserFilter = z.infer<typeof UserFilterSchema>;
+export const UserFilterSchema = z
+  .object({
+    name: validNonEmptyString(MIN_STRING_LENGTH, 150),
+    email: z.string().email().optional(),
+    page: z.coerce.number().int().positive(),
+    limit: z.coerce.number().int().positive(),
 
-  // Sensitive filters
-  minBirthDate: validDate(true).optional(),
-  maxBirthDate: validDate(true).optional(),
-  phoneNo: validPhoneNo().optional(),
-});
+    // Sensitive filters
+    minBirthDate: validDate(true),
+    maxBirthDate: validDate(true),
+    phoneNo: validPhoneNo(),
+  })
+  .partial();
 
 export type SensitiveUserFilters = (typeof SENSITIVE_USER_FILTERS)[number];
 export const SENSITIVE_USER_FILTERS = [
