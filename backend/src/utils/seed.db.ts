@@ -153,27 +153,15 @@ async function seedNotifications(notifications: Notification[]): Promise<void> {
   `;
 
   for (const notification of notifications) {
-    if ("supervisorId" in notification) {
-      await query(queryString, [
-        notification.id,
-        notification.subject,
-        notification.body,
-        notification.isRead,
-        notification.createdAt,
-        null,
-        notification.supervisorId,
-      ]);
-    } else {
-      await query(queryString, [
-        notification.id,
-        notification.subject,
-        notification.body,
-        notification.isRead,
-        notification.createdAt,
-        notification.recipientId,
-        null,
-      ]);
-    }
+    await query(queryString, [
+      notification.id,
+      notification.subject,
+      notification.body,
+      notification.isRead,
+      notification.createdAt,
+      notification.userType === "Recipient" ? notification.userId : null, // Recipient Id
+      notification.userType === "Supervisor" ? notification.userId : null, // Supervisor Id
+    ]);
   }
 }
 

@@ -7,7 +7,7 @@ import { query } from "../db.js";
 import { AppError } from "../errors/error.types.js";
 
 export async function getNotifications(
-  filterParams: NotificationFilter & { id?: UUID; userId?: UUID }
+  filterParams: NotificationFilter & { id?: UUID; userId?: UUID },
 ): Promise<PaginatedList<Notification>> {
   const pageNo = filterParams.page || 1;
   const limit = filterParams.limit ?? config.PAGE_SIZE;
@@ -41,7 +41,7 @@ export async function getNotifications(
 
   if (filterParams.userId) {
     whereClauses.push(
-      `("supervisorId" = $${paramIndex} OR "recipientId" = $${paramIndex})`
+      `("supervisorId" = $${paramIndex} OR "recipientId" = $${paramIndex})`,
     );
     values.push(filterParams.userId);
     paramIndex++;
@@ -76,7 +76,7 @@ export async function getNotifications(
   `;
   const countResult = await query(
     countQueryString,
-    values.slice(0, values.length - 2)
+    values.slice(0, values.length - 2),
   );
 
   const totalCount = parseInt(countResult.rows[0].count, 10);
@@ -109,7 +109,7 @@ export async function getNotifications(
 }
 
 export async function markNotificationAsRead(
-  notificationId: UUID
+  notificationId: UUID,
 ): Promise<Notification> {
   const result = await query<Notification>(
     `
@@ -118,7 +118,7 @@ export async function markNotificationAsRead(
     WHERE "id" = $1
     RETURNING *
     `,
-    [notificationId]
+    [notificationId],
   );
 
   if (!result || result.rows.length === 0) {
@@ -131,7 +131,7 @@ export async function markNotificationAsRead(
 }
 
 export async function deleteNotification(
-  notificationId: UUID
+  notificationId: UUID,
 ): Promise<boolean> {
   const result = await query(`DELETE FROM "Notification" WHERE "id" = $1`, [
     notificationId,

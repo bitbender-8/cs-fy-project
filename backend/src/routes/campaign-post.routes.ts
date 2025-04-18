@@ -68,7 +68,7 @@ campaignPostRouter.get(
 
     res.status(200).json(campaignPosts);
     return;
-  }
+  },
 );
 
 campaignPostRouter.delete(
@@ -98,5 +98,5 @@ campaignPostRouter.delete(
       return;
     }
     res.status(204).send();
-  }
+  },
 );

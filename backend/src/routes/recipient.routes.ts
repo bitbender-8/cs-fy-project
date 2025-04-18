@@ -41,8 +41,8 @@ export const recipientRouter: Router = Router();
 const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
   LOCKED_USER_FIELDS.reduce(
     (acc, field) => ({ ...acc, [field]: true }),
-    {} as { [key in LockedUserFields]: true }
-  )
+    {} as { [key in LockedUserFields]: true },
+  ),
 );
 
 recipientRouter.put(
@@ -74,7 +74,7 @@ recipientRouter.put(
     }
 
     const recipientIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? ""
+      req.auth?.payload.sub ?? "",
     );
     // Validated recipient update data from middleware
     const recipient: Omit<Recipient, LockedUserFields> = req.body;
@@ -94,7 +94,7 @@ recipientRouter.put(
     res.status(204).send();
 
     return;
-  }
+  },
 );
 
 recipientRouter.get(
@@ -121,7 +121,7 @@ recipientRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_USER_FILTERS
+      SENSITIVE_USER_FILTERS,
     );
 
     let recipients:
@@ -137,14 +137,14 @@ recipientRouter.get(
       recipients = {
         ...result,
         items: result.items.map((recipient) =>
-          excludeProperties(recipient, SENSITIVE_USER_FIELDS)
+          excludeProperties(recipient, SENSITIVE_USER_FIELDS),
         ),
       };
     }
 
     res.status(200).json(recipients);
     return;
-  }
+  },
 );
 
 recipientRouter.get(
@@ -161,7 +161,7 @@ recipientRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? ""
+          req.auth?.payload.sub ?? "",
         );
 
         if (userIdFromJwt === recipientId) {
@@ -179,7 +179,7 @@ recipientRouter.get(
                 id: recipientId,
               })
             ).items[0],
-            SENSITIVE_USER_FIELDS
+            SENSITIVE_USER_FIELDS,
           );
         }
         break;
@@ -192,7 +192,7 @@ recipientRouter.get(
               id: recipientId,
             })
           ).items[0],
-          SENSITIVE_USER_FIELDS
+          SENSITIVE_USER_FIELDS,
         );
     }
 
@@ -208,7 +208,7 @@ recipientRouter.get(
     }
 
     return;
-  }
+  },
 );
 
 // Ignores email from recipient object
@@ -233,12 +233,12 @@ recipientRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
+        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`,
       )
       .status(201)
       .json(insertedRecipient);
     return;
-  }
+  },
 );
 
 recipientRouter.delete(
@@ -295,5 +295,5 @@ recipientRouter.delete(
     }
 
     res.status(204).send();
-  }
+  },
 );

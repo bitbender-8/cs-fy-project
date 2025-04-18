@@ -30,7 +30,7 @@ notificationRouter.get(
     });
 
     res.status(200).json(notifications);
-  }
+  },
 );
 
 notificationRouter.patch(
@@ -69,7 +69,7 @@ notificationRouter.patch(
     res.status(204).send();
 
     return;
-  }
+  },
 );
 
 notificationRouter.delete(
@@ -89,5 +89,5 @@ notificationRouter.delete(
       return;
     }
     res.status(204).send();
-  }
+  },
 );

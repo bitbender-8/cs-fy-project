@@ -130,10 +130,9 @@ export function generateNotifications(
         subject: faker.lorem.sentence({ min: 1, max: 2 }),
         body: faker.lorem.sentence({ min: 3, max: 5 }),
         isRead: faker.datatype.boolean(),
-        createdAt: faker.date
-          .past({ years: 30, refDate: new Date() })
-          .toISOString(),
-        supervisorId: faker.helpers.arrayElement(supervisors).id as UUID,
+        createdAt: faker.date.past({ years: 30, refDate: new Date() }),
+        userType: "Supervisor",
+        userId: faker.helpers.arrayElement(supervisors).id as UUID,
       };
     } else {
       recipientNotification = {
@@ -141,10 +140,9 @@ export function generateNotifications(
         subject: faker.lorem.sentence({ min: 1, max: 2 }),
         body: faker.lorem.sentence({ min: 3, max: 5 }),
         isRead: faker.datatype.boolean(),
-        createdAt: faker.date
-          .past({ years: 30, refDate: new Date() })
-          .toISOString(),
-        recipientId: faker.helpers.arrayElement(recipients).id as UUID,
+        createdAt: faker.date.past({ years: 30, refDate: new Date() }),
+        userType: "Recipient",
+        userId: faker.helpers.arrayElement(recipients).id as UUID,
       };
     }
 

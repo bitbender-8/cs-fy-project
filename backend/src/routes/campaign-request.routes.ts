@@ -41,8 +41,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true }
-    )
+      {} as { [key in LockedCampaignRequestFields]: true },
+    ),
   ),
   StatusChangeRequestSchema.omit(
     LOCKED_CAMPAIGN_REQUEST_FIELDS.reduce(
@@ -50,8 +50,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true }
-    )
+      {} as { [key in LockedCampaignRequestFields]: true },
+    ),
   ),
   PostUpdateRequestSchema.omit(
     LOCKED_CAMPAIGN_REQUEST_FIELDS.reduce(
@@ -59,8 +59,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true }
-    )
+      {} as { [key in LockedCampaignRequestFields]: true },
+    ),
   ).extend({
     newPost: CampaignPostSchema.omit({
       id: true,
@@ -74,8 +74,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true }
-    )
+      {} as { [key in LockedCampaignRequestFields]: true },
+    ),
   ),
 ]);
 
@@ -99,7 +99,7 @@ campaignRequestRouter.post(
     const campaignId = validateUuidParam(
       req.query.campaignId as string,
       "query",
-      "campaignId"
+      "campaignId",
     );
 
     // Check that the recipient owns the campaign they are trying to create campaign requests for
@@ -134,12 +134,12 @@ campaignRequestRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/campaign-requests/${insertedCampaignRequest.id}`
+        `${req.protocol}://${req.get("host")}/campaign-requests/${insertedCampaignRequest.id}`,
       )
       .status(201)
       .json(insertedCampaignRequest);
     return;
-  }
+  },
 );
 
 campaignRequestRouter.get(
@@ -177,7 +177,7 @@ campaignRequestRouter.get(
 
     res.status(200).json(campaignRequests);
     return;
-  }
+  },
 );
 
 campaignRequestRouter.get(
@@ -229,7 +229,7 @@ campaignRequestRouter.get(
       res.status(200).json(campaignRequest);
     }
     return;
-  }
+  },
 );
 
 campaignRequestRouter.put(
@@ -249,7 +249,7 @@ campaignRequestRouter.put(
 
     // Validate decision
     const decision = validCampaignRequestDecision().safeParse(
-      req.params.decision
+      req.params.decision,
     );
 
     if (!decision.success) {
@@ -314,7 +314,7 @@ campaignRequestRouter.put(
       case "Status Change": {
         const validationResult = validateStatusTransitions(
           campaign.status,
-          campaignRequest.newStatus
+          campaignRequest.newStatus,
         );
 
         if (!validationResult.isValid) {
@@ -367,7 +367,7 @@ campaignRequestRouter.put(
     // Resolve campaign request
     await resolveCampaignRequest(campaignRequestId);
     res.status(204).send();
-  }
+  },
 );
 
 campaignRequestRouter.delete(
@@ -392,7 +392,7 @@ campaignRequestRouter.delete(
 
           if (campaignRequest.requestType === "Post Update") {
             deleteResult &&= await deleteCampaignPost(
-              campaignRequest.newPost.id
+              campaignRequest.newPost.id,
             );
           }
         } else {
@@ -436,5 +436,5 @@ campaignRequestRouter.delete(
     }
 
     res.status(204).send();
-  }
+  },
 );
