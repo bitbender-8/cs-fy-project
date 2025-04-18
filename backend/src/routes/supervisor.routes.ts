@@ -22,7 +22,7 @@ export const supervisorRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
 const updateableSupervisorSchema: AnyZodObject = SupervisorSchema.omit(
-  LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}), // Add {} as initial value
+  LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}) // Add {} as initial value
 );
 
 supervisorRouter.put(
@@ -41,10 +41,21 @@ supervisorRouter.put(
     }
 
     const supervisorId = validateUuidParam(req.params.id);
-    const supervisor: Omit<Supervisor, LockedUserFields> = req.body;
+    const checkSupervisor = (await getSupervisors({ id: supervisorId }))
+      .items[0];
+    if (!checkSupervisor || Object.keys(checkSupervisor).length === 0) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Supervisor with id ${supervisorId} was not found.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
 
+    const supervisor: Omit<Supervisor, LockedUserFields> = req.body;
     const supervisorIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? "",
+      req.auth?.payload.sub ?? ""
     );
 
     // Check that the authenticated supervisor owns the data they are trying to modify
@@ -61,7 +72,7 @@ supervisorRouter.put(
     await updateSupervisor(supervisorId, supervisor);
     res.status(204).send();
     return;
-  },
+  }
 );
 
 supervisorRouter.get(
@@ -84,5 +95,5 @@ supervisorRouter.get(
     const supervisor: Supervisor = (await getSupervisors({ id: supervisorId }))
       .items[0];
     res.status(200).json(supervisor);
-  },
+  }
 );

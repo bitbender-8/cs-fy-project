@@ -19,3 +19,7 @@ export const CampaignPostFilterSchema = z
     limit: z.coerce.number().int().positive(),
   })
   .partial();
+
+export const SENSITIVE_CAMPAIGN_POST_FILTERS = ["isPublic"] as const;
+export type SensitiveCampaignPostFilters =
+  (typeof SENSITIVE_CAMPAIGN_POST_FILTERS)[number];

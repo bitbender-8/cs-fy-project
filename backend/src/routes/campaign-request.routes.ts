@@ -16,6 +16,8 @@ import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { getUserRole } from "../services/user.service.js";
 import { ProblemDetails } from "../errors/error.types.js";
 import {
+  deleteCampaignPost,
+  deleteCampaignRequest,
   getCampaignRequests,
   insertCampaignRequest,
   resolveCampaignRequest,
@@ -39,8 +41,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ),
   StatusChangeRequestSchema.omit(
     LOCKED_CAMPAIGN_REQUEST_FIELDS.reduce(
@@ -48,8 +50,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ),
   PostUpdateRequestSchema.omit(
     LOCKED_CAMPAIGN_REQUEST_FIELDS.reduce(
@@ -57,8 +59,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ).extend({
     newPost: CampaignPostSchema.omit({
       id: true,
@@ -72,8 +74,8 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
         ...acc,
         [field]: true,
       }),
-      {} as { [key in LockedCampaignRequestFields]: true },
-    ),
+      {} as { [key in LockedCampaignRequestFields]: true }
+    )
   ),
 ]);
 
@@ -97,7 +99,7 @@ campaignRequestRouter.post(
     const campaignId = validateUuidParam(
       req.query.campaignId as string,
       "query",
-      "campaignId",
+      "campaignId"
     );
 
     // Check that the recipient owns the campaign they are trying to create campaign requests for
@@ -132,12 +134,12 @@ campaignRequestRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/campaign-requests/${insertedCampaignRequest.id}`,
+        `${req.protocol}://${req.get("host")}/campaign-requests/${insertedCampaignRequest.id}`
       )
       .status(201)
       .json(insertedCampaignRequest);
     return;
-  },
+  }
 );
 
 campaignRequestRouter.get(
@@ -175,7 +177,7 @@ campaignRequestRouter.get(
 
     res.status(200).json(campaignRequests);
     return;
-  },
+  }
 );
 
 campaignRequestRouter.get(
@@ -227,13 +229,14 @@ campaignRequestRouter.get(
       res.status(200).json(campaignRequest);
     }
     return;
-  },
+  }
 );
 
 campaignRequestRouter.put(
   "/:id/decision/:decision",
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
+    // TODO: Add notification creation after successful resolution
     if (getUserRole(req.auth) !== "Supervisor") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
@@ -246,7 +249,7 @@ campaignRequestRouter.put(
 
     // Validate decision
     const decision = validCampaignRequestDecision().safeParse(
-      req.params.decision,
+      req.params.decision
     );
 
     if (!decision.success) {
@@ -311,7 +314,7 @@ campaignRequestRouter.put(
       case "Status Change": {
         const validationResult = validateStatusTransitions(
           campaign.status,
-          campaignRequest.newStatus,
+          campaignRequest.newStatus
         );
 
         if (!validationResult.isValid) {
@@ -364,5 +367,74 @@ campaignRequestRouter.put(
     // Resolve campaign request
     await resolveCampaignRequest(campaignRequestId);
     res.status(204).send();
-  },
+  }
+);
+
+campaignRequestRouter.delete(
+  "/:id",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const campaignRequestId = validateUuidParam(req.params.id);
+    const campaignRequest = (
+      await getCampaignRequests({
+        id: campaignRequestId,
+      })
+    ).items[0];
+    let deleteResult: boolean;
+
+    switch (getUserRole(req.auth)) {
+      case "Recipient": {
+        const userUuid = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
+
+        // Check that the authenticated recipient owns the campaign request
+        if (campaignRequest.ownerRecipientId === userUuid) {
+          deleteResult = await deleteCampaignRequest(campaignRequestId);
+
+          if (campaignRequest.requestType === "Post Update") {
+            deleteResult &&= await deleteCampaignPost(
+              campaignRequest.newPost.id
+            );
+          }
+        } else {
+          const problemDetails: ProblemDetails = {
+            title: "Permission Denied",
+            status: 403,
+            detail: "You do not have permission to access this resource",
+          };
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+        break;
+      }
+      case "Supervisor": {
+        deleteResult = await deleteCampaignRequest(campaignRequestId);
+
+        if (campaignRequest.requestType === "Post Update") {
+          deleteResult &&= await deleteCampaignPost(campaignRequest.newPost.id);
+        }
+        break;
+      }
+      default: {
+        const problemDetails: ProblemDetails = {
+          title: "Permission Denied",
+          status: 403,
+          detail: "You do not have permission to access this resource",
+        };
+        res.status(problemDetails.status).json(problemDetails);
+        return;
+      }
+    }
+
+    if (!deleteResult) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Campaign request with id '${campaignRequestId}' was not found.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
+    res.status(204).send();
+  }
 );

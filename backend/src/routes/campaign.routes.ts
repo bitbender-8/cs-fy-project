@@ -48,8 +48,8 @@ const createCampaignSchema = CampaignSchema.pick(
       ...acc,
       [field]: true,
     }),
-    {} as { [key in CreateableCampaignFields]: true },
-  ),
+    {} as { [key in CreateableCampaignFields]: true }
+  )
 );
 
 const updateCampaignSchema = CampaignSchema.pick(
@@ -58,8 +58,8 @@ const updateCampaignSchema = CampaignSchema.pick(
       ...acc,
       [field]: true,
     }),
-    {} as { [key in UpdateableCampaignFields]: true },
-  ),
+    {} as { [key in UpdateableCampaignFields]: true }
+  )
 )
   .extend({ documentIds: z.array(validUrl()) })
   .partial();
@@ -90,15 +90,25 @@ campaignRouter.put(
     const updatedCampaignData: z.infer<typeof updateCampaignSchema> & {
       documents: CampaignDocument[];
     } = req.body;
+    const documentIds = updatedCampaignData.documentIds;
     const originalCampaign: Campaign = (await getCampaigns({ id: campaignId }))
       .items[0];
-    const documentIds = updatedCampaignData.documentIds;
+
+    if (!originalCampaign || Object.keys(originalCampaign).length === 0) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Campaign with id '${campaignId}' was not found`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
 
     // Validate campaign status transitions
     if (updatedCampaignData.status) {
       const validationResult = validateStatusTransitions(
         originalCampaign.status,
-        updatedCampaignData.status,
+        updatedCampaignData.status
       );
 
       if (!validationResult.isValid) {
@@ -129,10 +139,10 @@ campaignRouter.put(
 
       // Validating each documentId to make sure that it exists and belongs to this campaign
       const validDocumentUrls = (await getCampaignDocuments(campaignId)).map(
-        (result) => result.documentUrl,
+        (result) => result.documentUrl
       );
       const invalidDocumentIds = documentIds.filter(
-        (id) => !validDocumentUrls.includes(id),
+        (id) => !validDocumentUrls.includes(id)
       );
 
       if (invalidDocumentIds.length > 0) {
@@ -235,7 +245,7 @@ campaignRouter.put(
         "id",
         "ownerRecipientId",
         "paymentInfo",
-      ]),
+      ])
     );
 
     // Delete old redacted files *after* update to prevent data inconsistencies if update fails.
@@ -248,7 +258,7 @@ campaignRouter.put(
     res.status(204).send();
 
     return;
-  },
+  }
 );
 
 campaignRouter.post(
@@ -292,19 +302,19 @@ campaignRouter.post(
           ({
             documentUrl: url,
             // Suppressing errors since insertCampaign handles campaignId creation on its own
-          }) as { campaignId: UUID; documentUrl: string },
+          }) as { campaignId: UUID; documentUrl: string }
       ),
     });
 
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/campaigns/${insertedCampaign.id}`,
+        `${req.protocol}://${req.get("host")}/campaigns/${insertedCampaign.id}`
       )
       .status(201)
       .json(insertedCampaign);
     return;
-  },
+  }
 );
 
 campaignRouter.get(
@@ -331,7 +341,7 @@ campaignRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_CAMPAIGN_FILTERS,
+      SENSITIVE_CAMPAIGN_FILTERS
     );
 
     let campaigns: PaginatedList<RedactedCampaign> | PaginatedList<Campaign>;
@@ -383,7 +393,7 @@ campaignRouter.get(
 
     res.status(200).json(campaigns);
     return;
-  },
+  }
 );
 
 campaignRouter.get(
@@ -412,7 +422,7 @@ campaignRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         const tempCampaign = (
@@ -445,5 +455,5 @@ campaignRouter.get(
     }
 
     return;
-  },
+  }
 );

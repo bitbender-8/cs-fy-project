@@ -1,31 +1,13 @@
-import { UUID } from "crypto";
 import { z } from "zod";
 import {
   MIN_STRING_LENGTH,
   validDate,
   validNonEmptyString,
+  validUserType,
   validUuid,
 } from "../utils/zod-helpers.js";
 
-export type Notification =
-  | {
-      id: UUID;
-      subject: string;
-      body: string;
-      isRead: boolean;
-      createdAt: Date | string;
-      recipientId: UUID;
-    }
-  | {
-      id: UUID;
-      subject: string;
-      body: string;
-      isRead: boolean;
-      createdAt: Date | string;
-      supervisorId: UUID;
-    };
-
-// ================= Zod schemas ====================
+export type Notification = z.infer<typeof NotificationSchema>;
 export const NotificationSchema = z.object({
   id: validUuid().optional(),
   subject: validNonEmptyString(MIN_STRING_LENGTH, 255),
@@ -33,4 +15,5 @@ export const NotificationSchema = z.object({
   isRead: z.boolean(),
   createdAt: validDate(true),
   userId: validUuid(),
+  userType: validUserType(),
 });

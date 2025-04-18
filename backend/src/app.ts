@@ -7,6 +7,8 @@ import { config } from "./config.js";
 import { recipientRouter } from "./routes/recipient.routes.js";
 import { supervisorRouter } from "./routes/supervisor.routes.js";
 import { campaignRequestRouter } from "./routes/campaign-request.routes.js";
+import { notificationRouter } from "./routes/notification.routes.js";
+import { campaignPostRouter } from "./routes/campaign-post.routes.js";
 
 const app: Application = express();
 
@@ -17,7 +19,7 @@ if (config.ENV === "Development") {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept",
+      "Origin, X-Requested-With, Content-Type, Accept"
     );
     next();
   });
@@ -30,6 +32,8 @@ app.use("/campaigns", campaignRouter);
 app.use("/recipients", recipientRouter);
 app.use("/supervisors", supervisorRouter);
 app.use("/campaign-requests", campaignRequestRouter);
+app.use("/notifications", notificationRouter);
+app.use("/campaign-posts", campaignPostRouter);
 
 // Error handlers
 app.use(errorHandler);

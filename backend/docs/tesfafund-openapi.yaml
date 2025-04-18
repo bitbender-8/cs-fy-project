@@ -717,7 +717,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /campaign-posts/:
-    # NEXT 15
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => Access to public posts.
@@ -811,6 +811,54 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
+  # Permissions differ by method
+  /campaign-posts/{campaignPostId}:
+    # DONE
+    # (Role: Supervisor, Owner: No) => Full access
+    # (Role: Recipient, Owner: Yes) => No access
+    # (Role: Anon | Recipient, Owner: No) => No access
+    delete:
+      tags:
+        - Campaign Posts
+      summary: Deletes a specific campaign post.
+      parameters:
+        - name: campaignPostId
+          in: path
+          description: The ID of the campaign post to delete.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Successful deletion - No content to return.
+        "401":
+          description: Unauthorized - Authentication required or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden - User does not have the necessary permissions to delete this post.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Campaign post not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+
   # TODO: Add the donation route with /campaigns/{campaignId}/donate
   # Permissions differ by method
   /campaign-requests:
@@ -1056,7 +1104,7 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
       security:
         - bearerHttpAuth: []
-    # NEXT 13
+    # DONE
     # (Role: Supervisor, Owner: No) => Full access
     # (Role: Recipient, Owner: Yes) => Full access
     # (Role: Anon | Recipient, Owner: No) => No access
@@ -1161,11 +1209,9 @@ paths:
 
   # Permissions differ by method
   /notifications:
-    # NEXT 14
-    # (Role: Supervisor, Owner: No) => No access
-    # (Role: Supervisor, Owner: Yes) => Full access
-    # (Role: Recipient, Owner: Yes) => Full access
-    # (Role: Anon | Recipient, Owner: No) => No access
+    # DONE
+    # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
+    # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
     get:
       tags:
         - Notifications
@@ -1176,7 +1222,7 @@ paths:
           description: Has the notification been read?
           schema:
             type: boolean
-        - name: minTimestamp
+        - name: minCreatedAt
           in: query
           description: Minimum timestamp for filtering notifications (inclusive), including time.
           schema:
@@ -1185,7 +1231,7 @@ paths:
                 format: date-time
               - type: string
                 format: date
-        - name: maxTimestamp
+        - name: maxCreatedAt
           in: query
           description: Maximum timestamp for filtering notifications (inclusive), including time.
           schema:
@@ -1194,12 +1240,6 @@ paths:
                 format: date-time
               - type: string
                 format: date
-        - name: userId
-          in: query
-          description: Filter notifications by Supervisor or Recipient ID.
-          schema:
-            type: string
-            format: uuid
         - name: page
           description: Page number for pagination
           in: query
@@ -1254,101 +1294,7 @@ paths:
   # # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
   # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
   /notifications/{id}:
-    # NEXT 16
-    get:
-      tags:
-        - Notifications
-      summary: Fetches a notification by its ID. Access depends on the user's role.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The unique ID of the notification.
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Successful retrieval
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Notification"
-        "400":
-          description: Bad request - Invalid parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "401":
-          description: Unauthorized - Authentication required or invalid.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "404":
-          description: Campaign request with given ID not found (also used instead of 403 forbidden).
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-      security:
-        - bearerHttpAuth: []
-    # NEXT 17
-    patch:
-      tags:
-        - Notifications
-      summary: Updates a notification, mainly used for updating `isRead`.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The unique ID of the notification.
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                isRead:
-                  type: boolean
-                  description: Whether the notification has been read.
-              required:
-                - isRead
-      responses:
-        "204":
-          description: Successful update - No content to return.
-        "400":
-          description: Bad request - Invalid request body or parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "404":
-          description: Recipient with given ID not found (also used inplace of 403 forbidden).
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-      security:
-        - bearerHttpAuth: []
-    # NEXT 18
+    # DONE
     delete:
       tags:
         - Notifications
@@ -1378,6 +1324,46 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
         "404":
           description: Campaign request with given ID not found (also used inplace of 403 forbidden).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+      security:
+        - bearerHttpAuth: []
+  # For all methods:
+  # # (Role: Supervisor | Recipient | Anon, Owner: No) => No access
+  # (Role: Supervisor | Recipient | Anon, Owner: Yes) => Full access
+  /notifications/{id}/read:
+    # DONE
+    patch:
+      tags:
+        - Notifications
+      summary: Marks a notification as read.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique ID of the notification to mark as read.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Successful update - No content to return.
+        "400":
+          description: Bad request - Invalid request body or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Recipient with given ID not found (also used inplace of 403 forbidden).
           content:
             application/json:
               schema:
@@ -1701,3 +1687,4 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Bearer token using a JWT
+# TODO (bitbender-8): Make sure that the component schema matches your data models

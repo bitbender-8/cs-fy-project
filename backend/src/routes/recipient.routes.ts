@@ -41,8 +41,8 @@ export const recipientRouter: Router = Router();
 const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
   LOCKED_USER_FIELDS.reduce(
     (acc, field) => ({ ...acc, [field]: true }),
-    {} as { [key in LockedUserFields]: true },
-  ),
+    {} as { [key in LockedUserFields]: true }
+  )
 );
 
 recipientRouter.put(
@@ -62,11 +62,22 @@ recipientRouter.put(
     }
 
     const recipientId = validateUuidParam(req.params.id);
-    // Validated campaign update data from middleware
-    const recipient: Omit<Recipient, LockedUserFields> = req.body;
+    const checkRecipient = (await getRecipients({ id: recipientId })).items[0];
+    if (!checkRecipient || Object.keys(checkRecipient).length === 0) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Recipient with id ${recipientId} was not found.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
     const recipientIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? "",
+      req.auth?.payload.sub ?? ""
     );
+    // Validated recipient update data from middleware
+    const recipient: Omit<Recipient, LockedUserFields> = req.body;
 
     // Check that the authenticated recipient owns the data they are trying to modify
     if (recipientId !== recipientIdFromJwt) {
@@ -83,7 +94,7 @@ recipientRouter.put(
     res.status(204).send();
 
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -110,7 +121,7 @@ recipientRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_USER_FILTERS,
+      SENSITIVE_USER_FILTERS
     );
 
     let recipients:
@@ -126,14 +137,14 @@ recipientRouter.get(
       recipients = {
         ...result,
         items: result.items.map((recipient) =>
-          excludeProperties(recipient, SENSITIVE_USER_FIELDS),
+          excludeProperties(recipient, SENSITIVE_USER_FIELDS)
         ),
       };
     }
 
     res.status(200).json(recipients);
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -150,7 +161,7 @@ recipientRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         if (userIdFromJwt === recipientId) {
@@ -168,7 +179,7 @@ recipientRouter.get(
                 id: recipientId,
               })
             ).items[0],
-            SENSITIVE_USER_FIELDS,
+            SENSITIVE_USER_FIELDS
           );
         }
         break;
@@ -181,7 +192,7 @@ recipientRouter.get(
               id: recipientId,
             })
           ).items[0],
-          SENSITIVE_USER_FIELDS,
+          SENSITIVE_USER_FIELDS
         );
     }
 
@@ -197,7 +208,7 @@ recipientRouter.get(
     }
 
     return;
-  },
+  }
 );
 
 // Ignores email from recipient object
@@ -222,12 +233,12 @@ recipientRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`,
+        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
       )
       .status(201)
       .json(insertedRecipient);
     return;
-  },
+  }
 );
 
 recipientRouter.delete(
@@ -236,19 +247,18 @@ recipientRouter.delete(
   async (req: Request, res: Response): Promise<void> => {
     const recipientId = validateUuidParam(req.params.id);
     const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+    let deleteResult: boolean;
 
     switch (getUserRole(req.auth)) {
       case "Supervisor":
         // Supervisor: full access
         await deleteAuth0User(auth0UserIdFromJwt);
-        await deleteRecipient(recipientId);
+        deleteResult = await deleteRecipient(recipientId);
+
         break;
       case "Recipient": {
         // Recipient: full access only if they own the data
-        if ((await getUuidFromAuth0Id(auth0UserIdFromJwt)) === recipientId) {
-          await deleteAuth0User(auth0UserIdFromJwt);
-          await deleteRecipient(recipientId);
-        } else {
+        if ((await getUuidFromAuth0Id(auth0UserIdFromJwt)) !== recipientId) {
           const problemDetails: ProblemDetails = {
             title: "Permission Denied",
             status: 403,
@@ -257,6 +267,10 @@ recipientRouter.delete(
           res.status(problemDetails.status).json(problemDetails);
           return;
         }
+
+        await deleteAuth0User(auth0UserIdFromJwt);
+        deleteResult = await deleteRecipient(recipientId);
+
         break;
       }
       default: {
@@ -270,6 +284,16 @@ recipientRouter.delete(
       }
     }
 
+    if (!deleteResult) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Recipient with id '${recipientId}' was not found`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
+
     res.status(204).send();
-  },
+  }
 );

@@ -2,6 +2,7 @@ import { UUID } from "crypto";
 import { z } from "zod";
 import {
   MIN_STRING_LENGTH,
+  USER_TYPES,
   validDate,
   validNonEmptyString,
   validPhoneNo,
@@ -9,7 +10,7 @@ import {
   validUuid,
 } from "../utils/zod-helpers.js";
 
-export type UserRole = "Supervisor" | "Recipient";
+export type UserType = (typeof USER_TYPES)[number];
 
 export const SENSITIVE_USER_FIELDS = [
   "auth0UserId",
