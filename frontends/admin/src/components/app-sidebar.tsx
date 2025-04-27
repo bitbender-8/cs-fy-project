@@ -33,7 +33,7 @@ const itemsBottom = [
   },
   {
     title: "Logout",
-    url: "/logout",
+    url: "/auth/logout",
     icon: LogOutIcon,
   },
 ];
