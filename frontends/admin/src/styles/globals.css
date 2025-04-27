@@ -141,3 +141,9 @@
     --chart-5: 340 75% 55%;
   }
 }
+
+  html body[data-scroll-locked] {
+    overflow: visible !important;
+    padding: 12px !important;
+    margin-right: 0 !important;
+  } 
