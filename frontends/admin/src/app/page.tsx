@@ -1,31 +1,117 @@
 import DashboardCard from "@/components/dashboard-card";
 import { DashboardGraph } from "@/components/dashboard-graph";
+import prisma from "@/lib/prisma";
 
-const dashboardCardsList = [
-  {
-    id: "campaigns",
-    title: "Total Campaigns",
-    amount: 398,
-    icon: "/icons/people-dashboard-icon.svg",
-    trend: 8.5,
-  },
-  {
-    id: "donations",
-    title: "Total Donations",
-    amount: 3578987,
-    icon: "/icons/graph-dashboard-icon.svg",
-    trend: 2.5,
-  },
-  {
-    id: "live-campaigns",
-    title: "Total Live Campaigns",
-    amount: 15,
-    icon: "/icons/live-dashboard-icon.svg",
-    trend: -4.3,
-  },
-];
+export default async function BroswseCampaignsHomePage() {
+  const newCampaignsCount = await prisma.campaign.count({
+    where: {
+      submissionDate: {
+        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // new campaigns in the last 7 days
+      },
+    },
+  });
 
-export default function BroswseCampaignsHomePage() {
+  const lastWeekCampaignsCount = await prisma.campaign.findMany({
+    where: {
+      submissionDate: {
+        gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // campaigns in the week before that
+        lte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // new campaigns in the last 7 days
+      },
+    },
+  });
+
+  const totalCampaignsCount = await prisma.campaign.count();
+
+  // Do the same for donations
+  const newDonationsCount = await prisma.campaignDonation.count({
+    where: {
+      createdAt: {
+        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // new donations in the last 7 days
+      },
+    },
+  });
+  const lastWeekDonationsCount = await prisma.campaignDonation.findMany({
+    where: {
+      createdAt: {
+        gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // donations in the week before that
+        lte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // new donations in the last 7 days
+      },
+    },
+  });
+
+  const totalDonationsSum = await prisma.campaignDonation.aggregate({
+    _sum: {
+      grossAmount: true,
+    },
+  });
+
+  // Do the same for live campaigns
+  const newLiveCampaignsCount = await prisma.campaign.count({
+    where: {
+      submissionDate: {
+        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // new live campaigns in the last 7 days
+      },
+      status: "Live",
+    },
+  });
+
+  const lastWeekLiveCampaignsCount = await prisma.campaign.findMany({
+    where: {
+      submissionDate: {
+        gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // live campaigns in the week before that
+        lte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // new live campaigns in the last 7 days
+      },
+      status: "Live",
+    },
+  });
+
+  const totalLiveCampaignsCount = await prisma.campaign.count({
+    where: {
+      status: "Live",
+    },
+  });
+
+  // create a dashboardCardsList with the data from the database
+  const dashboardCardsListWithData = [
+    {
+      id: "campaigns",
+      title: "Total Campaigns",
+      amount: totalCampaignsCount,
+      icon: "/icons/people-dashboard-icon.svg",
+      trend:
+        // if there are no last week campaigns, set the trend to 0
+        lastWeekCampaignsCount.length === 0
+          ? 0
+          : ((newCampaignsCount - lastWeekCampaignsCount.length) /
+              lastWeekCampaignsCount.length) *
+            100,
+    },
+    {
+      id: "donations",
+      title: "Total Donations",
+      amount: totalDonationsSum._sum.grossAmount || 0,
+      icon: "/icons/graph-dashboard-icon.svg",
+      trend:
+        lastWeekDonationsCount.length === 0
+          ? 0
+          : ((newDonationsCount - lastWeekDonationsCount.length) /
+              lastWeekDonationsCount.length) *
+            100,
+    },
+    {
+      id: "live-campaigns",
+      title: "Total Live Campaigns",
+      amount: totalLiveCampaignsCount,
+      icon: "/icons/live-dashboard-icon.svg",
+      trend:
+        lastWeekLiveCampaignsCount.length === 0
+          ? 0
+          : ((newLiveCampaignsCount - lastWeekLiveCampaignsCount.length) /
+              lastWeekLiveCampaignsCount.length) *
+            100,
+    },
+  ];
+
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -33,7 +119,7 @@ export default function BroswseCampaignsHomePage() {
       </div>
 
       <div className="flex justify-between">
-        {dashboardCardsList.map((card) => (
+        {dashboardCardsListWithData.map((card) => (
           <DashboardCard
             key={card.id}
             id={card.id}
