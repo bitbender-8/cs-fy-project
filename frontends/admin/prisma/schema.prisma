@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Campaign {
+  id                      String                    @id @db.Uuid
+  title                   String                    @db.VarChar(100)
+  description             String                    @db.VarChar(500)
+  fundraisingGoal         BigInt
+  status                  CampaignStatus
+  category                String                    @db.VarChar(100)
+  paymentMethod           String                    @db.VarChar(100)
+  phoneNo                 String?                   @db.VarChar(20)
+  bankAccountNo           String?                   @db.VarChar(16)
+  bankName                String?                   @db.VarChar(50)
+  submissionDate          DateTime                  @default(now()) @db.Timestamptz(6)
+  verificationDate        DateTime?                 @db.Timestamptz(6)
+  denialDate              DateTime?                 @db.Timestamptz(6)
+  launchDate              DateTime?                 @db.Timestamptz(6)
+  endDate                 DateTime?                 @db.Timestamptz(6)
+  isPublic                Boolean                   @default(false)
+  ownerRecipientId        String                    @db.Uuid
+  Recipient               Recipient                 @relation(fields: [ownerRecipientId], references: [id], onDelete: Cascade)
+  CampaignDocuments       CampaignDocuments[]
+  CampaignDonation        CampaignDonation[]
+  CampaignPost            CampaignPost[]
+  EndDateExtensionRequest EndDateExtensionRequest[]
+  GoalAdjustmentRequest   GoalAdjustmentRequest[]
+  PostUpdateRequest       PostUpdateRequest[]
+  StatusChangeRequest     StatusChangeRequest[]
+}
+
+model CampaignDocuments {
+  documentUrl         String   @id
+  redactedDocumentUrl String?
+  campaignId          String   @db.Uuid
+  Campaign            Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model CampaignDonation {
+  id             String   @id @db.Uuid
+  grossAmount    BigInt
+  serviceFee     BigInt
+  createdAt      DateTime @db.Timestamptz(6)
+  transactionRef String   @unique @db.VarChar(255)
+  campaignId     String   @db.Uuid
+  Campaign       Campaign @relation(fields: [campaignId], references: [id])
+}
+
+model CampaignPost {
+  id                String             @id @db.Uuid
+  title             String             @db.VarChar(100)
+  content           String
+  publicPostDate    DateTime?          @db.Timestamptz(6)
+  campaignId        String             @db.Uuid
+  Campaign          Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  PostUpdateRequest PostUpdateRequest?
+}
+
+model EndDateExtensionRequest {
+  id             String    @id @db.Uuid
+  title          String    @db.VarChar(100)
+  requestDate    DateTime  @default(now()) @db.Timestamptz(6)
+  justification  String
+  resolutionDate DateTime? @db.Timestamptz(6)
+  newEndDate     DateTime  @db.Timestamptz(6)
+  campaignId     String    @db.Uuid
+  Campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model GoalAdjustmentRequest {
+  id             String    @id @db.Uuid
+  title          String    @db.VarChar(100)
+  requestDate    DateTime  @default(now()) @db.Timestamptz(6)
+  justification  String
+  resolutionDate DateTime? @db.Timestamptz(6)
+  newGoal        BigInt
+  campaignId     String    @db.Uuid
+  Campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Notification {
+  id           String      @id @db.Uuid
+  subject      String      @db.VarChar(255)
+  body         String?
+  isRead       Boolean
+  createdAt    DateTime    @default(now()) @db.Timestamptz(6)
+  recipientId  String?     @db.Uuid
+  supervisorId String?     @db.Uuid
+  Recipient    Recipient?  @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  Supervisor   Supervisor? @relation(fields: [supervisorId], references: [id], onDelete: Cascade)
+}
+
+model PostUpdateRequest {
+  id             String       @id @db.Uuid
+  title          String       @db.VarChar(100)
+  requestDate    DateTime     @default(now()) @db.Timestamptz(6)
+  justification  String
+  resolutionDate DateTime?    @db.Timestamptz(6)
+  campaignId     String       @db.Uuid
+  newPostId      String       @unique @db.Uuid
+  Campaign       Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  CampaignPost   CampaignPost @relation(fields: [newPostId], references: [id], onDelete: Cascade)
+}
+
+model Recipient {
+  id                         String                       @id @db.Uuid
+  firstName                  String                       @db.VarChar(50)
+  middleName                 String                       @db.VarChar(50)
+  lastName                   String                       @db.VarChar(50)
+  dateOfBirth                DateTime                     @db.Date
+  email                      String?                      @unique @db.VarChar(100)
+  phoneNo                    String?                      @unique @db.VarChar(20)
+  auth0UserId                String                       @unique @db.VarChar(255)
+  bio                        String?
+  profilePictureUrl          String?
+  Campaign                   Campaign[]
+  Notification               Notification[]
+  RecipientSocialMediaHandle RecipientSocialMediaHandle[]
+}
+
+model RecipientSocialMediaHandle {
+  id                String    @id @db.Uuid
+  recipientId       String    @db.Uuid
+  socialMediaHandle String
+  Recipient         Recipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+}
+
+model StatusChangeRequest {
+  id             String         @id @db.Uuid
+  title          String         @db.VarChar(100)
+  requestDate    DateTime       @default(now()) @db.Timestamptz(6)
+  justification  String
+  resolutionDate DateTime?      @db.Timestamptz(6)
+  newStatus      CampaignStatus
+  campaignId     String         @db.Uuid
+  Campaign       Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model Supervisor {
+  id           String         @id @db.Uuid
+  auth0UserId  String         @unique @db.VarChar(255)
+  firstName    String         @db.VarChar(50)
+  middleName   String         @db.VarChar(50)
+  lastName     String         @db.VarChar(50)
+  dateOfBirth  DateTime       @db.Date
+  email        String         @unique @db.VarChar(100)
+  phoneNo      String         @unique @db.VarChar(20)
+  Notification Notification[]
+}
+
+enum CampaignStatus {
+  Pending_Review @map("Pending Review")
+  Verified
+  Denied
+  Live
+  Paused
+  Completed
+}
