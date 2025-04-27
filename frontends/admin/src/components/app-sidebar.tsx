@@ -15,7 +15,7 @@ import {
 const itemsTop = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/",
     icon: LayoutDashboard,
   },
   {
