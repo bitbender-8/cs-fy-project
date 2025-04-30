@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { AnyZodObject } from "zod";
+import { z } from "zod";
 
 import {
   SENSITIVE_USER_FILTERS,
@@ -18,11 +18,12 @@ import {
   RecipientSchema,
   SENSITIVE_USER_FIELDS,
   SensitiveUserFields,
+  SocialMediaHandleSchema,
 } from "../models/user.model.js";
 import {
   deleteAuth0User,
   getUserRole,
-  verifyAuth0UserId,
+  getAuth0User,
 } from "../services/user.service.js";
 import {
   deleteRecipient,
@@ -38,12 +39,26 @@ import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
 export const recipientRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
-const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
+const recipientUpdateSchema = RecipientSchema.omit(
   LOCKED_USER_FIELDS.reduce(
     (acc, field) => ({ ...acc, [field]: true }),
     {} as { [key in LockedUserFields]: true },
   ),
 );
+const recipientCreateSchema = RecipientSchema.omit({
+  id: true,
+  email: true,
+  auth0UserId: true,
+  socialMediaHandles: true,
+  profilePictureUrl: true,
+}).extend({
+  socialMediaHandles: z.array(
+    SocialMediaHandleSchema.omit({
+      id: true,
+      recipientId: true,
+    }),
+  ),
+});
 
 recipientRouter.put(
   "/:id",
@@ -214,19 +229,23 @@ recipientRouter.get(
 // Ignores email from recipient object
 recipientRouter.post(
   "/",
-  optionalAuth,
+  requireAuth,
   validateFileUpload("profilePicture", "Images"),
-  validateRequestBody(RecipientSchema),
+  validateRequestBody(recipientCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
-    // Validated recipient data from middleware
-    const recipient: Recipient = req.body;
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+    const auth0User = await getAuth0User(auth0UserIdFromJwt as string);
 
-    // Verify the recipient's auth0 user ID
-    const auth0User = await verifyAuth0UserId(recipient.auth0UserId as string);
-    recipient.email = auth0User.email;
-    recipient.profilePictureUrl = req.file
-      ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
-      : undefined;
+    // Validated recipient data from middleware
+    const recipient: Omit<Recipient, "id"> = {
+      ...(req.body as z.infer<typeof recipientCreateSchema>),
+      email: auth0User.email,
+      auth0UserId: auth0User.userId,
+      socialMediaHandles: req.body.socialMediaHandles,
+      profilePictureUrl: req.file
+        ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
+        : undefined,
+    };
 
     // Store recipient in DB
     const insertedRecipient = await insertRecipient(recipient);

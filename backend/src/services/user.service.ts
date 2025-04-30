@@ -141,7 +141,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
   }
 }
 
-export async function verifyAuth0UserId(
+export async function getAuth0User(
   auth0UserId: string,
 ): Promise<Auth0UserResponse> {
   const options = {

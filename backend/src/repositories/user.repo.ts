@@ -342,7 +342,7 @@ export async function deleteRecipient(recipientId: UUID): Promise<boolean> {
 }
 
 export async function insertRecipient(
-  recipient: Recipient,
+  recipient: Omit<Recipient, "id">,
 ): Promise<Recipient> {
   try {
     const result = await query(
@@ -381,7 +381,7 @@ export async function insertRecipient(
       });
     }
 
-    const insertedRecipient = result.rows[0] as Recipient;
+    const insertedRecipient = result.rows[0] as { id: UUID } & Recipient;
 
     // Insert social media handles if they exist
     if (
@@ -392,7 +392,7 @@ export async function insertRecipient(
 
       for (const handle of recipient.socialMediaHandles) {
         const insertedHandle = await insertSocialMediaHandle({
-          recipientId: recipient.id as UUID,
+          recipientId: insertedRecipient.id,
           socialMediaHandle: handle.socialMediaHandle,
         });
 

@@ -29,10 +29,7 @@ export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
       firstName: faker.person.firstName(),
       middleName: faker.person.middleName(),
       lastName: faker.person.lastName(),
-      dateOfBirth: faker.date
-        .past({ years: 30, refDate: new Date() })
-        .toISOString()
-        .split("T")[0],
+      dateOfBirth: faker.date.past({ years: 30, refDate: new Date() }),
       email: "",
       phoneNo: faker.phone.number({ style: "international" }),
       bio: faker.lorem.sentence(),
@@ -94,10 +91,7 @@ export function generateSupervisors(
       firstName: faker.person.firstName(),
       middleName: faker.person.middleName(),
       lastName: faker.person.lastName(),
-      dateOfBirth: faker.date
-        .past({ years: 30, refDate: new Date() })
-        .toISOString()
-        .split("T")[0],
+      dateOfBirth: faker.date.past({ years: 30, refDate: new Date() }),
       email: "",
       phoneNo: faker.phone.number({ style: "international" }),
     };

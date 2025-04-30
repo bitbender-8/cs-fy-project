@@ -1,4 +1,3 @@
-import { UUID } from "crypto";
 import { z } from "zod";
 import {
   MIN_STRING_LENGTH,
@@ -28,60 +27,32 @@ export const LOCKED_USER_FIELDS = [
 ] as const;
 export type LockedUserFields = (typeof LOCKED_USER_FIELDS)[number];
 
-// Email omiited from Base User interface because it is optional for Recipients and requried for Supervisors.
-export interface User {
-  id?: UUID;
-  auth0UserId?: string;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  dateOfBirth: Date | string;
-  phoneNo?: string;
-  email: string;
-}
-
-export interface Recipient extends User {
-  bio?: string;
-  profilePictureUrl?: string;
-  socialMediaHandles?: SocialMediaHandle[];
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Supervisor extends User {}
-
-export interface SocialMediaHandle {
-  id?: UUID;
-  socialMediaHandle: string;
-  recipientId: UUID;
-}
-
-// ================= Zod schemas ====================
-// Define User schema
+export type User = z.infer<typeof UserSchema>;
 export const UserSchema = z.object({
-  id: validUuid().optional(),
+  id: validUuid(),
   auth0UserId: validNonEmptyString(MIN_STRING_LENGTH, 255),
   firstName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   middleName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   lastName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   dateOfBirth: validDate(true),
-  // FIXME: This is temporary, just until we add phone signups. Phone being optional that is.
+  // FIXME: This is temporary, just until we add phone signups. Phone being optional that is. Review how compliant you are to your signup method promises.
   phoneNo: validPhoneNo().optional(),
   email: z.string().email(),
 });
 
-// Define SocialMediaHandle schema
+export type SocialMediaHandle = z.infer<typeof SocialMediaHandleSchema>;
 export const SocialMediaHandleSchema = z.object({
-  id: validUuid().optional(),
+  id: validUuid(),
   socialMediaHandle: validUrl(),
   recipientId: validUuid(),
 });
 
-// Define Recipient schema extending User
+export type Recipient = z.infer<typeof RecipientSchema>;
 export const RecipientSchema = UserSchema.extend({
   bio: validNonEmptyString(MIN_STRING_LENGTH, 500),
   profilePictureUrl: validUrl().optional(),
   socialMediaHandles: z.array(SocialMediaHandleSchema).optional(),
 });
 
-// Define Supervisor schema extending User
+export type Supervisor = z.infer<typeof SupervisorSchema>;
 export const SupervisorSchema = UserSchema;
