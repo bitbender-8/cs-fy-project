@@ -1,219 +1,30 @@
 "use client";
 
+import { $Enums } from "@/generated/prisma";
 import { ColumnDef } from "@tanstack/react-table";
 
-export type Campaign = {
+export type CampaignTableType = {
   id: string;
   title: string;
-  recipient: string;
+  fundraisingGoal: bigint;
+  status: $Enums.CampaignStatus;
   category: string;
-  fundraisingGoal: number;
-  endDate: string;
-};
-
-export const campaigns: Campaign[] = [
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 2 Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-  {
-    id: "1",
-    title: "Campaign 1",
-    recipient: "Recipient 1",
-    category: "Health",
-    fundraisingGoal: 10000,
-    endDate: "2023-12-31",
-  },
-  {
-    id: "2",
-    title: "Campaign 2",
-    recipient: "Recipient 2",
-    category: "Education",
-    fundraisingGoal: 20000,
-    endDate: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Campaign 3",
-    recipient: "Recipient 3",
-    category: "Environment",
-    fundraisingGoal: 15000,
-    endDate: "2024-02-28",
-  },
-];
+  endDate: Date | null;
+  recipient: string;
+}
 
 function TableHeaderFormatter({ headerName }: { headerName: string }) {
   return <p className="font-extrabold">{headerName}</p>;
 }
 
-export const campaignTableColumns: ColumnDef<Campaign>[] = [
+export const campaignTableColumns: ColumnDef<CampaignTableType>[] = [
   {
     accessorKey: "id",
     header: () => <TableHeaderFormatter headerName="ID" />,
+    cell: ({ row }) => (
+      // row.index is zero‐based, so +1 to start from 1
+      <div className="mr-5">{row.index + 1}</div>
+    ),
   },
   {
     accessorKey: "title",
