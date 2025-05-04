@@ -6,7 +6,7 @@ class Campaign {
   String title;
   String description;
   String fundraisingGoal;
-  CampaignStatus status;
+  CampaignStatus? status;
   String category;
   DateTime? launchDate;
   DateTime endDate;
@@ -22,7 +22,7 @@ class Campaign {
     required this.title,
     required this.description,
     required this.fundraisingGoal,
-    required this.status,
+    this.status,
     required this.category,
     this.launchDate,
     required this.endDate,

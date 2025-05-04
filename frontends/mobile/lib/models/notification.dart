@@ -24,4 +24,14 @@ enum UserType {
 
   final String value;
   const UserType(this.value);
+  static UserType? fromString(String value) {
+    switch (value) {
+      case "Supervisor":
+        return UserType.supervisor;
+      case "Recipient":
+        return UserType.recipient;
+      default:
+        return null;
+    }
+  }
 }

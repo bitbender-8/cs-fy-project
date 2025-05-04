@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/pages/login_required_page.dart';
 import 'package:mobile/pages/public_campaigns_page.dart';
+import 'package:mobile/services/notifiers.dart';
 import 'package:mobile/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class NavPage {
   const NavPage({
     required this.title,
     required this.icon,
-    required this.widget,
+    required this.pageWidget,
   });
 
   final String title;
-  final Widget widget;
+  final Widget pageWidget;
   final IconData icon;
 }
 
@@ -24,29 +27,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
-  final List<NavPage> _navPages = const [
-    NavPage(
-      title: '    Public\nCampaigns',
-      widget: PublicCampaignsPage(),
-      icon: Icons.public,
-    ),
-    NavPage(
-      title: 'My Campaigns',
-      widget: Center(child: Text('My Campaigns Page')),
-      icon: Icons.folder,
-    ),
-    NavPage(
-      title: 'Campaign\n requests',
-      widget: Center(child: Text('Campaign Requests Page')),
-      icon: Icons.list_alt,
-    ),
-    NavPage(
-      title: 'Settings',
-      widget: Center(child: Text('Profile and Settings Page')),
-      icon: Icons.settings,
-    ),
-  ];
-
   void _onDestinationTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -57,10 +37,42 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final ThemeData currentTheme = Theme.of(context);
 
+    final userProvider = Provider.of<UserProvider>(context);
+    final bool isLoggedIn = userProvider.credentials != null;
+
+    List<NavPage> navPages = [
+      const NavPage(
+        title: '    Public\nCampaigns',
+        pageWidget: PublicCampaignsPage(),
+        icon: Icons.public,
+      ),
+      NavPage(
+        title: '       My\nCampaigns',
+        pageWidget: isLoggedIn
+            ? const Center(child: Text('My Campaigns Page'))
+            : const LoginRequiredPage(),
+        icon: Icons.folder,
+      ),
+      NavPage(
+        title: 'Campaign\n requests',
+        pageWidget: isLoggedIn
+            ? const Center(child: Text('Campaign Requests Page'))
+            : const LoginRequiredPage(),
+        icon: Icons.list_alt,
+      ),
+      NavPage(
+        title: 'Profile\n',
+        pageWidget: isLoggedIn
+            ? const Center(child: Text('Profile and Settings Page'))
+            : const LoginRequiredPage(),
+        icon: Icons.account_circle_rounded,
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          toTitleCase(_navPages[_selectedIndex].title),
+          toTitleCase(navPages[_selectedIndex].title),
           style: currentTheme.textTheme.titleLarge?.copyWith(
             color: currentTheme.colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
@@ -79,9 +91,9 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: _navPages[_selectedIndex].widget,
+      body: navPages[_selectedIndex].pageWidget,
       bottomNavigationBar: NavigationBar(
-        destinations: _navPages
+        destinations: navPages
             .map(
               (navPage) => NavigationDestination(
                 icon: Icon(navPage.icon),
