@@ -1,5 +1,6 @@
 import CampaignAdditionalDocumentsList from "@/components/campaign-additional-documents-list";
 import CampaignDocumentsList from "@/components/campaign-documents-list";
+import CampaignDocumentsListTemp from "@/components/campaign-documents-list-temp";
 import ChangeCampaignVisibilityDropdownMenu from "@/components/change-campaign-visibility-dropdown-menu";
 import { DialogDecline } from "@/components/dialog-decline";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         CampaignDonation: true,
         CampaignDocuments: true,
         CampaignPost: true,
+        EndDateExtensionRequest: true,
+        GoalAdjustmentRequest: true,
+        PostUpdateRequest: true,
+        StatusChangeRequest: true,
       },
     });
   } catch (error) {
@@ -53,9 +58,13 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     endDate,
     CampaignDonation,
     status,
+    CampaignDocuments,
+    EndDateExtensionRequest,
+    GoalAdjustmentRequest,
+    PostUpdateRequest,
+    StatusChangeRequest,
   } = campaign;
 
-  console.log("Status: ", status)
   let amountRaised = 0;
   CampaignDonation.forEach((donation) => {
     amountRaised += Number(donation.grossAmount);
@@ -70,7 +79,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     <div className="flex flex-col gap-5">
       <div className="flex gap-3 justify-between">
         <h1 className="text-primary">Campaign Overview</h1>
-        <ChangeCampaignVisibilityDropdownMenu status={status} campaignId={campaignId} />
+        <ChangeCampaignVisibilityDropdownMenu
+          status={status}
+          campaignId={campaignId}
+        />
       </div>
 
       <div className="flex justify-between">
@@ -117,7 +129,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       <div>
         <h2 className="text-primary">Campaign Documents</h2>
 
-        <CampaignDocumentsList />
+        {/* <CampaignDocumentsList /> */}
+        <CampaignDocumentsListTemp campaignDocuments={CampaignDocuments} />
       </div>
 
       <hr />
