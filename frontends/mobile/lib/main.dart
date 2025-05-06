@@ -9,8 +9,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: const CampaignsScreen(),
+    return const MaterialApp(
+      home: CampaignsScreen(),
     );
   }
 }
@@ -19,9 +19,8 @@ class MyApp extends StatelessWidget {
 class CampaignsScreen extends StatefulWidget {
   const CampaignsScreen({super.key});
 
- 
   @override
-  _CampaignsScreenState createState() => _CampaignsScreenState();
+  State<CampaignsScreen> createState() => _CampaignsScreenState();
 }
 
 class _CampaignsScreenState extends State<CampaignsScreen> {
@@ -29,7 +28,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
   final List<Widget> _screens = [
     const PublicCampaignsPage(),
     const MyCampaignsPage(),
-    const CampaignRequestPage(), 
+    const CampaignRequestPage(),
     const SettingsPage(),
   ];
 
@@ -44,9 +43,9 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.grey[850], 
-        selectedItemColor: Colors.blue, 
-        unselectedItemColor: Colors.white, 
+        backgroundColor: Colors.grey[850],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.white,
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
@@ -70,7 +69,7 @@ class CampaignRequestPage extends StatefulWidget {
   const CampaignRequestPage({super.key});
 
   @override
-  _CampaignRequestPageState createState() => _CampaignRequestPageState();
+  State<CampaignRequestPage> createState() => _CampaignRequestPageState();
 }
 
 class _CampaignRequestPageState extends State<CampaignRequestPage> {
@@ -309,14 +308,12 @@ class CampaignDetailsPage extends StatelessWidget {
             Text('Launch Date: ${campaign['launchDate']}'),
             Text('End Date: ${campaign['endDate']}'),
             const SizedBox(height: 16),
-            Text('Description:',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Description:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Text(campaign['description']!),
             const SizedBox(height: 16),
-            Text('Updates:',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Updates:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Text(campaign['updates']!),
             const SizedBox(height: 16),
             ElevatedButton(
