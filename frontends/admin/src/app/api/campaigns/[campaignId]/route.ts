@@ -2,12 +2,11 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ResolutionType } from "@/generated/prisma";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { campaignId: string } },
-) {
-  params = await params;
-  const campaignId = params.campaignId;
+type CampaignProps = { params: Promise<{ campaignId: string }> };
+
+export async function POST(req: NextRequest, { params }: CampaignProps) {
+  const { campaignId } = await params;
+
   const body = await req.json();
 
   const { requestType, requestId, action } = body;
