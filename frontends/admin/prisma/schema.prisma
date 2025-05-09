@@ -64,25 +64,27 @@ model CampaignPost {
 }
 
 model EndDateExtensionRequest {
-  id             String    @id @db.Uuid
-  title          String    @db.VarChar(100)
-  requestDate    DateTime  @default(now()) @db.Timestamptz(6)
+  id             String          @id @db.Uuid
+  title          String          @db.VarChar(100)
+  requestDate    DateTime        @default(now()) @db.Timestamptz(6)
   justification  String
-  resolutionDate DateTime? @db.Timestamptz(6)
-  newEndDate     DateTime  @db.Timestamptz(6)
-  campaignId     String    @db.Uuid
-  Campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  resolutionDate DateTime?       @db.Timestamptz(6)
+  resolutionType ResolutionType?
+  newEndDate     DateTime        @db.Timestamptz(6)
+  campaignId     String          @db.Uuid
+  Campaign       Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 model GoalAdjustmentRequest {
-  id             String    @id @db.Uuid
-  title          String    @db.VarChar(100)
-  requestDate    DateTime  @default(now()) @db.Timestamptz(6)
+  id             String          @id @db.Uuid
+  title          String          @db.VarChar(100)
+  requestDate    DateTime        @default(now()) @db.Timestamptz(6)
   justification  String
-  resolutionDate DateTime? @db.Timestamptz(6)
+  resolutionDate DateTime?       @db.Timestamptz(6)
+  resolutionType ResolutionType?
   newGoal        BigInt
-  campaignId     String    @db.Uuid
-  Campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId     String          @db.Uuid
+  Campaign       Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -99,15 +101,16 @@ model Notification {
 }
 
 model PostUpdateRequest {
-  id             String       @id @db.Uuid
-  title          String       @db.VarChar(100)
-  requestDate    DateTime     @default(now()) @db.Timestamptz(6)
+  id             String          @id @db.Uuid
+  title          String          @db.VarChar(100)
+  requestDate    DateTime        @default(now()) @db.Timestamptz(6)
   justification  String
-  resolutionDate DateTime?    @db.Timestamptz(6)
-  campaignId     String       @db.Uuid
-  newPostId      String       @unique @db.Uuid
-  Campaign       Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  CampaignPost   CampaignPost @relation(fields: [newPostId], references: [id], onDelete: Cascade)
+  resolutionDate DateTime?       @db.Timestamptz(6)
+  resolutionType ResolutionType?
+  campaignId     String          @db.Uuid
+  newPostId      String          @unique @db.Uuid
+  Campaign       Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  CampaignPost   CampaignPost    @relation(fields: [newPostId], references: [id], onDelete: Cascade)
 }
 
 model Recipient {
@@ -134,14 +137,15 @@ model RecipientSocialMediaHandle {
 }
 
 model StatusChangeRequest {
-  id             String         @id @db.Uuid
-  title          String         @db.VarChar(100)
-  requestDate    DateTime       @default(now()) @db.Timestamptz(6)
+  id             String          @id @db.Uuid
+  title          String          @db.VarChar(100)
+  requestDate    DateTime        @default(now()) @db.Timestamptz(6)
   justification  String
-  resolutionDate DateTime?      @db.Timestamptz(6)
+  resolutionDate DateTime?       @db.Timestamptz(6)
+  resolutionType ResolutionType?
   newStatus      CampaignStatus
-  campaignId     String         @db.Uuid
-  Campaign       Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId     String          @db.Uuid
+  Campaign       Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 model Supervisor {
@@ -163,4 +167,9 @@ enum CampaignStatus {
   Live
   Paused
   Completed
+}
+
+enum ResolutionType {
+  Accepted
+  Rejected
 }
