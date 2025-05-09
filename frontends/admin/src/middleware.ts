@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     // user is not authenticated, redirect to login page
     return NextResponse.redirect(
-      new URL("/auth/login", request.nextUrl.origin)
+      new URL("/auth/login", request.nextUrl.origin),
     );
   }
 
@@ -23,12 +23,12 @@ export async function middleware(request: NextRequest) {
   const roleKey = `${process.env.AUTH0_NAMESPACE}/roles`;
   const accessToken = await auth0.getAccessToken();
   const decodedAccessToken = jwtDecode<{ [key: string]: string[] }>(
-    accessToken.token
+    accessToken.token,
   );
   const role = decodedAccessToken[roleKey];
   if (role[0] !== "Supervisor") {
     return NextResponse.redirect(
-      new URL("/auth/logout", request.nextUrl.origin)
+      new URL("/auth/logout", request.nextUrl.origin),
     );
   }
 

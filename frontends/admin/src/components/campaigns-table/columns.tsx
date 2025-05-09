@@ -11,7 +11,7 @@ export type CampaignTableType = {
   category: string;
   endDate: Date | null;
   recipient: string;
-}
+};
 
 function TableHeaderFormatter({ headerName }: { headerName: string }) {
   return <p className="font-extrabold">{headerName}</p>;

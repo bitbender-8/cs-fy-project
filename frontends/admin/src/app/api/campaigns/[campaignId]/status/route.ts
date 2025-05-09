@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { campaignId: string } }
+  { params }: { params: { campaignId: string } },
 ) {
   params = await params;
   const { status } = await request.json();

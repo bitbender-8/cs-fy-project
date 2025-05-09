@@ -142,8 +142,8 @@
   }
 }
 
-  html body[data-scroll-locked] {
-    overflow: visible !important;
-    padding: 12px !important;
-    margin-right: 0 !important;
-  } 
+html body[data-scroll-locked] {
+  overflow: visible !important;
+  padding: 12px !important;
+  margin-right: 0 !important;
+}

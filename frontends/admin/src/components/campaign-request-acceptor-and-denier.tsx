@@ -4,7 +4,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
 type CampaignRequestAccepterAndDenierProps = {
-  requestType: "endDateExtension" | "goalAdjustment" | "postUpdate" | "statusChange";
+  requestType:
+    | "endDateExtension"
+    | "goalAdjustment"
+    | "postUpdate"
+    | "statusChange";
   campaignId: string;
   requestId: string;
 };
@@ -14,7 +18,6 @@ export default function CampaignRequestAccepterAndDenier({
   campaignId,
   requestId,
 }: CampaignRequestAccepterAndDenierProps) {
-
   const router = useRouter();
 
   const handleRequestAction = async (action: "accept" | "reject") => {
@@ -49,7 +52,10 @@ export default function CampaignRequestAccepterAndDenier({
         Approve
       </Button>
 
-      <Button variant="destructive" onClick={() => handleRequestAction("reject")}>
+      <Button
+        variant="destructive"
+        onClick={() => handleRequestAction("reject")}
+      >
         Decline
       </Button>
     </>

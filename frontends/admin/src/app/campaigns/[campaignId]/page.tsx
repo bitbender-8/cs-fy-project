@@ -127,7 +127,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     })),
   ].sort(
     (a, b) =>
-      new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
+      new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime(),
   );
 
   // const sampleAllRequests = [

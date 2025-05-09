@@ -4,7 +4,7 @@ import { ResolutionType } from "@/generated/prisma";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { campaignId: string } }
+  { params }: { params: { campaignId: string } },
 ) {
   params = await params;
   const campaignId = params.campaignId;
@@ -117,7 +117,7 @@ export async function POST(
     console.error("API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -45,7 +45,7 @@ export function DashboardGraph({ initialData }: DashboardGraphProps) {
     cutoff.setDate(cutoff.getDate() - days);
 
     setFilteredData(
-      initialData.filter((d: DonationPerDayData) => new Date(d.date) >= cutoff)
+      initialData.filter((d: DonationPerDayData) => new Date(d.date) >= cutoff),
     );
   }, [timeRange, initialData]);
 
