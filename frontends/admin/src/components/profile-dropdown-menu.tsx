@@ -22,7 +22,7 @@ export default function ProfileDropdownMenu() {
           </DropdownMenuItem>
           <DropdownMenuItem>
             <LogOutIcon />
-            <span>Logout</span>
+            <a href="/auth/logout">Logout</a>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

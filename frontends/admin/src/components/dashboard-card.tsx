@@ -12,7 +12,7 @@ import {
 type DashboardCardProps = {
   id: string;
   title: string;
-  amount: number;
+  amount: bigint | number;
   icon: string;
   trend: number;
 };

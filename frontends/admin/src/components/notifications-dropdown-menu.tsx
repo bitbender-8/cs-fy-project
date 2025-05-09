@@ -7,23 +7,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import prisma from "@/lib/prisma";
 
-const items = [
-  {
-    id: 1,
-    message: "New user registered",
-  },
-  {
-    id: 2,
-    message: "New donation received",
-  },
-  {
-    id: 5,
-    message: "New message from John",
-  },
-];
+export default async function NotificationsDropdownMenu() {
+  const notifications = await prisma.notification.findMany();
 
-export default function NotificationsDropdownMenu() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild className="cursor-pointer">
@@ -38,15 +26,15 @@ export default function NotificationsDropdownMenu() {
           />
 
           <div className="absolute -top-[5px] right-[5px] flex text-white bg-red-500 rounded-full w-4 h-4">
-            <p className="text-[12px] m-auto">6</p>
+            <p className="text-[12px] m-auto">{notifications.length}</p>
           </div>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-52 mt-3">
         <DropdownMenuGroup>
-          {items.map((item) => (
+          {notifications.map((item) => (
             <DropdownMenuItem key={item.id}>
-              <p className="text-[14px]">{item.message}</p>
+              <p className="text-[14px]">{item.body}</p>
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>

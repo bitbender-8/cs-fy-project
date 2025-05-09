@@ -86,7 +86,7 @@ async function seedRecipients(recipients: Recipient[]): Promise<void> {
 }
 
 async function seedSocialHandles(
-  socialHandles: SocialMediaHandle[],
+  socialHandles: SocialMediaHandle[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "RecipientSocialMediaHandle" (
@@ -234,7 +234,7 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
 }
 
 async function seedCampaignDonations(
-  donations: CampaignDonation[],
+  donations: CampaignDonation[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "CampaignDonation" (
@@ -286,7 +286,7 @@ async function seedCampaignPosts(campaignPosts: CampaignPost[]): Promise<void> {
 }
 
 async function seedPostUpdateRequests(
-  requests: PostUpdateRequest[],
+  requests: PostUpdateRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "PostUpdateRequest" (
@@ -295,9 +295,10 @@ async function seedPostUpdateRequests(
       "requestDate",
       "justification", 
       "resolutionDate", 
+      "resolutionType",
       "campaignId", 
       "newPostId"
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   `;
 
   for (const request of requests) {
@@ -307,6 +308,7 @@ async function seedPostUpdateRequests(
       request.requestDate,
       request.justification,
       request.resolutionDate ?? null,
+      request.resolutionType,
       request.campaignId,
       request.newPost.id,
     ]);
@@ -314,7 +316,7 @@ async function seedPostUpdateRequests(
 }
 
 async function seedEndDateExtensionRequests(
-  requests: EndDateExtensionRequest[],
+  requests: EndDateExtensionRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "EndDateExtensionRequest" (
@@ -323,9 +325,10 @@ async function seedEndDateExtensionRequests(
       "requestDate",
       "justification", 
       "resolutionDate", 
+      "resolutionType",
       "newEndDate", 
       "campaignId"
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   `;
 
   for (const request of requests) {
@@ -335,6 +338,7 @@ async function seedEndDateExtensionRequests(
       request.requestDate,
       request.justification,
       request.resolutionDate ?? null,
+      request.resolutionType,
       request.newEndDate,
       request.campaignId,
     ]);
@@ -342,7 +346,7 @@ async function seedEndDateExtensionRequests(
 }
 
 async function seedGoalAdjustmentRequests(
-  requests: GoalAdjustmentRequest[],
+  requests: GoalAdjustmentRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "GoalAdjustmentRequest" (
@@ -350,10 +354,11 @@ async function seedGoalAdjustmentRequests(
       "title", 
       "requestDate",
       "justification", 
-      "resolutionDate", 
+      "resolutionDate",
+      "resolutionType", 
       "newGoal", 
       "campaignId"
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   `;
 
   for (const request of requests) {
@@ -363,6 +368,7 @@ async function seedGoalAdjustmentRequests(
       request.requestDate,
       request.justification,
       request.resolutionDate ?? null,
+      request.resolutionType,
       typeof request.newGoal === "string"
         ? fromMoneyStrToBigInt(request.newGoal)
         : request.newGoal,
@@ -372,7 +378,7 @@ async function seedGoalAdjustmentRequests(
 }
 
 async function seedStatusChangeRequests(
-  requests: StatusChangeRequest[],
+  requests: StatusChangeRequest[]
 ): Promise<void> {
   const queryString = `
     INSERT INTO "StatusChangeRequest" (
@@ -381,9 +387,10 @@ async function seedStatusChangeRequests(
       "requestDate", 
       "justification", 
       "resolutionDate", 
+      "resolutionType",
       "newStatus", 
       "campaignId"
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   `;
 
   for (const request of requests) {
@@ -393,6 +400,7 @@ async function seedStatusChangeRequests(
       request.requestDate,
       request.justification,
       request.resolutionDate ?? null,
+      request.resolutionType,
       request.newStatus,
       request.campaignId,
     ]);
@@ -446,34 +454,34 @@ async function seedDatabase({
   const notifications = generateNotifications(
     recipients,
     supervisors,
-    noOfNotifications,
+    noOfNotifications
   );
   const campaigns = generateCampaigns(
     recipients,
     noOfCampaigns,
-    noOfCampaignCategories,
+    noOfCampaignCategories
   );
   const campaignDonations = generateCampaignDonations(
     campaigns,
-    avgDonationPerCampaign,
+    avgDonationPerCampaign
   );
   const campaignPosts = generateCampaignPosts(campaigns, avgPostPerCampaign);
   const postUpdateRequests = generatePostUpdateRequests(
     campaigns,
     campaignPosts,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const endDateExtensionRequests = generateEndDateExtensionRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const goalAdjustmentRequests = generateGoalAdjustmentRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
   const statusChangeRequests = generateStatusChangeRequests(
     campaigns,
-    noOfRequestsPerRequestType,
+    noOfRequestsPerRequestType
   );
 
   // Seed database

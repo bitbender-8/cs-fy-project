@@ -15,7 +15,7 @@ import {
 const itemsTop = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/",
     icon: LayoutDashboard,
   },
   {
@@ -33,7 +33,7 @@ const itemsBottom = [
   },
   {
     title: "Logout",
-    url: "/logout",
+    url: "/auth/logout",
     icon: LogOutIcon,
   },
 ];
