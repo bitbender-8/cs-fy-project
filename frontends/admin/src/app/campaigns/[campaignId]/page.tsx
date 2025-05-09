@@ -1,12 +1,11 @@
-import CampaignAdditionalDocumentsList from "@/components/campaign-additional-documents-list";
-import CampaignDocumentsList from "@/components/campaign-documents-list";
 import CampaignDocumentsListTemp from "@/components/campaign-documents-list-temp";
+import CampaignRequestAccepterAndDenier from "@/components/campaign-request-acceptor-and-denier";
 import ChangeCampaignVisibilityDropdownMenu from "@/components/change-campaign-visibility-dropdown-menu";
-import { DialogDecline } from "@/components/dialog-decline";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Campaign, CampaignDonation, Prisma } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
+import { submitCampaignUpdate } from "@/lib/actions";
 import prisma from "@/lib/prisma";
 import { ArrowBigRight } from "lucide-react";
 
@@ -21,6 +20,14 @@ type CampaignWithDonations = Prisma.CampaignGetPayload<{
     CampaignDonation: true;
     CampaignDocuments: true;
     CampaignPost: true;
+    EndDateExtensionRequest: true;
+    GoalAdjustmentRequest: true;
+    PostUpdateRequest: {
+      include: {
+        CampaignPost: true;
+      };
+    };
+    StatusChangeRequest: true;
   };
 }>;
 
@@ -36,10 +43,29 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         CampaignDonation: true,
         CampaignDocuments: true,
         CampaignPost: true,
-        EndDateExtensionRequest: true,
-        GoalAdjustmentRequest: true,
-        PostUpdateRequest: true,
-        StatusChangeRequest: true,
+        EndDateExtensionRequest: {
+          where: {
+            resolutionType: null,
+          },
+        },
+        GoalAdjustmentRequest: {
+          where: {
+            resolutionType: null,
+          },
+        },
+        PostUpdateRequest: {
+          include: {
+            CampaignPost: true,
+          },
+          where: {
+            resolutionType: null,
+          },
+        },
+        StatusChangeRequest: {
+          where: {
+            resolutionType: null,
+          },
+        },
       },
     });
   } catch (error) {
@@ -74,6 +100,85 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   const remainingAmount = remaining > 0 ? remaining : 0;
 
   const progressValue = (amountRaised / Number(fundraisingGoal)) * 100;
+
+  // Gather all requests, annotate with type, and sort by requestDate descending
+  const allRequests = [
+    ...EndDateExtensionRequest.map((req) => ({
+      ...req,
+      type: "endDateExtension" as const,
+      header: "End Date Extension" as const,
+      oldEndDate: endDate,
+    })),
+    ...GoalAdjustmentRequest.map((req) => ({
+      ...req,
+      type: "goalAdjustment" as const,
+      header: "Goal Adjustment" as const,
+      oldGoal: fundraisingGoal,
+    })),
+    ...PostUpdateRequest.map((req) => ({
+      ...req,
+      type: "postUpdate" as const,
+      header: "New Post" as const,
+    })),
+    ...StatusChangeRequest.map((req) => ({
+      ...req,
+      type: "statusChange" as const,
+      header: "Change Campaign Status" as const,
+    })),
+  ].sort(
+    (a, b) =>
+      new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
+  );
+
+  // const sampleAllRequests = [
+  //   {
+  //     id: "r1",
+  //     title: "Extend Campaign End",
+  //     campaignId: "c1",
+  //     requestDate: new Date("2025-04-15T10:30:00Z"),
+  //     justification: "Additional time needed for late pledges",
+  //     resolutionDate: null,
+  //     oldEndDate: new Date("2025-06-30"),
+  //     newEndDate: new Date("2025-12-31"),
+  //     type: "endDateExtension" as const,
+  //   },
+  //   {
+  //     id: "r2",
+  //     title: "Adjust Fundraising Goal",
+  //     campaignId: "c1",
+  //     requestDate: new Date("2025-03-20T14:00:00Z"),
+  //     justification: "Strong donor interest – let’s aim higher",
+  //     resolutionDate: new Date("2025-03-25T09:00:00Z"),
+  //     oldGoal: BigInt(500_000),
+  //     newGoal: BigInt(750_000),
+  //     type: "goalAdjustment" as const,
+  //   },
+  //   {
+  //     id: "r3",
+  //     title: "Post Campaign Update",
+  //     campaignId: "c1",
+  //     requestDate: new Date("2025-02-10T08:15:00Z"),
+  //     justification: "Share recent milestones with backers",
+  //     resolutionDate: null,
+  //     newPostId: "post_12345",
+  //     type: "postUpdate" as const,
+  //   },
+  //   {
+  //     id: "r4",
+  //     title: "Change Status to Archived",
+  //     campaignId: "c1",
+  //     requestDate: new Date("2025-01-05T16:45:00Z"),
+  //     justification: "Campaign completed successfully",
+  //     resolutionDate: new Date("2025-01-10T11:00:00Z"),
+  //     newStatus: "archived" as CampaignStatus,
+  //     type: "statusChange" as const,
+  //   },
+  // ];
+
+  // // If you want them sorted by requestDate descending:
+  // const sortedSampleRequests = sampleAllRequests.sort(
+  //   (a, b) => b.requestDate.getTime() - a.requestDate.getTime()
+  // );
 
   return (
     <div className="flex flex-col gap-5">
@@ -137,88 +242,81 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
       <div className="flex flex-col gap-5">
         <h2 className="text-primary">Requested Updates</h2>
+        {allRequests.map((req) => (
+          <div key={req.id} className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold mb-0">{req.header}</h3>
+              <p className="text-xs text-gray-500">
+                Requested on {new Date(req.requestDate).toLocaleDateString()}
+              </p>
 
-        {/* Campaign Goal Adjustment */}
-        <div className="flex justify-between">
-          <div>
-            <h3 className="text-lg font-semibold mb-0">
-              Campaign Goal Adjustment
-            </h3>
-            <p className="text-xs text-gray-500 items-end">
-              Requested on Jan. 5, 2024
-            </p>
-          </div>
+              <br />
+              <h3 className="text-lg font-semibold mb-0 underline">Reason</h3>
+              <p className="w-full pr-5">{req.justification}</p>
 
-          <div className="flex gap-5 ml-auto items-center">
-            <div className="flex gap-1">
-              <p>100,000</p>
-              <ArrowBigRight />
-              <p>200,000 ETB</p>
+              {req.type === "postUpdate" && (
+                <>
+                  <br />
+                  <h3 className="text-lg font-semibold mb-0">
+                    New Post Content
+                  </h3>
+                  <p className="w-full pr-5">{req.CampaignPost.content}</p>
+                </>
+              )}
             </div>
-            <Button className="cursor-pointer" variant="default">
-              Approve
-            </Button>
-            <DialogDecline />
-          </div>
-        </div>
 
-        {/* Additional Documents Update */}
-        <div>
-          <div>
-            <h3 className="text-lg font-semibold mb-0">
-              Additional Campaign Documents
-            </h3>
-            <p className="text-xs text-gray-500 items-end">
-              Requested on Jan. 5, 2024
-            </p>
-          </div>
+            <div className="flex gap-5 ml-auto items-center">
+              {req.type === "goalAdjustment" && (
+                <div className="flex gap-1">
+                  <p>{Number(req.oldGoal).toLocaleString()}</p>
+                  <ArrowBigRight />
+                  <p>{Number(req.newGoal).toLocaleString()} ETB</p>
+                </div>
+              )}
 
-          <CampaignAdditionalDocumentsList />
+              {req.type === "endDateExtension" && (
+                <div className="flex gap-1">
+                  <p>{new Date(req.oldEndDate!).toLocaleDateString()}</p>
+                  <ArrowBigRight />
+                  <p>{new Date(req.newEndDate).toLocaleDateString()}</p>
+                </div>
+              )}
 
-          <div className="flex gap-5 ml-auto items-center mt-2 justify-end">
-            <Button className="cursor-pointer" variant="default">
-              Approve
-            </Button>
-            <DialogDecline />
-          </div>
-        </div>
+              {req.type === "statusChange" && (
+                <p>New status: {req.newStatus}</p>
+              )}
 
-        {/* Extend campaign end */}
-        <div className="flex justify-between">
-          <div>
-            <h3 className="text-lg font-semibold mb-0">Extend Campaign End</h3>
-            <p className="text-xs text-gray-500 items-end">
-              Requested on Jan. 5, 2024
-            </p>
-          </div>
-
-          <div className="flex gap-5 ml-auto items-center">
-            <div className="flex gap-1">
-              <p>Mar. 29, 2024</p>
-              <ArrowBigRight />
-              <p>Decemeber 2, 2024</p>
+              <CampaignRequestAccepterAndDenier
+                requestType={req.type}
+                campaignId={campaignId}
+                requestId={req.id}
+              />
             </div>
-            <Button className="cursor-pointer" variant="default">
-              Approve
-            </Button>
-            <DialogDecline />
           </div>
-        </div>
+        ))}
       </div>
 
       <hr />
 
-      <div className="flex flex-col gap-3">
+      <form
+        action={submitCampaignUpdate}
+        method="POST"
+        className="flex flex-col gap-3"
+      >
         <h2 className="text-primary">Update campaign</h2>
 
+        <input type="hidden" name="campaignId" value={campaignId} />
+
         <Textarea
+          name="updateContent"
           placeholder="Enter new updates about the campaign..."
           className="h-32"
         />
-        <Button className="cursor-pointer w-fit ml-auto" variant="default">
+
+        <Button type="submit" className="cursor-pointer w-fit ml-auto">
           Submit
         </Button>
-      </div>
+      </form>
 
       <hr />
     </div>
