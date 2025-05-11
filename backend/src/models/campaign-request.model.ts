@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { CampaignPostSchema } from "./campaign.model.js";
 import {
+  REQUEST_RESOLUTION_TYPES,
   CAMPAIGN_REQUEST_TYPES,
   MIN_STRING_LENGTH,
   validCampaignStatus,
@@ -9,10 +10,12 @@ import {
   validMoneyAmount,
   validNonEmptyString,
   validUuid,
+  validCampaignResolution,
 } from "../utils/zod-helpers.js";
 
 // TODO(bitbender-8): Update the class diagram, add the requestType property as an enum, and the ownerRecipientId as a UUID. No change needed for the er diagram and relational schema.
 export type CampaignRequestType = (typeof CAMPAIGN_REQUEST_TYPES)[number];
+export type ResolutionType = (typeof REQUEST_RESOLUTION_TYPES)[number];
 
 const CampaignRequestSchema = z.object({
   id: validUuid(),
@@ -22,6 +25,7 @@ const CampaignRequestSchema = z.object({
   requestDate: validDate(true),
   justification: validNonEmptyString(MIN_STRING_LENGTH, 500),
   resolutionDate: validDate(true).optional(),
+  resolutionType: validCampaignResolution(),
 });
 
 export type GoalAdjustmentRequest = z.infer<typeof GoalAdjustmentRequestSchema>;

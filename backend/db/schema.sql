@@ -74,7 +74,7 @@ CREATE TABLE
         "isRead" BOOLEAN NOT NULL,
         /* DOC-UPDATE Changed timestamp column to createdAt bc it causes errors when used in prepared statements (it might be reserved). */
         -- Timestamp when the notification was issued with time zone.
-        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Foreign key referencing the Recipient table.
         "recipientId" UUID REFERENCES "Recipient" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- Foreign key referencing the Supervisor table.
@@ -93,7 +93,7 @@ CREATE TABLE
     );
 
 -- Encapsulates the possible statuses of a campaign.
-CREATE TYPE "CampaignStatus" AS ENUM (
+CREATE TYPE "CampaignStatus" AS ENUM(
     'Pending Review',
     'Verified',
     'Denied',
@@ -126,7 +126,7 @@ CREATE TABLE
         -- Bank name (if applicable).
         "bankName" VARCHAR(50) NULL,
         -- Timestamp when the campaign was submitted with time zone.
-        "submissionDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "submissionDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Timestamp when the campaign was verified with time zone.
         "verificationDate" TIMESTAMPTZ NULL,
         -- Timestamp when the campaign was denied with time zone.
@@ -190,6 +190,12 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
+/** 
+TODO: (bitbender-8): Propagate to data models in code.
+DOC-UPDATE: Update Relational schema and class diagrams.
+ */
+CREATE TYPE "ResolutionType" AS ENUM('Accepted', 'Rejected');
+
 -- Stores requests to update a campaign post.
 CREATE TABLE
     "PostUpdateRequest" (
@@ -198,11 +204,13 @@ CREATE TABLE
         -- Title of the request.
         "title" VARCHAR(100) NOT NULL,
         -- Timestamp when the request was made with time zone.
-        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the post update.
         "justification" TEXT NOT NULL,
         /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
+        -- Specifies whether the campaign request is accepted or rejected.
+        "resolutionType" "ResolutionType" NULL DEFAULT NULL,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
         -- Foreign key referencing the CampaignPost table.
@@ -217,11 +225,13 @@ CREATE TABLE
         -- Title of the request.
         "title" VARCHAR(100) NOT NULL,
         -- Timestamp when the request was made with time zone.
-        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the extension request.
         "justification" TEXT NOT NULL,
         /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
+        -- Specifies whether the campaign request is accepted or rejected.
+        "resolutionType" "ResolutionType" NULL DEFAULT NULL,
         -- The new proposed end date with time zone.
         "newEndDate" TIMESTAMPTZ NOT NULL,
         -- Foreign key referencing the Campaign table.
@@ -236,11 +246,13 @@ CREATE TABLE
         -- Title of the request.
         "title" VARCHAR(100) NOT NULL,
         -- Timestamp when the request was made with time zone.
-        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the goal adjustment.
         "justification" TEXT NOT NULL,
         /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
+        -- Specifies whether the campaign request is accepted or rejected.
+        "resolutionType" "ResolutionType" NULL DEFAULT NULL,
         -- The new proposed fundraising goal.
         "newGoal" BIGINT NOT NULL,
         -- Foreign key referencing the Campaign table.
@@ -255,11 +267,13 @@ CREATE TABLE
         -- Title of the request.
         "title" VARCHAR(100) NOT NULL,
         -- Timestamp when the request was made with time zone.
-        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+        "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the status change.
         "justification" TEXT NOT NULL,
         /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
+        -- Specifies whether the campaign request is accepted or rejected.
+        "resolutionType" "ResolutionType" NULL DEFAULT NULL,
         -- The new proposed status.
         "newStatus" "CampaignStatus" NOT NULL,
         -- Foreign key referencing the Campaign table.

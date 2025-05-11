@@ -11,7 +11,7 @@ import {
   CampaignDonation,
   CampaignPost,
 } from "../models/campaign.model.js";
-import { CAMPAIGN_STATUSES } from "./zod-helpers.js";
+import { CAMPAIGN_STATUSES, REQUEST_RESOLUTION_TYPES } from "./zod-helpers.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
@@ -29,10 +29,7 @@ export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
       firstName: faker.person.firstName(),
       middleName: faker.person.middleName(),
       lastName: faker.person.lastName(),
-      dateOfBirth: faker.date
-        .past({ years: 30, refDate: new Date() })
-        .toISOString()
-        .split("T")[0],
+      dateOfBirth: faker.date.past({ years: 30, refDate: new Date() }),
       email: "",
       phoneNo: faker.phone.number({ style: "international" }),
       bio: faker.lorem.sentence(),
@@ -94,10 +91,7 @@ export function generateSupervisors(
       firstName: faker.person.firstName(),
       middleName: faker.person.middleName(),
       lastName: faker.person.lastName(),
-      dateOfBirth: faker.date
-        .past({ years: 30, refDate: new Date() })
-        .toISOString()
-        .split("T")[0],
+      dateOfBirth: faker.date.past({ years: 30, refDate: new Date() }),
       email: "",
       phoneNo: faker.phone.number({ style: "international" }),
     };
@@ -323,6 +317,7 @@ export function generatePostUpdateRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newPost: newPost,
     };
@@ -348,6 +343,7 @@ export function generateEndDateExtensionRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newEndDate: newEndDate,
     };
@@ -373,6 +369,7 @@ export function generateGoalAdjustmentRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newGoal: newGoal,
     };
@@ -398,6 +395,7 @@ export function generateStatusChangeRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newStatus: newStatus,
     };
