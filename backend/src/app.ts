@@ -9,6 +9,7 @@ import { supervisorRouter } from "./routes/supervisor.routes.js";
 import { campaignRequestRouter } from "./routes/campaign-request.routes.js";
 import { notificationRouter } from "./routes/notification.routes.js";
 import { campaignPostRouter } from "./routes/campaign-post.routes.js";
+import { ProblemDetails } from "./errors/error.types.js";
 
 const app: Application = express();
 
@@ -19,9 +20,10 @@ if (config.ENV === "Development") {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept",
+      "Origin, X-Requested-With, Content-Type, Accept"
     );
     next();
+    return;
   });
 }
 
@@ -37,6 +39,15 @@ app.use("/campaign-posts", campaignPostRouter);
 
 // Error handlers
 app.use(errorHandler);
+app.use((req, res) => {
+  const problemDetails: ProblemDetails = {
+    title: "Not Found",
+    status: 404,
+    detail: `Cannot ${req.method} ${req.originalUrl}`,
+  };
+  res.status(problemDetails.status).json(problemDetails);
+  return;
+});
 
 // Start server
 app.listen(config.PORT, () => {

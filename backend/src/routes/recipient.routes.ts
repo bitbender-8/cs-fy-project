@@ -18,12 +18,13 @@ import {
   RecipientSchema,
   SENSITIVE_USER_FIELDS,
   SensitiveUserFields,
-  SocialMediaHandleSchema,
+  SocialMediaHandle,
 } from "../models/user.model.js";
 import {
   deleteAuth0User,
   getUserRole,
   getAuth0User,
+  assignRoleToAuth0User,
 } from "../services/user.service.js";
 import {
   deleteRecipient,
@@ -35,6 +36,7 @@ import {
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
+import { validUrl } from "../utils/zod-helpers.js";
 
 export const recipientRouter: Router = Router();
 
@@ -42,8 +44,8 @@ export const recipientRouter: Router = Router();
 const recipientUpdateSchema = RecipientSchema.omit(
   LOCKED_USER_FIELDS.reduce(
     (acc, field) => ({ ...acc, [field]: true }),
-    {} as { [key in LockedUserFields]: true },
-  ),
+    {} as { [key in LockedUserFields]: true }
+  )
 );
 const recipientCreateSchema = RecipientSchema.omit({
   id: true,
@@ -52,12 +54,7 @@ const recipientCreateSchema = RecipientSchema.omit({
   socialMediaHandles: true,
   profilePictureUrl: true,
 }).extend({
-  socialMediaHandles: z.array(
-    SocialMediaHandleSchema.omit({
-      id: true,
-      recipientId: true,
-    }),
-  ),
+  socialMediaHandles: z.array(validUrl()).optional(),
 });
 
 recipientRouter.put(
@@ -89,7 +86,7 @@ recipientRouter.put(
     }
 
     const recipientIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? "",
+      req.auth?.payload.sub ?? ""
     );
     // Validated recipient update data from middleware
     const recipient: Omit<Recipient, LockedUserFields> = req.body;
@@ -109,7 +106,7 @@ recipientRouter.put(
     res.status(204).send();
 
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -136,15 +133,20 @@ recipientRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_USER_FILTERS,
+      SENSITIVE_USER_FILTERS
     );
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
 
     let recipients:
       | PaginatedList<Recipient>
       | PaginatedList<Omit<Recipient, SensitiveUserFields>>;
 
-    if (getUserRole(req.auth) === "Supervisor") {
-      // Supervisor: full access
+    if (
+      getUserRole(req.auth) === "Supervisor" ||
+      (getUserRole(req.auth) === "Recipient" &&
+        queryParams.auth0UserId === auth0UserIdFromJwt)
+    ) {
+      // Supervisor and Account owners: full access
       recipients = await getRecipients(queryParams);
     } else {
       // Everyone else has access to public recipient data
@@ -152,14 +154,14 @@ recipientRouter.get(
       recipients = {
         ...result,
         items: result.items.map((recipient) =>
-          excludeProperties(recipient, SENSITIVE_USER_FIELDS),
+          excludeProperties(recipient, SENSITIVE_USER_FIELDS)
         ),
       };
     }
 
     res.status(200).json(recipients);
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -176,7 +178,7 @@ recipientRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         if (userIdFromJwt === recipientId) {
@@ -194,7 +196,7 @@ recipientRouter.get(
                 id: recipientId,
               })
             ).items[0],
-            SENSITIVE_USER_FIELDS,
+            SENSITIVE_USER_FIELDS
           );
         }
         break;
@@ -207,7 +209,7 @@ recipientRouter.get(
               id: recipientId,
             })
           ).items[0],
-          SENSITIVE_USER_FIELDS,
+          SENSITIVE_USER_FIELDS
         );
     }
 
@@ -223,25 +225,29 @@ recipientRouter.get(
     }
 
     return;
-  },
+  }
 );
 
-// Ignores email from recipient object
 recipientRouter.post(
   "/",
   requireAuth,
-  validateFileUpload("profilePicture", "Images"),
+  validateFileUpload("profilePicture", "Images", 1),
   validateRequestBody(recipientCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
     const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
     const auth0User = await getAuth0User(auth0UserIdFromJwt as string);
 
+    await assignRoleToAuth0User(auth0UserIdFromJwt, "Recipient");
+
     // Validated recipient data from middleware
+    const recipientData = req.body as z.infer<typeof recipientCreateSchema>;
     const recipient: Omit<Recipient, "id"> = {
-      ...(req.body as z.infer<typeof recipientCreateSchema>),
+      ...recipientData,
       email: auth0User.email,
       auth0UserId: auth0User.userId,
-      socialMediaHandles: req.body.socialMediaHandles,
+      socialMediaHandles: recipientData.socialMediaHandles?.map((value) => {
+        return { socialMediaHandle: value } as SocialMediaHandle;
+      }),
       profilePictureUrl: req.file
         ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
         : undefined,
@@ -252,12 +258,12 @@ recipientRouter.post(
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`,
+        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
       )
       .status(201)
       .json(insertedRecipient);
     return;
-  },
+  }
 );
 
 recipientRouter.delete(
@@ -314,5 +320,29 @@ recipientRouter.delete(
     }
 
     res.status(204).send();
-  },
+  }
+);
+
+// TODO (bitbender-8): Add route to openapi.yml
+// To be more robust, you would use an Auth0 action instead relying on calls from the
+recipientRouter.delete(
+  "/auth0/:auth0UserId",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const auth0UserId = req.params.auth0UserId;
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+
+    // Only allow deleting own Auth0 account
+    if (auth0UserIdFromJwt !== auth0UserId) {
+      res.status(403).json({
+        title: "Permission Denied",
+        status: 403,
+        detail: "You can only delete your own Auth0 account.",
+      });
+      return;
+    }
+
+    await deleteAuth0User(auth0UserId);
+    res.status(204).send();
+  }
 );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/campaign_card.dart';
+import 'package:mobile/mock_data.dart';
 
 class PublicCampaignsPage extends StatelessWidget {
   const PublicCampaignsPage({super.key});
@@ -7,81 +8,6 @@ class PublicCampaignsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData currentTheme = Theme.of(context);
-
-    final List<Map<String, dynamic>> dummyCampaigns = [
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 2',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 3',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-      {
-        'title': 'Campaign Title 1',
-        'status': 'Live',
-        'recipient': 'Abebe Kebede',
-        'daysRemaining': 234,
-        'goal': 1000,
-        'progress': 0.54,
-      },
-    ];
 
     return Column(
       children: [
@@ -126,7 +52,7 @@ class PublicCampaignsPage extends StatelessWidget {
             itemCount: dummyCampaigns.length,
             itemBuilder: (context, index) {
               final campaign = dummyCampaigns[index];
-              return CampaignCard(campaignData: campaign);
+              return CampaignCard(campaignData: campaign, isPublic: true);
             },
           ),
         ),

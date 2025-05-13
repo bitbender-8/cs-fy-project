@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/pages/login_required_page.dart';
+import 'package:mobile/pages/my_campaigns_page.dart';
 import 'package:mobile/pages/public_campaigns_page.dart';
-import 'package:mobile/services/notifiers.dart';
+import 'package:mobile/services/providers.dart';
 import 'package:mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 
@@ -35,10 +37,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData currentTheme = Theme.of(context);
-
-    final userProvider = Provider.of<UserProvider>(context);
-    final bool isLoggedIn = userProvider.credentials != null;
+    // final userProvider = Provider.of<UserProvider>(context);
+    final bool isLoggedIn = true; // userProvider.credentials != null;
 
     List<NavPage> navPages = [
       const NavPage(
@@ -48,9 +48,8 @@ class _HomeState extends State<Home> {
       ),
       NavPage(
         title: '       My\nCampaigns',
-        pageWidget: isLoggedIn
-            ? const Center(child: Text('My Campaigns Page'))
-            : const LoginRequiredPage(),
+        pageWidget:
+            isLoggedIn ? const MyCampaignsPage() : const LoginRequiredPage(),
         icon: Icons.folder,
       ),
       NavPage(
@@ -70,27 +69,7 @@ class _HomeState extends State<Home> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          toTitleCase(navPages[_selectedIndex].title),
-          style: currentTheme.textTheme.titleLarge?.copyWith(
-            color: currentTheme.colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: currentTheme.colorScheme.primary,
-        iconTheme: IconThemeData(color: currentTheme.colorScheme.onPrimary),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.notifications,
-              color: currentTheme.colorScheme.onPrimary,
-            ),
-            tooltip: 'Notifications',
-            onPressed: () {},
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(pageTitle: navPages[_selectedIndex].title),
       body: navPages[_selectedIndex].pageWidget,
       bottomNavigationBar: NavigationBar(
         destinations: navPages

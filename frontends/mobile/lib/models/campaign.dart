@@ -1,4 +1,5 @@
 import 'package:mobile/models/payment_info.dart';
+import 'package:mobile/models/recipient.dart';
 
 class Campaign {
   String? id;
@@ -16,6 +17,11 @@ class Campaign {
   List<CampaignDocument>? documents;
   PaymentInfo? paymentInfo;
 
+  // Not Json serialized
+  List<CampaignDonation>? campaignDonations;
+  List<CampaignPost>? campaignPosts;
+  Recipient? ownerRecipient;
+
   Campaign({
     this.id,
     required this.ownerRecipientId,
@@ -31,7 +37,30 @@ class Campaign {
     this.denialDate,
     this.documents,
     this.paymentInfo,
+    this.campaignDonations,
+    this.campaignPosts,
+    this.ownerRecipient,
   });
+
+  Duration get timeRemaining {
+    final now = DateTime.now();
+    final difference = endDate.difference(now);
+    return difference.isNegative ? Duration.zero : difference;
+  }
+
+  double get totalDonated {
+    final donations = campaignDonations ?? [];
+    final goalAmount = double.tryParse(fundraisingGoal) ?? 0.0;
+
+    if (goalAmount == 0) {
+      return 0.0;
+    }
+
+    return donations.fold<double>(0.0, (sum, donation) {
+      final amount = double.tryParse(donation.grossAmount) ?? 0.0;
+      return sum + amount;
+    });
+  }
 }
 
 enum CampaignStatus {
@@ -44,6 +73,9 @@ enum CampaignStatus {
 
   final String value;
   const CampaignStatus(this.value);
+
+  @override
+  String toString() => value;
 }
 
 class CampaignDocument {

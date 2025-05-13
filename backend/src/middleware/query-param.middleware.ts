@@ -19,6 +19,7 @@ export function validateQueryParams(schema: ZodSchema) {
       // Parse the query parameters using the provided schema
       req.validatedParams = await schema.parseAsync(req.query);
       next();
+      return;
     } catch (error) {
       if (error instanceof ZodError) {
         // Handle Zod validation errors
@@ -36,6 +37,7 @@ export function validateQueryParams(schema: ZodSchema) {
       }
 
       next(error);
+      return;
     }
   };
 }

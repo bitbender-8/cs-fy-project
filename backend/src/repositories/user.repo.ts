@@ -46,7 +46,7 @@ export async function getUuidFromAuth0Id(auth0UserId: string): Promise<UUID> {
 }
 
 export async function getSupervisors(
-  filterParams: UserFilter & { id: UUID },
+  filterParams: UserFilter & { id: UUID }
 ): Promise<PaginatedList<Supervisor>> {
   let queryString = `
     SELECT 
@@ -122,7 +122,7 @@ export async function getSupervisors(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Supervisor"${whereClause}`,
-    values,
+    values
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -151,7 +151,7 @@ export async function getSupervisors(
 
 export async function updateSupervisor(
   supervisorId: UUID,
-  supervisor: Omit<Supervisor, LockedUserFields>,
+  supervisor: Omit<Supervisor, LockedUserFields>
 ): Promise<Supervisor> {
   try {
     const { fragments, values: updateValues } =
@@ -161,7 +161,7 @@ export async function updateSupervisor(
       throw new AppError(
         "Validation Failure",
         400,
-        "Supervisor body cannot be empty",
+        "Supervisor body cannot be empty"
       );
     }
 
@@ -196,21 +196,21 @@ export async function updateSupervisor(
             "Validation Failure",
             409,
             "Phone number is already in use by another supervisor",
-            { cause: error },
+            { cause: error }
           );
         } else if (error.constraint === "Supervisor_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Auth0 authentication ID is already in use by another supervisor",
-            { cause: error },
+            { cause: error }
           );
         } else if (error.constraint === "Supervisor_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another supervisor",
-            { cause: error },
+            { cause: error }
           );
         }
         throw error;
@@ -221,7 +221,7 @@ export async function updateSupervisor(
 }
 
 export async function getRecipients(
-  filterParams: UserFilter & { id?: UUID },
+  filterParams: UserFilter & { id?: UUID }
 ): Promise<PaginatedList<Recipient>> {
   let queryString = `
     SELECT 
@@ -248,6 +248,12 @@ export async function getRecipients(
   if (filterParams.id) {
     whereClauses.push(`"id" = $${paramIndex}`);
     values.push(filterParams.id);
+    paramIndex++;
+  }
+
+  if (filterParams.auth0UserId) {
+    whereClauses.push(`"auth0UserId" = $${paramIndex}`);
+    values.push(filterParams.auth0UserId);
     paramIndex++;
   }
 
@@ -299,7 +305,7 @@ export async function getRecipients(
 
   const countResult = await query(
     `SELECT COUNT(*) FROM "Recipient"${whereClause}`,
-    values,
+    values
   );
   const totalRecords = parseInt(countResult.rows[0].count, 10);
   const totalPages = Math.ceil(totalRecords / limit);
@@ -322,8 +328,8 @@ export async function getRecipients(
           ...recipient,
           socialMediaHandles: await getSocialMediaHandles(recipient.id as UUID),
         };
-      },
-    ),
+      }
+    )
   );
 
   return {
@@ -342,7 +348,7 @@ export async function deleteRecipient(recipientId: UUID): Promise<boolean> {
 }
 
 export async function insertRecipient(
-  recipient: Omit<Recipient, "id">,
+  recipient: Omit<Recipient, "id">
 ): Promise<Recipient> {
   try {
     const result = await query(
@@ -372,7 +378,7 @@ export async function insertRecipient(
         recipient.auth0UserId,
         recipient.bio,
         recipient.profilePictureUrl,
-      ],
+      ]
     );
 
     if (!result || result.rows.length === 0) {
@@ -413,21 +419,21 @@ export async function insertRecipient(
             "Validation Failure",
             409,
             "Phone number is already in use by another recipient",
-            { cause: error },
+            { cause: error }
           );
         } else if (error.constraint === "Recipient_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
-            "Auth0 authentication ID is already in use by another recipient",
-            { cause: error },
+            "Auth0 user ID is already in use by another recipient",
+            { cause: error }
           );
         } else if (error.constraint === "Recipient_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another recipient",
-            { cause: error },
+            { cause: error }
           );
         }
         throw error;
@@ -439,18 +445,18 @@ export async function insertRecipient(
 
 export async function updateRecipient(
   recipientId: UUID,
-  recipient: Omit<Recipient, LockedUserFields>,
+  recipient: Omit<Recipient, LockedUserFields>
 ): Promise<Recipient> {
   try {
     const { fragments, values: updateValues } = buildUpdateQueryString(
-      excludeProperties(recipient, ["socialMediaHandles"]),
+      excludeProperties(recipient, ["socialMediaHandles"])
     );
 
     if (fragments.length === 0) {
       throw new AppError(
         "Validation Failure",
         400,
-        "Recipient body cannot be empty",
+        "Recipient body cannot be empty"
       );
     }
 
@@ -497,7 +503,7 @@ export async function updateRecipient(
     }
 
     updatedRecipient.socialMediaHandles.concat(
-      await getSocialMediaHandles(recipientId),
+      await getSocialMediaHandles(recipientId)
     );
 
     return updatedRecipient;
@@ -513,21 +519,21 @@ export async function updateRecipient(
             "Validation Failure",
             409,
             "Phone number is already in use by another recipient",
-            { cause: error },
+            { cause: error }
           );
         } else if (error.constraint === "Recipient_auth0UserId_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Auth0 authentication ID is already in use by another recipient",
-            { cause: error },
+            { cause: error }
           );
         } else if (error.constraint === "Recipient_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another recipient",
-            { cause: error },
+            { cause: error }
           );
         }
         throw error;
@@ -538,11 +544,11 @@ export async function updateRecipient(
 }
 
 async function getSocialMediaHandles(
-  recipientId: UUID,
+  recipientId: UUID
 ): Promise<SocialMediaHandle[]> {
   const result = await query(
     `SELECT * FROM "RecipientSocialMediaHandle" WHERE "recipientId" = $1`,
-    [recipientId],
+    [recipientId]
   );
 
   if (!result || result.rows.length === 0) {
@@ -553,7 +559,7 @@ async function getSocialMediaHandles(
 }
 
 async function updateSocialMediaHandle(
-  handle: Required<SocialMediaHandle>,
+  handle: Required<SocialMediaHandle>
 ): Promise<SocialMediaHandle> {
   try {
     const result = await query<SocialMediaHandle>(
@@ -562,7 +568,7 @@ async function updateSocialMediaHandle(
        WHERE "id" = $1 AND "recipientId" = $2
        RETURNING *
       `,
-      [handle.id, handle.recipientId, handle.socialMediaHandle],
+      [handle.id, handle.recipientId, handle.socialMediaHandle]
     );
 
     if (!result || result.rows.length === 0) {
@@ -589,7 +595,7 @@ async function updateSocialMediaHandle(
             {
               internalDetails: `The recipient ID specified in the social media handle does not exist.`,
               cause: error,
-            },
+            }
           );
         }
         throw error;
@@ -600,7 +606,7 @@ async function updateSocialMediaHandle(
 }
 
 async function insertSocialMediaHandle(
-  handle: Omit<SocialMediaHandle, "id">,
+  handle: Omit<SocialMediaHandle, "id">
 ): Promise<SocialMediaHandle> {
   try {
     const result = await query<SocialMediaHandle>(
@@ -611,7 +617,7 @@ async function insertSocialMediaHandle(
        ) VALUES (
          $1, $2, $3
        ) RETURNING *`,
-      [randomUUID(), handle.recipientId, handle.socialMediaHandle],
+      [randomUUID(), handle.recipientId, handle.socialMediaHandle]
     );
 
     if (!result || result.rows.length === 0) {
@@ -639,7 +645,7 @@ async function insertSocialMediaHandle(
               internalDetails:
                 "The recipient ID specified for the social media handle does not exist.",
               cause: error,
-            },
+            }
           );
         }
         throw error;
