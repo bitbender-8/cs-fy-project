@@ -4,7 +4,6 @@ import 'package:mobile/pages/login_required_page.dart';
 import 'package:mobile/pages/my_campaigns_page.dart';
 import 'package:mobile/pages/public_campaigns_page.dart';
 import 'package:mobile/services/providers.dart';
-import 'package:mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class NavPage {
@@ -37,8 +36,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // final userProvider = Provider.of<UserProvider>(context);
-    final bool isLoggedIn = true; // userProvider.credentials != null;
+    final userProvider = Provider.of<UserProvider>(context);
+    final bool isLoggedIn = userProvider.credentials != null;
 
     List<NavPage> navPages = [
       const NavPage(

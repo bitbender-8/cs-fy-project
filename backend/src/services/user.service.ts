@@ -81,7 +81,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
               Status: ${JSON.stringify(error.response.data)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         case 400:
         case 401:
@@ -95,7 +95,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
               Status: ${JSON.stringify(error.response.data)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         case 500:
         case 503:
@@ -108,7 +108,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
               Status: ${JSON.stringify(error.response.status)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         default:
           throw new AppError(
@@ -120,7 +120,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
               Status: ${JSON.stringify(error.response.data)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
       }
     } else if (error.request) {
@@ -133,7 +133,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
           internalDetails:
             "No response was received from the Auth0 authentication server.",
           cause: error,
-        }
+        },
       );
     } else {
       // Something went wrong while setting up the request
@@ -147,7 +147,7 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
 }
 
 export async function getAuth0User(
-  auth0UserId: string
+  auth0UserId: string,
 ): Promise<Auth0UserResponse> {
   const options = {
     method: "GET",
@@ -178,7 +178,7 @@ export async function getAuth0User(
               Status: ${JSON.stringify(error.response.status)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         case 400:
         case 401:
@@ -192,7 +192,7 @@ export async function getAuth0User(
               Status: ${JSON.stringify(error.response.status)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         case 500:
         case 503:
@@ -204,7 +204,7 @@ export async function getAuth0User(
               internalDetails: `Status: ${error.response.status},
               Message: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         default:
           throw new AppError(
@@ -216,7 +216,7 @@ export async function getAuth0User(
               Status: ${error.response.status},
               Message: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
       }
     } else if (error.request) {
@@ -229,7 +229,7 @@ export async function getAuth0User(
           internalDetails: `No response was received from the authentication server.
           Message: ${error.message}`,
           cause: error,
-        }
+        },
       );
     } else {
       // Something went wrong while setting up the request
@@ -244,7 +244,7 @@ export async function getAuth0User(
 
 export async function assignRoleToAuth0User(
   auth0UserId: string,
-  role: UserType
+  role: UserType,
 ) {
   const roleId = userTypeToRoleId[role];
   if (!roleId) {
@@ -252,7 +252,7 @@ export async function assignRoleToAuth0User(
       "Validation Failure",
       400,
       `No Auth0 role mapping found for user type: ${role}`,
-      { internalDetails: `UserType: ${role}` }
+      { internalDetails: `UserType: ${role}` },
     );
   }
 
@@ -290,7 +290,7 @@ export async function assignRoleToAuth0User(
               Status: ${JSON.stringify(error.response.status)}
               Response: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         case 404:
           throw new AppError("Not Found", 404, "User not found in Auth0", {
@@ -309,7 +309,7 @@ export async function assignRoleToAuth0User(
               internalDetails: `Status: ${error.response.status},
               Message: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
         default:
           throw new AppError(
@@ -321,7 +321,7 @@ export async function assignRoleToAuth0User(
               Status: ${error.response.status},
               Message: ${JSON.stringify(error.response.data)}`,
               cause: error,
-            }
+            },
           );
       }
     } else if (error.request) {
@@ -333,7 +333,7 @@ export async function assignRoleToAuth0User(
           internalDetails: `No response was received from the authentication server.
           Message: ${error.message}`,
           cause: error,
-        }
+        },
       );
     } else {
       throw new AppError("Internal Server Error", 500, "Something went wrong", {
