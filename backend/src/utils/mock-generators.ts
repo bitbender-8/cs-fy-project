@@ -11,7 +11,7 @@ import {
   CampaignDonation,
   CampaignPost,
 } from "../models/campaign.model.js";
-import { CAMPAIGN_STATUSES } from "./zod-helpers.js";
+import { CAMPAIGN_STATUSES, REQUEST_RESOLUTION_TYPES } from "./zod-helpers.js";
 import {
   EndDateExtensionRequest,
   GoalAdjustmentRequest,
@@ -317,6 +317,7 @@ export function generatePostUpdateRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newPost: newPost,
     };
@@ -342,6 +343,7 @@ export function generateEndDateExtensionRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newEndDate: newEndDate,
     };
@@ -367,6 +369,7 @@ export function generateGoalAdjustmentRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newGoal: newGoal,
     };
@@ -392,6 +395,7 @@ export function generateStatusChangeRequests(
       requestDate: requestDate,
       justification: faker.lorem.sentences(),
       resolutionDate: resolutionDate ? resolutionDate : undefined,
+      resolutionType: faker.helpers.arrayElement(REQUEST_RESOLUTION_TYPES),
       campaignId: campaign.id,
       newStatus: newStatus,
     };
