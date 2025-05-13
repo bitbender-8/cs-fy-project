@@ -61,6 +61,7 @@ export function validateFileUpload(
               },
             ),
           );
+          return;
         } else if (err instanceof Error) {
           next(
             new AppError(
@@ -72,11 +73,13 @@ export function validateFileUpload(
               },
             ),
           );
+          return;
         }
 
         // If no file(s) were uploaded, move to next middleware
         if (!req.files && !req.file) {
           next();
+          return;
         }
 
         // Combine single file and multiple files into one array
@@ -106,16 +109,19 @@ export function validateFileUpload(
             break;
           default:
             // if none match, we can pass along without further validation or throw an error.
-            return next(
+            next(
               new AppError(
                 "Validation Failure",
                 400,
                 "Invalid expectedFileTypes parameter",
               ),
             );
+            return;
         }
 
         for (const file of files) {
+          let validationFailed = false;
+
           // Validate MIME type
           if (!allowedMimeTypes.includes(file.mimetype)) {
             next(
@@ -125,6 +131,7 @@ export function validateFileUpload(
                 `The MIME file type ${file.mimetype} is invalid. Allowed type(s) are ${allowedMimeTypes.join(", ")}.`,
               ),
             );
+            validationFailed = true;
           }
 
           // Validate file size
@@ -138,6 +145,7 @@ export function validateFileUpload(
                 `The uploaded file exceeds the maximum allowed size of ${maxSizeMb}MB.`,
               ),
             );
+            validationFailed = true;
           }
 
           // Validate file extension
@@ -150,6 +158,7 @@ export function validateFileUpload(
                 `The uploaded file has an invalid extension. Allowed extension(s) include(s) ${allowedExtensions.join(", ")}.`,
               ),
             );
+            validationFailed = true;
           }
 
           // Validate file content using magic number
@@ -167,15 +176,29 @@ export function validateFileUpload(
                 `The uploaded file has invalid content or is corrupted. Allowed file type(s) include(s) ${allowedExtensions.join(", ")}.`,
               ),
             );
+            validationFailed = true;
+          }
+          if (validationFailed && file.path) {
+            fs.unlink(file.path, (err) => {
+              if (err) {
+                console.error(`Error deleting invalid file ${file.path}:`, err);
+              } else {
+                console.log(`Deleted invalid file: ${file.path}`);
+              }
+            });
+
+            return;
           }
         }
 
         // All file validations passed; move to the next middleware.
         next();
+        return;
       });
     } else {
       // If content-type is not 'multipart/form-data', pass along without processing.
       next();
+      return;
     }
   };
 }

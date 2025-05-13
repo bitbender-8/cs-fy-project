@@ -9,6 +9,8 @@ import {
 export type UserFilter = z.infer<typeof UserFilterSchema>;
 export const UserFilterSchema = z
   .object({
+    // TODO: Add to openapi.yml
+    auth0UserId: validNonEmptyString(MIN_STRING_LENGTH, 150),
     name: validNonEmptyString(MIN_STRING_LENGTH, 150),
     email: z.string().email().optional(),
     page: z.coerce.number().int().positive(),
@@ -23,6 +25,7 @@ export const UserFilterSchema = z
 
 export type SensitiveUserFilters = (typeof SENSITIVE_USER_FILTERS)[number];
 export const SENSITIVE_USER_FILTERS = [
+  "auth0UserId",
   "minBirthDate",
   "maxBirthDate",
   "phoneNo",

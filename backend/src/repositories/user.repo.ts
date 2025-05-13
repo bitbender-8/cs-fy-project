@@ -251,6 +251,12 @@ export async function getRecipients(
     paramIndex++;
   }
 
+  if (filterParams.auth0UserId) {
+    whereClauses.push(`"auth0UserId" = $${paramIndex}`);
+    values.push(filterParams.auth0UserId);
+    paramIndex++;
+  }
+
   if (filterParams.name) {
     whereClauses.push(`
     (
@@ -342,7 +348,7 @@ export async function deleteRecipient(recipientId: UUID): Promise<boolean> {
 }
 
 export async function insertRecipient(
-  recipient: Recipient,
+  recipient: Omit<Recipient, "id">,
 ): Promise<Recipient> {
   try {
     const result = await query(
@@ -381,7 +387,7 @@ export async function insertRecipient(
       });
     }
 
-    const insertedRecipient = result.rows[0] as Recipient;
+    const insertedRecipient = result.rows[0] as { id: UUID } & Recipient;
 
     // Insert social media handles if they exist
     if (
@@ -392,7 +398,7 @@ export async function insertRecipient(
 
       for (const handle of recipient.socialMediaHandles) {
         const insertedHandle = await insertSocialMediaHandle({
-          recipientId: recipient.id as UUID,
+          recipientId: insertedRecipient.id,
           socialMediaHandle: handle.socialMediaHandle,
         });
 
@@ -419,7 +425,7 @@ export async function insertRecipient(
           throw new AppError(
             "Validation Failure",
             409,
-            "Auth0 authentication ID is already in use by another recipient",
+            "Auth0 user ID is already in use by another recipient",
             { cause: error },
           );
         } else if (error.constraint === "Recipient_email_key") {

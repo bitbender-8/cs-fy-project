@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { AnyZodObject } from "zod";
+import { z } from "zod";
 
 import {
   SENSITIVE_USER_FILTERS,
@@ -18,11 +18,13 @@ import {
   RecipientSchema,
   SENSITIVE_USER_FIELDS,
   SensitiveUserFields,
+  SocialMediaHandle,
 } from "../models/user.model.js";
 import {
   deleteAuth0User,
   getUserRole,
-  verifyAuth0UserId,
+  getAuth0User,
+  assignRoleToAuth0User,
 } from "../services/user.service.js";
 import {
   deleteRecipient,
@@ -34,16 +36,26 @@ import {
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
+import { validUrl } from "../utils/zod-helpers.js";
 
 export const recipientRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
-const recipientUpdateSchema: AnyZodObject = RecipientSchema.omit(
+const recipientUpdateSchema = RecipientSchema.omit(
   LOCKED_USER_FIELDS.reduce(
     (acc, field) => ({ ...acc, [field]: true }),
     {} as { [key in LockedUserFields]: true },
   ),
 );
+const recipientCreateSchema = RecipientSchema.omit({
+  id: true,
+  email: true,
+  auth0UserId: true,
+  socialMediaHandles: true,
+  profilePictureUrl: true,
+}).extend({
+  socialMediaHandles: z.array(validUrl()).optional(),
+});
 
 recipientRouter.put(
   "/:id",
@@ -123,13 +135,18 @@ recipientRouter.get(
       queryParams,
       SENSITIVE_USER_FILTERS,
     );
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
 
     let recipients:
       | PaginatedList<Recipient>
       | PaginatedList<Omit<Recipient, SensitiveUserFields>>;
 
-    if (getUserRole(req.auth) === "Supervisor") {
-      // Supervisor: full access
+    if (
+      getUserRole(req.auth) === "Supervisor" ||
+      (getUserRole(req.auth) === "Recipient" &&
+        queryParams.auth0UserId === auth0UserIdFromJwt)
+    ) {
+      // Supervisor and Account owners: full access
       recipients = await getRecipients(queryParams);
     } else {
       // Everyone else has access to public recipient data
@@ -211,22 +228,30 @@ recipientRouter.get(
   },
 );
 
-// Ignores email from recipient object
 recipientRouter.post(
   "/",
-  optionalAuth,
-  validateFileUpload("profilePicture", "Images"),
-  validateRequestBody(RecipientSchema),
+  requireAuth,
+  validateFileUpload("profilePicture", "Images", 1),
+  validateRequestBody(recipientCreateSchema),
   async (req: Request, res: Response): Promise<void> => {
-    // Validated recipient data from middleware
-    const recipient: Recipient = req.body;
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+    const auth0User = await getAuth0User(auth0UserIdFromJwt as string);
 
-    // Verify the recipient's auth0 user ID
-    const auth0User = await verifyAuth0UserId(recipient.auth0UserId as string);
-    recipient.email = auth0User.email;
-    recipient.profilePictureUrl = req.file
-      ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
-      : undefined;
+    await assignRoleToAuth0User(auth0UserIdFromJwt, "Recipient");
+
+    // Validated recipient data from middleware
+    const recipientData = req.body as z.infer<typeof recipientCreateSchema>;
+    const recipient: Omit<Recipient, "id"> = {
+      ...recipientData,
+      email: auth0User.email,
+      auth0UserId: auth0User.userId,
+      socialMediaHandles: recipientData.socialMediaHandles?.map((value) => {
+        return { socialMediaHandle: value } as SocialMediaHandle;
+      }),
+      profilePictureUrl: req.file
+        ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
+        : undefined,
+    };
 
     // Store recipient in DB
     const insertedRecipient = await insertRecipient(recipient);
@@ -294,6 +319,30 @@ recipientRouter.delete(
       return;
     }
 
+    res.status(204).send();
+  },
+);
+
+// TODO (bitbender-8): Add route to openapi.yml
+// To be more robust, you would use an Auth0 action instead relying on calls from the
+recipientRouter.delete(
+  "/auth0/:auth0UserId",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const auth0UserId = req.params.auth0UserId;
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+
+    // Only allow deleting own Auth0 account
+    if (auth0UserIdFromJwt !== auth0UserId) {
+      res.status(403).json({
+        title: "Permission Denied",
+        status: 403,
+        detail: "You can only delete your own Auth0 account.",
+      });
+      return;
+    }
+
+    await deleteAuth0User(auth0UserId);
     res.status(204).send();
   },
 );

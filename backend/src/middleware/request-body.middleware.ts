@@ -24,6 +24,7 @@ export function validateRequestBody(schema: ZodSchema) {
 
       req.body = await schema.parseAsync(req.body);
       next();
+      return;
     } catch (error) {
       if (error instanceof ZodError) {
         const problemDetails: ProblemDetails = {
@@ -40,6 +41,7 @@ export function validateRequestBody(schema: ZodSchema) {
       }
 
       next(error);
+      return;
     }
   };
 }

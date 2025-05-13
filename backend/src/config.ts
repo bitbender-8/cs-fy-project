@@ -27,5 +27,7 @@ export const config = {
     process.env.AUTH0_NAMESPACE ?? "https://tesfafund-api.example.com",
   AUDIENCE: process.env.AUDIENCE ?? "CHANGE ME",
   ISSUER_BASE_URL: process.env.ISSUER_BASE_URL ?? "CHANGE ME",
+  SUPERVISOR_ROLE_ID: (process.env.AUTH0_ROLE_IDS ?? "").split(";")[0],
+  RECIPIENT_ROLE_ID: (process.env.AUTH0_ROLE_IDS ?? "").split(";")[1],
   MANAGEMENT_ACCESS_TOKEN: process.env.MANAGEMENT_ACCESS_TOKEN ?? "CHANGE ME",
 };
