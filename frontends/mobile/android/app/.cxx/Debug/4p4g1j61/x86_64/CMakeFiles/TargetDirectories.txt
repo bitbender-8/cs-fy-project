@@ -1,2 +1,0 @@
-/mnt/Shared/repos/school/y4/cs-fy-project/frontends/mobile/android/app/.cxx/Debug/4p4g1j61/x86_64/CMakeFiles/edit_cache.dir
-/mnt/Shared/repos/school/y4/cs-fy-project/frontends/mobile/android/app/.cxx/Debug/4p4g1j61/x86_64/CMakeFiles/rebuild_cache.dir

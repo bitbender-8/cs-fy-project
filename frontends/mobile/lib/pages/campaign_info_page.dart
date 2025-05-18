@@ -8,28 +8,30 @@ import 'package:mobile/models/payment_info.dart';
 
 class CampaignInfoPage extends StatelessWidget {
   final Campaign campaign;
-  final List<CampaignRequest> campaignRequests = dummyCampaignRequests;
+  final List<CampaignRequest> campaignRequests;
   final bool isPublic;
 
   CampaignInfoPage({
     super.key,
     required this.campaign,
+    List<CampaignRequest>? campaignRequests,
     this.isPublic = true,
-  });
+  }) : campaignRequests = campaignRequests ?? dummyCampaignRequests;
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'N/A';
-    return DateFormat('dd MMM yyyy').format(date);
+    return DateFormat('dd MMM yy').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final documents = campaign.documents ?? [];
+    final campaignPosts = campaign.campaignPosts ?? [];
 
-    // Placeholder values - replace with actual data from your Campaign model
     final double progressValue = 0.54;
-    final String currentAmount = 'XXXX'; // Replace with actual raised amount
+    final String currentAmount = 'XXXX';
 
     return Scaffold(
       appBar: const CustomAppBar(pageTitle: "Campaign Information"),
@@ -38,28 +40,36 @@ class CampaignInfoPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCampaignHeader(
-                context, colorScheme, textTheme, currentAmount, progressValue),
-            const SizedBox(height: 12),
+            _buildCampaignHeaderSection(
+              context,
+              colorScheme,
+              textTheme,
+              currentAmount,
+              progressValue,
+            ),
+            const SizedBox(height: 16),
             _buildDescriptionSection(colorScheme, textTheme),
-            const SizedBox(height: 12),
-            if (campaign.documents != null &&
-                campaign.documents!.isNotEmpty) ...[
-              _buildDocumentsSection(
-                  colorScheme, textTheme, campaign.documents!),
-              const SizedBox(height: 12),
+            const SizedBox(height: 16),
+            if (documents.isNotEmpty) ...[
+              _buildDocumentsSection(colorScheme, textTheme, documents),
+              const SizedBox(height: 16),
             ],
             if (!isPublic && campaign.paymentInfo != null) ...[
               _buildPaymentInfoSection(
                   colorScheme, textTheme, campaign.paymentInfo!),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
             ],
-            _buildCampaignUpdatesSection(
-                colorScheme, textTheme, campaign.campaignPosts ?? []),
+            if (isPublic) ...[
+              // Conditional rendering based on isPublic
+              _buildCampaignUpdatesSection(
+                  colorScheme, textTheme, campaignPosts),
+              const SizedBox(height: 16),
+            ],
             if (!isPublic && campaignRequests.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              // Conditional rendering based on isPublic and requests existence
               _buildCampaignRequestsSection(
                   colorScheme, textTheme, campaignRequests),
+              const SizedBox(height: 16),
             ],
           ],
         ),
@@ -67,8 +77,13 @@ class CampaignInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCampaignHeader(BuildContext context, ColorScheme colorScheme,
-      TextTheme textTheme, String currentAmount, double progressValue) {
+  Widget _buildCampaignHeaderSection(
+    BuildContext context,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    String currentAmount,
+    double progressValue,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -97,7 +112,6 @@ class CampaignInfoPage extends StatelessWidget {
                 const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement Donate action
                     print(
                         'Donate button pressed for campaign: ${campaign.title}');
                   },
@@ -238,10 +252,6 @@ class CampaignInfoPage extends StatelessWidget {
 
   Widget _buildDocumentsSection(
       ColorScheme colorScheme, TextTheme textTheme, List<dynamic> documents) {
-    if (documents.isEmpty) {
-      return const SizedBox.shrink(); // Return empty box if no documents
-    }
-
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -270,20 +280,14 @@ class CampaignInfoPage extends StatelessWidget {
               spacing: 8.0,
               runSpacing: 8.0,
               children: documents.map((doc) {
-                // Assuming doc has documentUrl and can be uniquely identified
-                final index =
-                    documents.indexOf(doc) + 1; // Simple index for display
-                // You might need a proper Document model if doc isn't dynamic
+                final index = documents.indexOf(doc) + 1;
                 return ActionChip(
                   avatar: Icon(Icons.description_outlined,
                       color: colorScheme.primary),
                   label: Text('Document $index'),
                   onPressed: () {
-                    // TODO: Implement document viewing - Check the actual structure of 'doc'
-                    // Assuming doc has a 'documentUrl' property
                     if (doc.documentUrl != null) {
                       print('Viewing document: ${doc.documentUrl}');
-                      // Implement logic to launch URL or navigate to a viewer
                     } else {
                       print('Document URL is null for document $index');
                     }
@@ -328,7 +332,7 @@ class CampaignInfoPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
-              label: 'Bank Name:',
+              label: 'Chapa Bank Name:',
               value: paymentInfo.chapaBankName,
               icon: Icons.account_balance_outlined,
               colorScheme: colorScheme,
@@ -341,8 +345,6 @@ class CampaignInfoPage extends StatelessWidget {
               colorScheme: colorScheme,
               textTheme: textTheme,
             ),
-            // Note: The provided PaymentInfo model does NOT include accountHolderName or paymentMethodType/phoneNo.
-            // If your actual data model has these, you would add rows here.
           ],
         ),
       ),
@@ -402,7 +404,7 @@ class CampaignInfoPage extends StatelessWidget {
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 12),
                       title: Text(
-                        post.title ?? 'No Title', // Assuming post has title
+                        post.title ?? 'No Title',
                         style: textTheme.titleMedium!.copyWith(
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onSurface,
@@ -417,7 +419,6 @@ class CampaignInfoPage extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        // TODO: Navigate to full campaign update view
                         print('Tapped on update: ${post.title}');
                       },
                       dense: true,
@@ -433,10 +434,7 @@ class CampaignInfoPage extends StatelessWidget {
 
   Widget _buildCampaignRequestsSection(ColorScheme colorScheme,
       TextTheme textTheme, List<CampaignRequest> campaignRequests) {
-    // Assuming campaignRequests is a List<CampaignRequest> with 'title' and 'requestDate'
-    if (campaignRequests.isEmpty) {
-      return const SizedBox.shrink(); // Return empty box if no requests
-    }
+    if (campaignRequests.isEmpty) return const SizedBox.shrink();
 
     return Card(
       elevation: 2,
@@ -480,7 +478,7 @@ class CampaignInfoPage extends StatelessWidget {
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     title: Text(
-                      req.title, // Assuming req has title
+                      req.title,
                       style: textTheme.titleMedium!.copyWith(
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
@@ -495,7 +493,6 @@ class CampaignInfoPage extends StatelessWidget {
                       ),
                     ),
                     onTap: () {
-                      // TODO: Navigate to full campaign request view
                       print('Tapped on request: ${req.title}');
                     },
                     dense: true,
