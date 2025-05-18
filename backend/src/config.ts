@@ -30,4 +30,9 @@ export const config = {
   SUPERVISOR_ROLE_ID: (process.env.AUTH0_ROLE_IDS ?? "").split(";")[0],
   RECIPIENT_ROLE_ID: (process.env.AUTH0_ROLE_IDS ?? "").split(";")[1],
   MANAGEMENT_ACCESS_TOKEN: process.env.MANAGEMENT_ACCESS_TOKEN ?? "CHANGE ME",
+
+  // Chapa config
+  TEST_CHAPA_PUB_KEY: process.env.TEST_CHAPA_PUB_KEY ?? "CHANGE ME",
+  TEST_CHAPA_SECRET: process.env.TEST_CHAPA_SECRET ?? "CHANGE ME",
+  TEST_CHAPA_ENC_KEY: process.env.TEST_CHAPA_ENC_KEY ?? "CHANGE ME",
 };

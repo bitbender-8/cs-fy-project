@@ -117,14 +117,12 @@ CREATE TABLE
         "status" "CampaignStatus" NOT NULL,
         -- Category of the campaign.
         "category" VARCHAR(100) NOT NULL,
-        -- Payment method used (e.g., TeleBirr, CBEBirr, Phone transfer, etc.).
-        "paymentMethod" VARCHAR(100) NOT NULL,
-        -- Phone number associated with the payment method (if applicable).
-        "phoneNo" VARCHAR(20) NULL,
+        -- Bank's code from chapa API.
+        "chapaBankCode" INT NULL,
+        -- Bank name (if applicable).
+        "chapaBankName" VARCHAR(50) NULL,
         -- Bank account number (if applicable).
         "bankAccountNo" VARCHAR(16) NULL,
-        -- Bank name (if applicable).
-        "bankName" VARCHAR(50) NULL,
         -- Timestamp when the campaign was submitted with time zone.
         "submissionDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Timestamp when the campaign was verified with time zone.
