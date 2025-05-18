@@ -40,7 +40,7 @@ enum ChapaBanks {
 
 class PaymentInfo {
   int chapaBankCode;
-  int chapaBankName;
+  String chapaBankName;
   String bankAccountNo;
 
   PaymentInfo({
