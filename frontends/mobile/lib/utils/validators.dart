@@ -1,5 +1,4 @@
-String? validNonEmptyString(String? value,
-    {int min = 3, required int max}) {
+String? validNonEmptyString(String? value, {int min = 3, required int max}) {
   if (value == null || value.trim().isEmpty) {
     return 'Cannot be empty or contain only whitespace';
   }
@@ -105,8 +104,6 @@ String? validMoneyAmount(String? value, double max) {
   return null;
 }
 
-/*
-
 String? validEnum(String? value, List<String> allowed, String fieldName) {
   if (value == null || value.isEmpty) {
     return '$fieldName is required';
@@ -127,5 +124,3 @@ String? validBankAccountNo(String? value) {
   }
   return null;
 }
-
-*/

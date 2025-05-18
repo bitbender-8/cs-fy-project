@@ -4,6 +4,7 @@ import 'package:mobile/mock_data.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/campaign_request.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/models/payment_info.dart';
 
 class CampaignInfoPage extends StatelessWidget {
   final Campaign campaign;
@@ -25,10 +26,8 @@ class CampaignInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final documents = campaign.documents ?? [];
-    final campaignPosts = campaign.campaignPosts ?? [];
 
-    // Placeholder values - replace with actual data
+    // Placeholder values - replace with actual data from your Campaign model
     final double progressValue = 0.54;
     final String currentAmount = 'XXXX'; // Replace with actual raised amount
 
@@ -39,464 +38,471 @@ class CampaignInfoPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Campaign Header Section
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            campaign.title,
-                            style: textTheme.headlineSmall!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            // TODO: Implement Donate action
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          child: const Text('Donate'),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 16),
-                    const SizedBox(height: 16),
-
-                    // Basic Information
-                    _buildInfoRow(
-                      label: 'Status:',
-                      value: campaign.status?.value ?? 'N/A',
-                      icon: Icons.info_outline,
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                    ),
-                    _buildInfoRow(
-                      label: 'Recipient:',
-                      value: campaign.ownerRecipientId,
-                      icon: Icons.person_outline,
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                    ),
-                    _buildInfoRow(
-                      label: 'Category:',
-                      value: campaign.category,
-                      icon: Icons.category_outlined,
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Goal and Progress
-                    _buildInfoRow(
-                      label: 'Goal:',
-                      value:
-                          '$currentAmount ETB / ${campaign.fundraisingGoal} ETB',
-                      icon: Icons.attach_money,
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                      valueStyle: textTheme.titleMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicator(
-                        value: progressValue,
-                        backgroundColor: colorScheme.surfaceContainerHighest,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                        minHeight: 10,
-                      ),
-                    ),
-
-                    // Dates Section
-                    const SizedBox(height: 12),
-
-                    _buildDateRow(
-                      label1: 'Launch:',
-                      value1: _formatDate(campaign.launchDate),
-                      label2: 'End:',
-                      value2: _formatDate(campaign.endDate),
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                    ),
-
-                    if (!isPublic) ...[
-                      const SizedBox(height: 8),
-                      _buildDateRow(
-                        label1: 'Submission:',
-                        value1: _formatDate(campaign.submissionDate),
-                        label2: 'Verification:',
-                        value2: _formatDate(campaign.verificationDate),
-                        colorScheme: colorScheme,
-                        textTheme: textTheme,
-                      ),
-                      if (campaign.denialDate != null) ...[
-                        const SizedBox(height: 8),
-                        _buildInfoRow(
-                          label: 'Denial:',
-                          value: _formatDate(campaign.denialDate),
-                          icon: Icons.cancel_outlined,
-                          colorScheme: colorScheme,
-                          textTheme: textTheme,
-                          valueStyle: textTheme.bodyMedium!.copyWith(
-                            color: colorScheme.error,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ],
-                ),
-              ),
-            ),
+            _buildCampaignHeader(
+                context, colorScheme, textTheme, currentAmount, progressValue),
             const SizedBox(height: 12),
-
-            // Description Section
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.description_outlined,
-                            color: colorScheme.onSurface),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Description',
-                          style: textTheme.titleLarge!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      campaign.description,
-                      style: textTheme.bodyMedium!
-                          .copyWith(color: colorScheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildDescriptionSection(colorScheme, textTheme),
             const SizedBox(height: 12),
-
-            // Documents Section
-            if (documents.isNotEmpty) ...[
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.folder_outlined,
-                              color: colorScheme.onSurface),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Documents',
-                            style: textTheme.titleLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: documents.map((doc) {
-                          final index = documents.indexOf(doc) + 1;
-                          return ActionChip(
-                            avatar: Icon(Icons.description_outlined,
-                                color: colorScheme.primary),
-                            label: Text('Document $index'),
-                            onPressed: () {
-                              // TODO: Implement document viewing
-                              print('Viewing document ${doc.documentUrl}');
-                            },
-                            labelStyle: textTheme.bodyMedium!
-                                .copyWith(color: colorScheme.primary),
-                            backgroundColor: colorScheme.primaryContainer
-                                .withValues(alpha: 0.5), // Used withOpacity
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            if (campaign.documents != null &&
+                campaign.documents!.isNotEmpty) ...[
+              _buildDocumentsSection(
+                  colorScheme, textTheme, campaign.documents!),
               const SizedBox(height: 12),
             ],
-
-            // Payment Information Section
             if (!isPublic && campaign.paymentInfo != null) ...[
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.payments_outlined,
-                              color: colorScheme.onSurface),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Payment Information',
-                            style: textTheme.titleLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(
-                        label: 'Payment Method:',
-                        value: campaign.paymentInfo!.paymentMethod,
-                        icon: Icons.payment_outlined,
-                        colorScheme: colorScheme,
-                        textTheme: textTheme,
-                      ),
-                      _buildInfoRow(
-                        label: 'Phone Number:',
-                        value: campaign.paymentInfo!.phoneNo,
-                        icon: Icons.phone_android_outlined,
-                        colorScheme: colorScheme,
-                        textTheme: textTheme,
-                      ),
-                      if (campaign.paymentInfo!.bankAccountNo != null &&
-                          campaign.paymentInfo!.bankAccountNo!.isNotEmpty)
-                        _buildInfoRow(
-                          label: 'Bank Account:',
-                          value: campaign.paymentInfo!.bankAccountNo!,
-                          icon: Icons.account_balance_wallet_outlined,
-                          colorScheme: colorScheme,
-                          textTheme: textTheme,
-                        ),
-                      if (campaign.paymentInfo!.bankName != null &&
-                          campaign.paymentInfo!.bankName!.isNotEmpty)
-                        _buildInfoRow(
-                          label: 'Bank Name:',
-                          value: campaign.paymentInfo!.bankName!,
-                          icon: Icons.account_balance_outlined,
-                          colorScheme: colorScheme,
-                          textTheme: textTheme,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              _buildPaymentInfoSection(
+                  colorScheme, textTheme, campaign.paymentInfo!),
               const SizedBox(height: 12),
             ],
-
-            // Campaign Updates Section
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.update_outlined,
-                            color: colorScheme.onSurface),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Campaign Updates',
-                          style: textTheme.titleLarge!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (campaignPosts.isEmpty)
-                      Text(
-                        'No campaign updates available.',
-                        style: textTheme.bodyMedium!.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      )
-                    else
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: campaignPosts.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final post = campaignPosts[index];
-                          return Card(
-                            elevation: 0,
-                            color: colorScheme.surfaceContainerHigh,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              side:
-                                  BorderSide(color: colorScheme.outlineVariant),
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 12), // Reduced vertical padding
-                              title: Text(
-                                post.title,
-                                style: textTheme.titleMedium!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.onSurface,
-                                ),
-                                maxLines:
-                                    1, // Added maxLines to prevent tall titles
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: Text(
-                                _formatDate(post.publicPostDate),
-                                style: textTheme.bodySmall!.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              onTap: () {
-                                // TODO: Navigate to full campaign update view
-                                print('Tapped on update: ${post.title}');
-                              },
-                              dense: true, // Makes the ListTile more compact
-                            ),
-                          );
-                        },
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Campaign Requests Section (Non-Public View)
+            _buildCampaignUpdatesSection(
+                colorScheme, textTheme, campaign.campaignPosts ?? []),
             if (!isPublic && campaignRequests.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.request_page_outlined,
-                              color: colorScheme.onSurface),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Campaign Requests',
-                            style: textTheme.titleLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: campaignRequests.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final req = campaignRequests[index];
-                          return Card(
-                            elevation: 0,
-                            color: colorScheme.surfaceContainerHigh,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              side:
-                                  BorderSide(color: colorScheme.outlineVariant),
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 12), // Reduced vertical padding
-                              title: Text(
-                                req.title,
-                                style: textTheme.titleMedium!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.onSurface,
-                                ),
-                                maxLines: 1, // Added maxLines
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: Text(
-                                _formatDate(req.requestDate),
-                                style: textTheme.bodySmall!.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              onTap: () {
-                                // TODO: Navigate to full campaign request view
-                                print('Tapped on request: ${req.title}');
-                              },
-                              dense: true, // Makes the ListTile more compact
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+              _buildCampaignRequestsSection(
+                  colorScheme, textTheme, campaignRequests),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCampaignHeader(BuildContext context, ColorScheme colorScheme,
+      TextTheme textTheme, String currentAmount, double progressValue) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    campaign.title,
+                    style: textTheme.headlineSmall!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement Donate action
+                    print(
+                        'Donate button pressed for campaign: ${campaign.title}');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: const Text('Donate'),
+                ),
+              ],
+            ),
+            const Divider(height: 16),
+            const SizedBox(height: 16),
+            _buildInfoRow(
+              label: 'Status:',
+              value: campaign.status?.value ?? 'N/A',
+              icon: Icons.info_outline,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            _buildInfoRow(
+              label: 'Recipient:',
+              value: campaign.ownerRecipientId,
+              icon: Icons.person_outline,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            _buildInfoRow(
+              label: 'Category:',
+              value: campaign.category,
+              icon: Icons.category_outlined,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow(
+              label: 'Goal:',
+              value: '$currentAmount ETB / ${campaign.fundraisingGoal} ETB',
+              icon: Icons.attach_money,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+              valueStyle: textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
               ),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progressValue,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                minHeight: 10,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildDateRow(
+              label1: 'Launch:',
+              value1: _formatDate(campaign.launchDate),
+              label2: 'End:',
+              value2: _formatDate(campaign.endDate),
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            if (!isPublic) ...[
+              const SizedBox(height: 8),
+              _buildDateRow(
+                label1: 'Submission:',
+                value1: _formatDate(campaign.submissionDate),
+                label2: 'Verification:',
+                value2: _formatDate(campaign.verificationDate),
+                colorScheme: colorScheme,
+                textTheme: textTheme,
+              ),
+              if (campaign.denialDate != null) ...[
+                const SizedBox(height: 8),
+                _buildInfoRow(
+                  label: 'Denial:',
+                  value: _formatDate(campaign.denialDate),
+                  icon: Icons.cancel_outlined,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
+                  valueStyle: textTheme.bodyMedium!.copyWith(
+                    color: colorScheme.error,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDescriptionSection(
+      ColorScheme colorScheme, TextTheme textTheme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.description_outlined, color: colorScheme.onSurface),
+                const SizedBox(width: 8),
+                Text(
+                  'Description',
+                  style: textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              campaign.description,
+              style: textTheme.bodyMedium!
+                  .copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDocumentsSection(
+      ColorScheme colorScheme, TextTheme textTheme, List<dynamic> documents) {
+    if (documents.isEmpty) {
+      return const SizedBox.shrink(); // Return empty box if no documents
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.folder_outlined, color: colorScheme.onSurface),
+                const SizedBox(width: 8),
+                Text(
+                  'Documents',
+                  style: textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: documents.map((doc) {
+                // Assuming doc has documentUrl and can be uniquely identified
+                final index =
+                    documents.indexOf(doc) + 1; // Simple index for display
+                // You might need a proper Document model if doc isn't dynamic
+                return ActionChip(
+                  avatar: Icon(Icons.description_outlined,
+                      color: colorScheme.primary),
+                  label: Text('Document $index'),
+                  onPressed: () {
+                    // TODO: Implement document viewing - Check the actual structure of 'doc'
+                    // Assuming doc has a 'documentUrl' property
+                    if (doc.documentUrl != null) {
+                      print('Viewing document: ${doc.documentUrl}');
+                      // Implement logic to launch URL or navigate to a viewer
+                    } else {
+                      print('Document URL is null for document $index');
+                    }
+                  },
+                  labelStyle: textTheme.bodyMedium!
+                      .copyWith(color: colorScheme.primary),
+                  backgroundColor:
+                      colorScheme.primaryContainer.withValues(alpha: 0.5),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentInfoSection(
+      ColorScheme colorScheme, TextTheme textTheme, PaymentInfo paymentInfo) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.payments_outlined, color: colorScheme.onSurface),
+                const SizedBox(width: 8),
+                Text(
+                  'Payout Information',
+                  style: textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              label: 'Bank Name:',
+              value: paymentInfo.chapaBankName,
+              icon: Icons.account_balance_outlined,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            _buildInfoRow(
+              label: 'Bank Account No:',
+              value: paymentInfo.bankAccountNo,
+              icon: Icons.account_balance_wallet_outlined,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            // Note: The provided PaymentInfo model does NOT include accountHolderName or paymentMethodType/phoneNo.
+            // If your actual data model has these, you would add rows here.
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCampaignUpdatesSection(ColorScheme colorScheme,
+      TextTheme textTheme, List<dynamic> campaignPosts) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.update_outlined, color: colorScheme.onSurface),
+                const SizedBox(width: 8),
+                Text(
+                  'Campaign Updates',
+                  style: textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (campaignPosts.isEmpty)
+              Text(
+                'No campaign updates available.',
+                style: textTheme.bodyMedium!.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: campaignPosts.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final post = campaignPosts[index];
+                  return Card(
+                    elevation: 0,
+                    color: colorScheme.surfaceContainerHigh,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 12),
+                      title: Text(
+                        post.title ?? 'No Title', // Assuming post has title
+                        style: textTheme.titleMedium!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Text(
+                        _formatDate(post.publicPostDate),
+                        style: textTheme.bodySmall!.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      onTap: () {
+                        // TODO: Navigate to full campaign update view
+                        print('Tapped on update: ${post.title}');
+                      },
+                      dense: true,
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCampaignRequestsSection(ColorScheme colorScheme,
+      TextTheme textTheme, List<CampaignRequest> campaignRequests) {
+    // Assuming campaignRequests is a List<CampaignRequest> with 'title' and 'requestDate'
+    if (campaignRequests.isEmpty) {
+      return const SizedBox.shrink(); // Return empty box if no requests
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.request_page_outlined, color: colorScheme.onSurface),
+                const SizedBox(width: 8),
+                Text(
+                  'Campaign Requests',
+                  style: textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: campaignRequests.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final req = campaignRequests[index];
+                return Card(
+                  elevation: 0,
+                  color: colorScheme.surfaceContainerHigh,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    side: BorderSide(color: colorScheme.outlineVariant),
+                  ),
+                  child: ListTile(
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    title: Text(
+                      req.title, // Assuming req has title
+                      style: textTheme.titleMedium!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      _formatDate(req.requestDate),
+                      style: textTheme.bodySmall!.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    onTap: () {
+                      // TODO: Navigate to full campaign request view
+                      print('Tapped on request: ${req.title}');
+                    },
+                    dense: true,
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -557,19 +563,17 @@ class CampaignInfoPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.center, // Align contents vertically
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(Icons.calendar_today_outlined,
-              size: 18,
-              color: colorScheme.primary), // Using consistent date icon
+              size: 18, color: colorScheme.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  flex: 1, // Give equal flex to both date parts
+                  flex: 1,
                   child: RichText(
                     text: TextSpan(
                       style: textTheme.bodyMedium!
@@ -587,13 +591,13 @@ class CampaignInfoPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    maxLines: 1, // Prevent wrapping
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 8), // Space between date pairs
+                const SizedBox(width: 8),
                 Expanded(
-                  flex: 1, // Give equal flex
+                  flex: 1,
                   child: RichText(
                     text: TextSpan(
                       style: textTheme.bodyMedium!
@@ -611,7 +615,7 @@ class CampaignInfoPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    maxLines: 1, // Prevent wrapping
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
