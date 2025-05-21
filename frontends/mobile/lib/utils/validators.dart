@@ -84,7 +84,7 @@ String? validBoolean(String? value) {
   return null;
 }
 
-String? validMoneyAmount(String? value, double max) {
+String? validMoneyAmount(String? value, double max, [String suffix = " ETB"]) {
   if (value == null || value.isEmpty) {
     return 'Amount is required';
   }
@@ -99,7 +99,7 @@ String? validMoneyAmount(String? value, double max) {
     }
   }
   if (numValue > max) {
-    return 'Amount must be less than or equal to $max.';
+    return 'Amount must be less than or equal to $max$suffix.';
   }
   return null;
 }

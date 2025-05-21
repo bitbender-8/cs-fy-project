@@ -562,8 +562,11 @@ class CampaignInfoPage extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Icons.calendar_today_outlined,
-              size: 18, color: colorScheme.primary),
+          Icon(
+            Icons.calendar_today_outlined,
+            size: 18,
+            color: colorScheme.primary,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Row(
