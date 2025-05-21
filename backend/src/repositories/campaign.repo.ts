@@ -176,10 +176,9 @@ export async function insertCampaign(
           "fundraisingGoal",
           "status",
           "category",
-          "paymentMethod",
-          "phoneNo",
+          "chapaBankCode",
+          "chapaBankName",
           "bankAccountNo",
-          "bankName",
           "submissionDate",
           "isPublic",
           "ownerRecipientId"
@@ -194,10 +193,9 @@ export async function insertCampaign(
         fromMoneyStrToBigInt(campaign.fundraisingGoal),
         "Pending Review",
         campaign.category,
-        campaign.paymentInfo.paymentMethod,
-        campaign.paymentInfo.phoneNo,
+        campaign.paymentInfo.chapaBankCode,
+        campaign.paymentInfo.chapaBankName,
         campaign.paymentInfo.bankAccountNo,
-        campaign.paymentInfo.bankName,
         new Date(),
         false,
         ownerRecipientId,
@@ -210,13 +208,8 @@ export async function insertCampaign(
       });
     }
 
-    const {
-      paymentMethod,
-      phoneNo,
-      bankAccountNo,
-      bankName,
-      ...insertedCampaign
-    } = result.rows[0] as Omit<Campaign, "paymentInfo"> & PaymentInfo;
+    const { chapaBankCode, chapaBankName, bankAccountNo, ...insertedCampaign } =
+      result.rows[0] as Omit<Campaign, "paymentInfo"> & PaymentInfo;
 
     // Insert document urls if they exist
     if (campaign.documents && campaign.documents.length > 0) {
@@ -235,10 +228,9 @@ export async function insertCampaign(
     return {
       ...insertedCampaign,
       paymentInfo: {
-        paymentMethod,
-        phoneNo,
+        chapaBankCode,
+        chapaBankName,
         bankAccountNo,
-        bankName,
       },
     };
   } catch (error) {

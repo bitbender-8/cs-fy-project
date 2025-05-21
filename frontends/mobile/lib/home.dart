@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/custom_appbar.dart';
+import 'package:mobile/pages/add_campaign_page.dart';
 import 'package:mobile/pages/login_required_page.dart';
 import 'package:mobile/pages/my_campaigns_page.dart';
 import 'package:mobile/pages/public_campaigns_page.dart';
@@ -11,11 +12,13 @@ class NavPage {
     required this.title,
     required this.icon,
     required this.pageWidget,
+    this.floatingActionButton,
   });
 
   final String title;
   final Widget pageWidget;
   final IconData icon;
+  final FloatingActionButton? floatingActionButton;
 }
 
 class Home extends StatefulWidget {
@@ -34,6 +37,14 @@ class _HomeState extends State<Home> {
     });
   }
 
+  void _addNewCampaign(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AddCampaignPage(), // Return the Widget
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -50,6 +61,14 @@ class _HomeState extends State<Home> {
         pageWidget:
             isLoggedIn ? const MyCampaignsPage() : const LoginRequiredPage(),
         icon: Icons.folder,
+        floatingActionButton: isLoggedIn
+            ? FloatingActionButton(
+                onPressed: () {
+                  _addNewCampaign(context); // Directly use the context
+                },
+                child: const Icon(Icons.add),
+              )
+            : null,
       ),
       NavPage(
         title: 'Campaign\n requests',
@@ -82,6 +101,7 @@ class _HomeState extends State<Home> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onDestinationTapped,
       ),
+      floatingActionButton: navPages[_selectedIndex].floatingActionButton,
     );
   }
 }

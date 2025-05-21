@@ -209,10 +209,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r1'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Bank Transfer',
-      phoneNo: '+1234567890',
+      chapaBankCode: 23441234567890,
+      chapaBankName: 'Example Bank',
       bankAccountNo: '123456789',
-      bankName: 'Example Bank',
     ),
   ),
   Campaign(
@@ -230,10 +229,9 @@ final List<Campaign> dummyCampaigns = [
     campaignPosts: [],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r2'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Mobile Money',
-      phoneNo: '+1987654321',
-      bankAccountNo: null,
-      bankName: null,
+      chapaBankCode: 23441232347890,
+      chapaBankName: 'Example Bank',
+      bankAccountNo: '123456234',
     ),
   ),
   Campaign(
@@ -276,10 +274,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r3'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Bank Transfer',
-      phoneNo: '+1122334455',
-      bankAccountNo: '987654321',
-      bankName: 'Health Bank',
+      chapaBankCode: 243234567890,
+      chapaBankName: 'Health Bank',
+      bankAccountNo: '1234567892342',
     ),
   ),
   Campaign(
@@ -314,10 +311,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r4'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Credit Card',
-      phoneNo: '+25192342345',
-      bankAccountNo: null,
-      bankName: null,
+      chapaBankCode: 23441234523424,
+      chapaBankName: 'Example 2 Bank',
+      bankAccountNo: '12345678923',
     ),
   ),
   Campaign(
@@ -352,10 +348,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r5'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'PayPal',
-      phoneNo: "+23049809854",
-      bankAccountNo: null,
-      bankName: null,
+      chapaBankCode: 23441234567890,
+      chapaBankName: 'Example Bank',
+      bankAccountNo: '123456789',
     ),
   ),
   Campaign(
@@ -373,10 +368,9 @@ final List<Campaign> dummyCampaigns = [
     campaignPosts: [],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r6'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Bank Transfer',
-      phoneNo: '+15550001111',
-      bankAccountNo: '1122334455',
-      bankName: 'Community Bank',
+      chapaBankCode: 23441234567890,
+      chapaBankName: 'Example Bank',
+      bankAccountNo: '123456789',
     ),
   ),
   Campaign(
@@ -418,10 +412,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r7'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Credit Card',
-      phoneNo: "+2342340980934",
-      bankAccountNo: null,
-      bankName: null,
+      chapaBankCode: 23441234567890,
+      chapaBankName: 'Example Bank',
+      bankAccountNo: '123456789',
     ),
   ),
   Campaign(
@@ -464,10 +457,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r8'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Mobile Money',
-      phoneNo: '+14445556666',
-      bankAccountNo: null,
-      bankName: null,
+      chapaBankCode: 23441234567890,
+      chapaBankName: 'Example Bank',
+      bankAccountNo: '123456789',
     ),
   ),
   Campaign(
@@ -509,10 +501,9 @@ final List<Campaign> dummyCampaigns = [
     ],
     ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r9'),
     paymentInfo: PaymentInfo(
-      paymentMethod: 'Bank Transfer',
-      phoneNo: '+13334445555',
-      bankAccountNo: '6677889900',
-      bankName: 'Green Earth Bank',
+      chapaBankCode: 23441234567890,
+      chapaBankName: 'Example Bank',
+      bankAccountNo: '123456789',
     ),
   ),
 ];

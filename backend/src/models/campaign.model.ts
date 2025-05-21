@@ -5,21 +5,21 @@ import {
   validBankAccountNo,
   validCampaignStatus,
   validDate,
-  validPhoneNo,
   validUrl,
   validUuid,
   validMoneyAmount,
   CAMPAIGN_STATUSES,
+  validBankCode,
 } from "../utils/zod-helpers.js";
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+// DOC-UPDATE: Made changes to the way accounts are stored
 export type PaymentInfo = z.infer<typeof PaymentInfoSchema>;
 export const PaymentInfoSchema = z.object({
-  paymentMethod: validNonEmptyString(MIN_STRING_LENGTH, 50),
-  phoneNo: validPhoneNo(),
+  chapaBankCode: validBankCode(),
+  chapaBankName: validNonEmptyString(MIN_STRING_LENGTH, 50).optional(),
   bankAccountNo: validBankAccountNo().optional(),
-  bankName: validNonEmptyString(MIN_STRING_LENGTH, 50).optional(),
 });
 
 export type CampaignDocument = z.infer<typeof CampaignDocumentSchema>;

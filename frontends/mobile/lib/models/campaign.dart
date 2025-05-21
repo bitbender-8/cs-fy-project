@@ -17,7 +17,7 @@ class Campaign {
   List<CampaignDocument>? documents;
   PaymentInfo? paymentInfo;
 
-  // Not Json serialized
+  //TODO: Not Json serialized
   List<CampaignDonation>? campaignDonations;
   List<CampaignPost>? campaignPosts;
   Recipient? ownerRecipient;
@@ -120,4 +120,27 @@ class CampaignPost {
     this.publicPostDate,
     required this.campaignId,
   });
+}
+
+enum CampaignCategories {
+  charity('Charity'),
+  education('Education'),
+  health('Health'),
+  environment('Environment'),
+  animalWelfare('Animal Welfare'),
+  community('Community'),
+  artsAndCulture('Arts and Culture'),
+  youth('Youth');
+
+  final String value;
+  const CampaignCategories(this.value);
+}
+
+enum PaymentMethods {
+  bankTransfer('Bank Transfer'),
+  mobileMoney('Mobile Money'),
+  creditCard('Credit Card');
+
+  final String value;
+  const PaymentMethods(this.value);
 }

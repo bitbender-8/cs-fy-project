@@ -146,6 +146,11 @@ export const validCurrency = () =>
     ).join(", ")}.`,
   });
 
+export const validBankCode = () =>
+  z.coerce.number().int({
+    message: "Bank code must be an integer",
+  });
+
 export const validCampaignRequestType = () =>
   z.enum(CAMPAIGN_REQUEST_TYPES, {
     message: `Invalid campaign request type. Must be one of: ${CAMPAIGN_REQUEST_TYPES.join(", ")}.`,

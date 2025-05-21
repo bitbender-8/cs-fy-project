@@ -1,1 +1,0 @@
-/mnt/Shared/repos/school/y4/cs-fy-project/frontends/mobile/build/app/intermediates/cxx/Debug/4p4g1j61/obj/arm64-v8a

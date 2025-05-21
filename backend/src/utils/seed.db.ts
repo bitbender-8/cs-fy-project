@@ -175,10 +175,9 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       "fundraisingGoal",
       "status",
       "category",
-      "paymentMethod",
-      "phoneNo",
+      "chapaBankCode",
+      "chapaBankName",
       "bankAccountNo",
-      "bankName",
       "submissionDate",
       "verificationDate",
       "denialDate",
@@ -186,7 +185,7 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       "endDate",
       "isPublic"
     ) VALUES (
-       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
     )
   `;
 
@@ -209,10 +208,9 @@ async function seedCampaigns(campaigns: Campaign[]): Promise<void> {
       fromMoneyStrToBigInt(campaign.fundraisingGoal),
       campaign.status,
       campaign.category,
-      campaign.paymentInfo?.paymentMethod,
-      campaign.paymentInfo?.phoneNo,
+      campaign.paymentInfo?.chapaBankCode,
+      campaign.paymentInfo?.chapaBankName,
       campaign.paymentInfo?.bankAccountNo,
-      campaign.paymentInfo?.bankName,
       campaign.submissionDate,
       campaign.verificationDate,
       campaign.denialDate,

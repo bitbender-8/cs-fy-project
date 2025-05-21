@@ -155,7 +155,6 @@ export function generateCampaigns(
 ): Campaign[] {
   const campiagns: Campaign[] = [];
   const categories: string[] = [];
-  const paymentMethods = ["TeleBirr", "CBEBirr", "Phone", "Bank transfer"];
   const bankNames = ["Commercial Bank of Ethiopia", "Awash Bank", ""];
 
   for (let i = 0; i < noOfCategories; i++) {
@@ -205,10 +204,9 @@ export function generateCampaigns(
       status: faker.helpers.arrayElement(CAMPAIGN_STATUSES),
       category: faker.helpers.arrayElement(categories),
       paymentInfo: {
-        paymentMethod: faker.helpers.arrayElement(paymentMethods),
-        phoneNo: faker.phone.number({ style: "international" }),
+        chapaBankCode: faker.number.int({ min: 1, max: 400 }),
+        chapaBankName: faker.helpers.arrayElement(bankNames),
         bankAccountNo: faker.finance.accountNumber(16),
-        bankName: faker.helpers.arrayElement(bankNames),
       },
       isPublic: faker.datatype.boolean(),
       submissionDate,

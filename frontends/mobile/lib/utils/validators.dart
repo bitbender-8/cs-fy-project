@@ -1,5 +1,4 @@
-String? validNonEmptyString(String? value,
-    {int min = 3, required int max}) {
+String? validNonEmptyString(String? value, {int min = 3, required int max}) {
   if (value == null || value.trim().isEmpty) {
     return 'Cannot be empty or contain only whitespace';
   }
@@ -85,7 +84,7 @@ String? validBoolean(String? value) {
   return null;
 }
 
-String? validMoneyAmount(String? value, double max) {
+String? validMoneyAmount(String? value, double max, [String suffix = " ETB"]) {
   if (value == null || value.isEmpty) {
     return 'Amount is required';
   }
@@ -100,12 +99,10 @@ String? validMoneyAmount(String? value, double max) {
     }
   }
   if (numValue > max) {
-    return 'Amount must be less than or equal to $max.';
+    return 'Amount must be less than or equal to $max$suffix.';
   }
   return null;
 }
-
-/*
 
 String? validEnum(String? value, List<String> allowed, String fieldName) {
   if (value == null || value.isEmpty) {
@@ -127,5 +124,3 @@ String? validBankAccountNo(String? value) {
   }
   return null;
 }
-
-*/
