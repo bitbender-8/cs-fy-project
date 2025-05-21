@@ -49,13 +49,15 @@ class CampaignCard extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 4.0),
+                      horizontal: 8.0,
+                      vertical: 4.0,
+                    ),
                     decoration: BoxDecoration(
                       color: currentTheme.colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(4.0),
                     ),
                     child: Text(
-                      'Status: ${campaignData.status.toString()}',
+                      campaignData.status.toString(),
                       style: currentTheme.textTheme.bodySmall?.copyWith(
                         color: currentTheme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.bold,

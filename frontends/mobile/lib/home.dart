@@ -40,7 +40,7 @@ class _HomeState extends State<Home> {
   void _addNewCampaign(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => AddCampaignPage(), // Return the Widget
+        builder: (context) => const AddCampaignPage(), // Return the Widget
       ),
     );
   }

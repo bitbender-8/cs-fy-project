@@ -32,7 +32,12 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
     });
 
     await userProvider.login();
-    if (!context.mounted) return;
+    if (!context.mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
 
     final credentials = userProvider.credentials;
     if (credentials == null) {
@@ -41,6 +46,9 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
           const SnackBar(content: Text('Login failed. Please try again.')),
         );
       }
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -87,11 +95,9 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
 
     UserProvider.debugPrintUserProviderState(userProvider);
 
-    if (context.mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   // Handle Sign Up Logic
@@ -108,10 +114,20 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
     ) as Map<String, dynamic>?;
 
     // Handle Signup Cancellation
-    if (recipientData == null) return;
+    if (recipientData == null) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
 
     await userProvider.signup();
-    if (!context.mounted) return;
+    if (!context.mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
 
     final credentials = userProvider.credentials;
     if (credentials == null) {
@@ -120,6 +136,9 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
           const SnackBar(content: Text('Signup failed. Please try again.')),
         );
       }
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
