@@ -1,4 +1,4 @@
-const double maxMoneyAmount = 100000;
+const double maxMoneyAmount = 10000000000;
 const int maxFileNo = 5;
 const int maxFileSizeMb = 5;
 const List<String> allowedFileExtensions = ["jpg", "jpeg", "png", "gif"];

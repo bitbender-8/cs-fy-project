@@ -49,7 +49,8 @@ class RecipientService {
       final stream = http.ByteStream(profilePicture.openRead());
       final length = await profilePicture.length();
       final filename = profilePicture.path.split('/').last;
-      final mimeType = lookupMimeType(profilePicture.path) ?? 'image/jpeg';
+      final mimeType =
+          lookupMimeType(profilePicture.path) ?? 'application/octet-stream';
       final mimeSplit = mimeType.split('/');
 
       request.files.add(
@@ -63,7 +64,7 @@ class RecipientService {
       );
     }
 
-    debugPrint(request.fields.toString());
+    debugPrint("[REQUEST_BODY]: ${request.fields.toString()}");
 
     try {
       final streamedResponse = await request.send();

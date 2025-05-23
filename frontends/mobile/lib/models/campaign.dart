@@ -1,13 +1,20 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mobile/models/payment_info.dart';
 import 'package:mobile/models/recipient.dart';
 
+part 'campaign.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class Campaign {
   String? id;
   String ownerRecipientId;
   String title;
   String description;
   String fundraisingGoal;
+
+  @CampaignStatusConverter()
   CampaignStatus? status;
+
   String category;
   DateTime? launchDate;
   DateTime endDate;
@@ -15,11 +22,13 @@ class Campaign {
   DateTime? verificationDate;
   DateTime? denialDate;
   List<CampaignDocument>? documents;
-  PaymentInfo? paymentInfo;
+  PaymentInfo paymentInfo;
 
-  //TODO: Not Json serialized
+  @JsonKey(includeToJson: false, includeFromJson: false)
   List<CampaignDonation>? campaignDonations;
+  @JsonKey(includeToJson: false, includeFromJson: false)
   List<CampaignPost>? campaignPosts;
+  @JsonKey(includeToJson: false, includeFromJson: false)
   Recipient? ownerRecipient;
 
   Campaign({
@@ -36,11 +45,16 @@ class Campaign {
     this.verificationDate,
     this.denialDate,
     this.documents,
-    this.paymentInfo,
+    required this.paymentInfo,
     this.campaignDonations,
     this.campaignPosts,
     this.ownerRecipient,
   });
+
+  factory Campaign.fromJson(Map<String, dynamic> json) =>
+      _$CampaignFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CampaignToJson(this);
 
   Duration get timeRemaining {
     final now = DateTime.now();
@@ -63,6 +77,7 @@ class Campaign {
   }
 }
 
+@JsonEnum(valueField: 'value')
 enum CampaignStatus {
   pendingReview("Pending Review"),
   verified("Verified"),
@@ -78,6 +93,22 @@ enum CampaignStatus {
   String toString() => value;
 }
 
+class CampaignStatusConverter implements JsonConverter<CampaignStatus, String> {
+  const CampaignStatusConverter();
+
+  @override
+  CampaignStatus fromJson(String json) {
+    return CampaignStatus.values.firstWhere(
+      (e) => e.value == json,
+      orElse: () => throw ArgumentError('Unknown CampaignStatus: $json'),
+    );
+  }
+
+  @override
+  String toJson(CampaignStatus object) => object.value;
+}
+
+@JsonSerializable(explicitToJson: true)
 class CampaignDocument {
   String campaignId;
   String? documentUrl;
@@ -88,8 +119,14 @@ class CampaignDocument {
     this.documentUrl,
     this.redactedDocumentUrl,
   });
+
+  factory CampaignDocument.fromJson(Map<String, dynamic> json) =>
+      _$CampaignDocumentFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CampaignDocumentToJson(this);
 }
 
+@JsonSerializable(explicitToJson: true)
 class CampaignDonation {
   String id;
   String grossAmount;
@@ -104,8 +141,14 @@ class CampaignDonation {
     required this.createdAt,
     required this.campaignId,
   });
+
+  factory CampaignDonation.fromJson(Map<String, dynamic> json) =>
+      _$CampaignDonationFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CampaignDonationToJson(this);
 }
 
+@JsonSerializable(explicitToJson: true)
 class CampaignPost {
   String id;
   String title;
@@ -120,6 +163,10 @@ class CampaignPost {
     this.publicPostDate,
     required this.campaignId,
   });
+
+  factory CampaignPost.fromJson(Map<String, dynamic> json) =>
+      _$CampaignPostFromJson(json);
+  Map<String, dynamic> toJson() => _$CampaignPostToJson(this);
 }
 
 enum CampaignCategories {
@@ -134,13 +181,4 @@ enum CampaignCategories {
 
   final String value;
   const CampaignCategories(this.value);
-}
-
-enum PaymentMethods {
-  bankTransfer('Bank Transfer'),
-  mobileMoney('Mobile Money'),
-  creditCard('Credit Card');
-
-  final String value;
-  const PaymentMethods(this.value);
 }

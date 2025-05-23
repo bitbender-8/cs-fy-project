@@ -30,6 +30,7 @@ String? validDate(String? value, {required bool isPast}) {
   try {
     date = DateTime.parse(value);
   } catch (_) {
+    print(value);
     return 'Invalid date format';
   }
   final now = DateTime.now();

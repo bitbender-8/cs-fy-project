@@ -37,7 +37,7 @@ class Recipient {
   Map<String, dynamic> toJson() => _$RecipientToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class SocialMediaHandle {
   String? id;
   String? recipientId;

@@ -1,8 +1,47 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'errors.g.dart';
 
-sealed class ApiServiceError {}
+sealed class ApiServiceError {
+  static ApiServiceError handleException(Object e) {
+    debugPrint("[REQUEST_ERROR]: $e");
+
+    if (e is SocketException) {
+      return SimpleError('No Internet connection. Please check your network.');
+    }
+    if (e is TimeoutException) {
+      return SimpleError('Request timed out. Please try again later.');
+    }
+    if (e is SimpleError) {
+      return e;
+    }
+
+    return SimpleError('An unexpected error occurred: $e');
+  }
+
+  /// Extracts a user-friendly error message from a service response error.
+  ///
+  /// [error] The error object received from a service response (ApiServiceError).
+  /// Returns a string message suitable for display.
+  static String getErrorMessage(ApiServiceError error) {
+    if (error is ProblemDetails) {
+      if (error.fieldFailures != null && error.fieldFailures!.isNotEmpty) {
+        return 'One or more fields have validation errors.';
+      }
+      return error.detail.isNotEmpty ? error.detail : 'An API error occurred.';
+    } else if (error is SimpleError) {
+      return error.message.isNotEmpty
+          ? error.message
+          : 'An unexpected error occurred.';
+    }
+    // Fallback for any other unhandled error types
+    return 'An unknown error occurred. Please try again.';
+  }
+}
 
 final class SimpleError extends ApiServiceError {
   final String message;
