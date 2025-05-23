@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/models/server/errors.dart';
+import 'package:provider/provider.dart';
+
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/config.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/payment_info.dart';
-import 'package:mobile/models/server/errors.dart';
 import 'package:mobile/services/campaign_service.dart';
 import 'package:mobile/services/providers.dart';
-import 'package:mobile/utils/ui_helpers.dart';
 import 'package:mobile/utils/utils.dart';
 import 'package:mobile/utils/validators.dart';
-import 'package:provider/provider.dart';
 
 class AddCampaignPage extends StatefulWidget {
   const AddCampaignPage({super.key});
@@ -21,7 +21,8 @@ class AddCampaignPage extends StatefulWidget {
   State<AddCampaignPage> createState() => _AddCampaignPageState();
 }
 
-class _AddCampaignPageState extends State<AddCampaignPage> {
+class _AddCampaignPageState extends State<AddCampaignPage>
+    with FormErrorHelpers<AddCampaignPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -38,7 +39,6 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
     bankAccountNo: '',
   );
 
-  Map<String, List<String>> _serverErrors = {};
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _fundraisingGoalController =
@@ -157,12 +157,12 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           hintText: 'Enter the campaign title',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.title, color: colorScheme.primary),
-          errorText: _getServerError('title'),
+          errorText: getServerError('title'),
         ),
         maxLength: 100,
         onChanged: (value) {
           setState(() => _title = value);
-          _clearServerError('title');
+          clearServerError('title');
         },
         validator: (value) => validNonEmptyString(value, max: 100),
         onSaved: (value) => _title = value ?? '',
@@ -175,13 +175,13 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           hintText: 'Enter the campaign description',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.description, color: colorScheme.primary),
-          errorText: _getServerError('description'),
+          errorText: getServerError('description'),
         ),
         maxLines: 5,
         maxLength: 500,
         onChanged: (value) {
           setState(() => _description = value);
-          _clearServerError('description');
+          clearServerError('description');
         },
         validator: (value) => validNonEmptyString(value, max: 500),
         onSaved: (value) => _description = value ?? '',
@@ -195,7 +195,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.attach_money, color: colorScheme.primary),
           suffixText: 'ETB',
-          errorText: _getServerError('fundraisingGoal'),
+          errorText: getServerError('fundraisingGoal'),
         ),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [
@@ -203,7 +203,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
         ],
         onChanged: (value) {
           setState(() => _fundraisingGoal = value);
-          _clearServerError('fundraisingGoal');
+          clearServerError('fundraisingGoal');
         },
         validator: (value) {
           final valResult = validMoneyAmount(value, maxMoneyAmount);
@@ -223,12 +223,12 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           hintText: 'Enter the campaign end date',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.calendar_today, color: colorScheme.primary),
-          errorText: _getServerError('endDate'),
+          errorText: getServerError('endDate'),
         ),
         readOnly: true,
         onTap: () async {
           await _selectEndDate(context);
-          _clearServerError('endDate');
+          clearServerError('endDate');
         },
         initialValue: DateFormat('MMMM dd, yyyy').format(_endDate),
         validator: (value) =>
@@ -241,7 +241,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           hintText: 'Select a category',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.category, color: colorScheme.primary),
-          errorText: _getServerError('category'),
+          errorText: getServerError('category'),
         ),
         value: _category,
         items: CampaignCategories.values.map((category) {
@@ -252,7 +252,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
         }).toList(),
         onChanged: (value) {
           setState(() => _category = value!);
-          _clearServerError('category');
+          clearServerError('category');
         },
         validator: (value) {
           return validEnum(
@@ -275,7 +275,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           hintText: 'Select your bank',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.account_balance, color: colorScheme.primary),
-          errorText: _getServerError('paymentInfo.chapaBankCode'),
+          errorText: getServerError('paymentInfo.chapaBankCode'),
         ),
         value: _paymentInfo.chapaBankCode,
         items: ChapaBanks.values.map((bank) {
@@ -296,7 +296,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
                 chapaBankName: selectedBank.name,
               );
             });
-            _clearServerError('paymentInfo.chapaBankCode');
+            clearServerError('paymentInfo.chapaBankCode');
           }
         },
         validator: (value) => value == null ? 'Please select a bank' : null,
@@ -310,14 +310,14 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           border: const OutlineInputBorder(),
           prefixIcon:
               Icon(Icons.account_balance_wallet, color: colorScheme.primary),
-          errorText: _getServerError('paymentInfo.bankAccountNo'),
+          errorText: getServerError('paymentInfo.bankAccountNo'),
         ),
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: (value) => validBankAccountNo(value),
         onChanged: (value) {
           _paymentInfo.bankAccountNo = value;
-          _clearServerError('paymentInfo.bankAccountNo');
+          clearServerError('paymentInfo.bankAccountNo');
         },
       ),
     ];
@@ -327,7 +327,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
     BuildContext context,
     ColorScheme colorScheme,
   ) {
-    String? documentsServerError = _getServerError('documents');
+    String? documentsServerError = getServerError('documents');
     return <Widget>[
       Text(
         'You may attach up to $maxFileNo files under the size of $maxFileSizeMb MB each. '
@@ -356,7 +356,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
         ),
         onPressed: () async {
           await _pickDocuments();
-          _clearServerError('documents');
+          clearServerError('documents');
         },
       ),
       if (documentsServerError != null)
@@ -482,7 +482,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
   Future<void> _submitCampaign(BuildContext context) async {
     setState(() {
       _isLoading = true;
-      _serverErrors = {};
+      clearAllServerErrors();
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -518,7 +518,10 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
       paymentInfo: _paymentInfo,
     );
 
-    final response = await CampaignService().createCampaign(
+    final response = await Provider.of<CampaignService>(
+      context,
+      listen: false,
+    ).createCampaign(
       campaignData,
       _supportingDocuments,
       accessToken,
@@ -539,7 +542,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
       },
       onValidationErrors: (errors) {
         setState(() {
-          _serverErrors = errors;
+          setServerErrors(errors);
         });
         // After setting errors, validate the form again to show them immediately. This causes the TextFormFields to re-evaluate their errorText.
         _formKey.currentState?.validate();
@@ -594,24 +597,5 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
         );
       },
     );
-  }
-
-  //** Error helpers
-  /// Helper to get the first error message for a given field
-  String? _getServerError(String fieldName) {
-    if (_serverErrors.containsKey(fieldName) &&
-        _serverErrors[fieldName]!.isNotEmpty) {
-      return _serverErrors[fieldName]!.first;
-    }
-    return null;
-  }
-
-  /// Helper to clear server errors when user starts typing or when a field changes
-  void _clearServerError(String fieldName) {
-    if (_serverErrors.containsKey(fieldName)) {
-      setState(() {
-        _serverErrors.remove(fieldName);
-      });
-    }
   }
 }

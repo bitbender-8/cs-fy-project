@@ -2,7 +2,7 @@ import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:mobile/config.dart';
-import 'package:mobile/models/notification.dart';
+import 'package:mobile/models/app_notification.dart';
 import 'package:mobile/models/recipient.dart';
 
 class UserProvider extends ChangeNotifier {
@@ -77,7 +77,6 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     _isLoading = true;
-    await _auth0.webAuthentication().logout(useHTTPS: true);
 
     _credentials = null;
     _recipient = null;

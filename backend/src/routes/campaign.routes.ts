@@ -269,7 +269,7 @@ campaignRouter.post(
   validateFileUpload("documents", "Both"),
   validateRequestBody(createCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
-    // TODO: Add a check for whether the campaign has a status of "Pending Review"
+    // TODO(bitbender-8): Add a check for whether the campaign has a status of "Pending Review"
     if (getUserRole(req.auth) !== "Recipient") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",

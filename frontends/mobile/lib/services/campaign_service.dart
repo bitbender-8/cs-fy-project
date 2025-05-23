@@ -131,4 +131,11 @@ class CampaignService {
       );
     }
   }
+
+  Future<ServiceResult<CampaignPost>> createCampaignPost(
+    CampaignPost newPost,
+    String accessToken,
+  ) {
+    throw UnimplementedError();
+  }
 }

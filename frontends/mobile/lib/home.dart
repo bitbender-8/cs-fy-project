@@ -3,6 +3,7 @@ import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/pages/add_campaign_page.dart';
 import 'package:mobile/pages/login_required_page.dart';
 import 'package:mobile/pages/my_campaigns_page.dart';
+import 'package:mobile/pages/profile_page.dart';
 import 'package:mobile/pages/public_campaigns_page.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:provider/provider.dart';
@@ -40,7 +41,7 @@ class _HomeState extends State<Home> {
   void _addNewCampaign(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const AddCampaignPage(), // Return the Widget
+        builder: (context) => const AddCampaignPage(),
       ),
     );
   }
@@ -64,7 +65,7 @@ class _HomeState extends State<Home> {
         floatingActionButton: isLoggedIn
             ? FloatingActionButton(
                 onPressed: () {
-                  _addNewCampaign(context); // Directly use the context
+                  _addNewCampaign(context);
                 },
                 child: const Icon(Icons.add),
               )
@@ -80,9 +81,12 @@ class _HomeState extends State<Home> {
       NavPage(
         title: 'Profile\n',
         pageWidget: isLoggedIn
-            ? const Center(child: Text('Profile and Settings Page'))
+            ? (userProvider.user != null
+                ? ProfilePage(initialRecipient: userProvider.user!)
+                : const Center(child: CircularProgressIndicator()))
             : const LoginRequiredPage(),
         icon: Icons.account_circle_rounded,
+        floatingActionButton: null,
       ),
     ];
 

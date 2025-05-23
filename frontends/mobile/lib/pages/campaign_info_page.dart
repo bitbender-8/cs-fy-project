@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/mock_data.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/campaign_request.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile/models/payment_info.dart';
+import 'package:mobile/pages/campaign_post_info_page.dart';
 
 class CampaignInfoPage extends StatelessWidget {
   final Campaign campaign;
@@ -54,17 +56,13 @@ class CampaignInfoPage extends StatelessWidget {
               _buildDocumentsSection(colorScheme, textTheme, documents),
               const SizedBox(height: 16),
             ],
-            if (!isPublic && campaign.paymentInfo != null) ...[
+            if (!isPublic) ...[
               _buildPaymentInfoSection(
-                  colorScheme, textTheme, campaign.paymentInfo!),
+                  colorScheme, textTheme, campaign.paymentInfo),
               const SizedBox(height: 16),
             ],
-            if (isPublic) ...[
-              // Conditional rendering based on isPublic
-              _buildCampaignUpdatesSection(
-                  colorScheme, textTheme, campaignPosts),
-              const SizedBox(height: 16),
-            ],
+            _buildCampaignUpdatesSection(colorScheme, textTheme, campaignPosts),
+            const SizedBox(height: 16),
             if (!isPublic && campaignRequests.isNotEmpty) ...[
               // Conditional rendering based on isPublic and requests existence
               _buildCampaignRequestsSection(
@@ -214,7 +212,9 @@ class CampaignInfoPage extends StatelessWidget {
   }
 
   Widget _buildDescriptionSection(
-      ColorScheme colorScheme, TextTheme textTheme) {
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -251,7 +251,10 @@ class CampaignInfoPage extends StatelessWidget {
   }
 
   Widget _buildDocumentsSection(
-      ColorScheme colorScheme, TextTheme textTheme, List<dynamic> documents) {
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    List<dynamic> documents,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -306,7 +309,10 @@ class CampaignInfoPage extends StatelessWidget {
   }
 
   Widget _buildPaymentInfoSection(
-      ColorScheme colorScheme, TextTheme textTheme, PaymentInfo paymentInfo) {
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    PaymentInfo paymentInfo,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -351,8 +357,11 @@ class CampaignInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCampaignUpdatesSection(ColorScheme colorScheme,
-      TextTheme textTheme, List<dynamic> campaignPosts) {
+  Widget _buildCampaignUpdatesSection(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    List<CampaignPost> campaignPosts,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -404,7 +413,7 @@ class CampaignInfoPage extends StatelessWidget {
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 12),
                       title: Text(
-                        post.title ?? 'No Title',
+                        post.title,
                         style: textTheme.titleMedium!.copyWith(
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onSurface,
@@ -419,7 +428,12 @@ class CampaignInfoPage extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        print('Tapped on update: ${post.title}');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                CampaignPostInfoPage(campaignPost: post),
+                          ),
+                        );
                       },
                       dense: true,
                     ),
@@ -432,8 +446,11 @@ class CampaignInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCampaignRequestsSection(ColorScheme colorScheme,
-      TextTheme textTheme, List<CampaignRequest> campaignRequests) {
+  Widget _buildCampaignRequestsSection(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    List<CampaignRequest> campaignRequests,
+  ) {
     if (campaignRequests.isEmpty) return const SizedBox.shrink();
 
     return Card(

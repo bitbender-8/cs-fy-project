@@ -1,3 +1,4 @@
+import 'package:mobile/models/app_notification.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/campaign_request.dart';
 import 'package:mobile/models/payment_info.dart';
@@ -620,5 +621,44 @@ final List<CampaignRequest> dummyCampaignRequests = [
     resolutionDate: DateTime.now()
         .subtract(const Duration(hours: 6)), // Another resolved request
     newGoal: '60000', // Requesting to increase goal to 60000
+  ),
+];
+
+final List<AppNotification> dummyNotifications = [
+  AppNotification(
+    id: '1',
+    subject: 'Campaign Update: New Goal!',
+    body: 'Our "Clean Water for All" campaign has reached 50% of its goal!',
+    createdAt: DateTime(2022, 12, 12, 9, 12),
+    isRead: false,
+    userId: 'user123',
+    userType: UserType.recipient,
+  ),
+  AppNotification(
+    id: '2',
+    subject: 'New Donation Received!',
+    body: 'You received a donation of 100 ETB for "Helping Hands".',
+    createdAt: DateTime(2022, 12, 12, 10, 30),
+    isRead: false,
+    userId: 'user123',
+    userType: UserType.recipient,
+  ),
+  AppNotification(
+    id: '3',
+    subject: 'Action Required: Verify Account',
+    body: 'Please verify your account details to continue using our services.',
+    createdAt: DateTime(2022, 12, 11, 15, 0),
+    isRead: true, // Example of an already read notification
+    userId: 'user456',
+    userType: UserType.supervisor,
+  ),
+  AppNotification(
+    id: '4',
+    subject: 'New Feature Alert!',
+    body: 'Discover our new analytics dashboard for campaign owners.',
+    createdAt: DateTime(2022, 12, 10, 18, 45),
+    isRead: false,
+    userId: 'user123',
+    userType: UserType.recipient,
   ),
 ];
