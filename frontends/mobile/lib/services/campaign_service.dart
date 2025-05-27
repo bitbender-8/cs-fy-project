@@ -11,19 +11,11 @@ import 'package:mime/mime.dart';
 import 'package:mobile/config.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/server/errors.dart';
+import 'package:mobile/models/server/filters.dart';
 import 'package:mobile/models/server/response.dart';
 
 class CampaignService {
   static const String baseUrl = '$apiUrl/campaigns';
-
-  Future<ServiceResult<Campaign>> getCampaignById(
-    String campaignId,
-    String accessToken,
-  ) async {
-    Uri getUrl = Uri.parse("$baseUrl/$campaignId");
-
-    throw UnimplementedError();
-  }
 
   Future<ServiceResult<Campaign>> createCampaign(
     Campaign campaignData,
@@ -49,11 +41,11 @@ class CampaignService {
       'description': campaignData.description,
       'fundraisingGoal': campaignData.fundraisingGoal,
       'category': campaignData.category,
-      'endDate': campaignData.endDate.toIso8601String(),
+      'endDate': campaignData.endDate!.toIso8601String(),
       'paymentInfo[chapaBankCode]':
-          campaignData.paymentInfo.chapaBankCode.toString(),
-      'paymentInfo[chapaBankName]': campaignData.paymentInfo.chapaBankName,
-      'paymentInfo[bankAccountNo]': campaignData.paymentInfo.bankAccountNo,
+          campaignData.paymentInfo!.chapaBankCode.toString(),
+      'paymentInfo[chapaBankName]': campaignData.paymentInfo!.chapaBankName,
+      'paymentInfo[bankAccountNo]': campaignData.paymentInfo!.bankAccountNo,
     };
 
     for (var field in fields.entries) {
@@ -132,10 +124,48 @@ class CampaignService {
     }
   }
 
-  Future<ServiceResult<CampaignPost>> createCampaignPost(
-    CampaignPost newPost,
-    String accessToken,
-  ) {
-    throw UnimplementedError();
+  Future<ServiceResult<PaginatedList<Campaign>>> fetchCampaigns(
+    CampaignFilter filters,
+    String? accessToken,
+  ) async {
+    Uri uri = Uri.parse(baseUrl);
+    final queryParams = filters.toMap();
+    if (queryParams != null) {
+      uri = uri.replace(queryParameters: queryParams);
+    }
+
+    debugPrint("[REQUEST_URI]: $uri");
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+      debugPrint("RESPONSE: ${jsonEncode(response.body)}");
+
+      if (response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+        return (
+          data: PaginatedList<Campaign>.fromJson(
+            decodedBody,
+            (data) => Campaign.fromJson(data as Map<String, dynamic>),
+          ),
+          error: null,
+        );
+      } else {
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(response.body))
+        );
+      }
+    } catch (e) {
+      debugPrint("[REQUEST_ERROR]: $e");
+
+      return (
+        data: null,
+        error: SimpleError('An unexpected error occurred: $e')
+      );
+    }
   }
 }

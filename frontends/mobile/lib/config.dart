@@ -1,3 +1,4 @@
+const int pageSize = 10;
 const double maxMoneyAmount = 10000000000;
 const int maxFileNo = 5;
 const int maxFileSizeMb = 5;

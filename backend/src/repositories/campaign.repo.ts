@@ -31,10 +31,9 @@ export async function getCampaigns(
             "fundraisingGoal",
             "status",
             "category",
-            "paymentMethod",
-            "phoneNo",
+            "chapaBankCode",
+            "chapaBankName",
             "bankAccountNo",
-            "bankName",
             "submissionDate",
             "verificationDate",
             "denialDate",
@@ -134,10 +133,9 @@ export async function getCampaigns(
   const campaigns: Campaign[] = await Promise.all(
     (await query(queryString, values)).rows.map(async (campaign) => {
       const {
-        paymentMethod,
-        phoneNo,
+        chapaBankCode,
+        chapaBankName,
         bankAccountNo,
-        bankName,
         fundraisingGoal,
         ...rest
       } = campaign;
@@ -147,12 +145,11 @@ export async function getCampaigns(
         fundraisingGoal: fromIntToMoneyStr(BigInt(fundraisingGoal)),
         documents: await getCampaignDocuments(campaign.id),
         paymentInfo: {
-          paymentMethod,
-          phoneNo,
+          chapaBankCode,
+          chapaBankName,
           bankAccountNo,
-          bankName,
         },
-      };
+      } as Campaign;
     })
   );
 

@@ -23,8 +23,8 @@ class AppNotification {
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> json) =>
-      _$NotificationFromJson(json);
-  Map<String, dynamic> toJson() => _$NotificationToJson(this);
+      _$AppNotificationFromJson(json);
+  Map<String, dynamic> toJson() => _$AppNotificationToJson(this);
 }
 
 enum UserType {

@@ -17,12 +17,12 @@ class Campaign {
 
   String category;
   DateTime? launchDate;
-  DateTime endDate;
+  DateTime? endDate;
   DateTime? submissionDate;
   DateTime? verificationDate;
   DateTime? denialDate;
   List<CampaignDocument>? documents;
-  PaymentInfo paymentInfo;
+  PaymentInfo? paymentInfo;
 
   @JsonKey(includeToJson: false, includeFromJson: false)
   List<CampaignDonation>? campaignDonations;
@@ -56,10 +56,12 @@ class Campaign {
 
   Map<String, dynamic> toJson() => _$CampaignToJson(this);
 
-  Duration get timeRemaining {
+  Duration? get timeRemaining {
     final now = DateTime.now();
-    final difference = endDate.difference(now);
-    return difference.isNegative ? Duration.zero : difference;
+    final difference = endDate?.difference(now);
+    return difference != null && difference.isNegative
+        ? Duration.zero
+        : difference;
   }
 
   double get totalDonated {

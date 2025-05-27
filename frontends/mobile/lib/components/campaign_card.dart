@@ -75,7 +75,7 @@ class CampaignCard extends StatelessWidget {
               ),
               const SizedBox(height: 4.0),
               Text(
-                'Days remaining: ${campaignData.timeRemaining.inDays}',
+                'Days remaining: ${campaignData.timeRemaining?.inDays}',
                 style: currentTheme.textTheme.bodyMedium?.copyWith(
                   color: currentTheme.colorScheme.onSurfaceVariant,
                 ),

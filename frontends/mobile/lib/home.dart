@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/pages/add_campaign_page.dart';
 import 'package:mobile/pages/login_required_page.dart';
-import 'package:mobile/pages/my_campaigns_page.dart';
 import 'package:mobile/pages/profile_page.dart';
 import 'package:mobile/pages/public_campaigns_page.dart';
 import 'package:mobile/services/providers.dart';
@@ -38,7 +37,7 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _addNewCampaign(BuildContext context) {
+  void _addNewCampaign() {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const AddCampaignPage(),
@@ -54,19 +53,18 @@ class _HomeState extends State<Home> {
     List<NavPage> navPages = [
       const NavPage(
         title: '    Public\nCampaigns',
-        pageWidget: PublicCampaignsPage(),
+        pageWidget: CampaignListPage(),
         icon: Icons.public,
       ),
       NavPage(
         title: '       My\nCampaigns',
-        pageWidget:
-            isLoggedIn ? const MyCampaignsPage() : const LoginRequiredPage(),
+        pageWidget: isLoggedIn
+            ? const CampaignListPage(isPublicList: false)
+            : const LoginRequiredPage(),
         icon: Icons.folder,
         floatingActionButton: isLoggedIn
             ? FloatingActionButton(
-                onPressed: () {
-                  _addNewCampaign(context);
-                },
+                onPressed: () => _addNewCampaign(),
                 child: const Icon(Icons.add),
               )
             : null,

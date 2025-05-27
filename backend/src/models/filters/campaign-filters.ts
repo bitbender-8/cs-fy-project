@@ -1,20 +1,18 @@
 import { z } from "zod";
 
 import {
-  MIN_STRING_LENGTH,
   validBoolean,
   validCampaignStatus,
   validDate,
-  validNonEmptyString,
   validUuid,
 } from "../../utils/zod-helpers.js";
 
 export type CampaignFilterParams = z.infer<typeof CampaignFilterSchema>;
 export const CampaignFilterSchema = z
   .object({
-    title: validNonEmptyString(MIN_STRING_LENGTH, 100),
+    title: z.string(),
     status: validCampaignStatus(),
-    category: validNonEmptyString(MIN_STRING_LENGTH, 50),
+    category: z.string(),
     minLaunchDate: validDate(true),
     maxLaunchDate: validDate(true),
     minEndDate: validDate(false),

@@ -138,7 +138,6 @@ class RecipientService {
     try {
       final response = await http.get(getUrl, headers: {
         'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
       });
 
       if (response.statusCode == 200) {

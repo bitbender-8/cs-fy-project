@@ -311,7 +311,7 @@ class CampaignInfoPage extends StatelessWidget {
   Widget _buildPaymentInfoSection(
     ColorScheme colorScheme,
     TextTheme textTheme,
-    PaymentInfo paymentInfo,
+    PaymentInfo? paymentInfo,
   ) {
     return Card(
       elevation: 2,
@@ -339,14 +339,14 @@ class CampaignInfoPage extends StatelessWidget {
             const SizedBox(height: 12),
             _buildInfoRow(
               label: 'Chapa Bank Name:',
-              value: paymentInfo.chapaBankName,
+              value: paymentInfo?.chapaBankName ?? '',
               icon: Icons.account_balance_outlined,
               colorScheme: colorScheme,
               textTheme: textTheme,
             ),
             _buildInfoRow(
               label: 'Bank Account No:',
-              value: paymentInfo.bankAccountNo,
+              value: paymentInfo?.bankAccountNo ?? '',
               icon: Icons.account_balance_wallet_outlined,
               colorScheme: colorScheme,
               textTheme: textTheme,

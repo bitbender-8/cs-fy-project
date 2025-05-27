@@ -372,6 +372,8 @@ campaignRouter.get(
       };
     };
 
+    // REMOVE
+    console.log(userRole);
     switch (userRole) {
       case "Supervisor":
         campaigns = await getCampaigns(queryParams);

@@ -408,7 +408,56 @@ class _AddCampaignPageState extends State<AddCampaignPage>
     ];
   }
 
-  //***** Helper methods
+  //****** Helper methods
+  void _showSuccessDialog(BuildContext context) {
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 30),
+              SizedBox(width: 10),
+              Text(
+                'Success',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Your campaign application has been submitted successfully!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'OK',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -527,11 +576,8 @@ class _AddCampaignPageState extends State<AddCampaignPage>
       accessToken,
     );
 
-    if (!context.mounted) {
-      return;
-    }
+    if (!context.mounted) return;
 
-    setState(() => _isLoading = false);
     handleServiceResponse(
       context,
       response,
@@ -548,54 +594,7 @@ class _AddCampaignPageState extends State<AddCampaignPage>
         _formKey.currentState?.validate();
       },
     );
-  }
 
-  void _showSuccessDialog(BuildContext context) {
-    if (!context.mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 30),
-              SizedBox(width: 10),
-              Text(
-                'Success',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Your campaign application has been submitted successfully!',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
-    );
+    if (context.mounted) setState(() => _isLoading = false);
   }
 }
