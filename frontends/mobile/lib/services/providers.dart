@@ -6,8 +6,27 @@ import 'package:mobile/models/notification.dart';
 import 'package:mobile/models/recipient.dart';
 
 class UserProvider extends ChangeNotifier {
-  Recipient? _recipient;
-  Credentials? _credentials;
+  Recipient? _recipient = Recipient(
+      firstName: 'Eileen',
+      middleName: 'Arden',
+      lastName: 'Ondricka',
+      dateOfBirth: DateTime.parse('2002-10-26'),
+      phoneNo: '+18408703513',
+      bio: 'Vilis conqueror delectatio tenax libero vaco anser.',
+      profilePictureUrl:
+          'https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/male/512/93.jpg');
+
+  Credentials? _credentials = Credentials(
+      idToken:
+          "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImV6MXBFRU9pcThra3dDVlJ3cnUyUCJ9.eyJodHRwczovL3Rlc2ZhZnVuZC1hcGkuZXhhbXBsZS5jb20vcm9sZXMiOlsiUmVjaXBpZW50Il0sImlzcyI6Imh0dHBzOi8vZGV2LWJkcnc1M2RxNzM2dXg1am4udXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDY3ZmY1OGRlMzQ3ODJkYTgxODliNDUxNyIsImF1ZCI6WyJ0ZXNmYWZ1bmQtYXBpIiwiaHR0cHM6Ly9kZXYtYmRydzUzZHE3MzZ1eDVqbi51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNzQ4NjkyMTI2LCJleHAiOjE3NDg3Nzg1MjYsInNjb3BlIjoib3BlbmlkIGVtYWlsIiwiYXpwIjoib2NCSlFQTG5samExaWNQTVE0T3V6QUpWeEgxaU5jTnAiLCJwZXJtaXNzaW9ucyI6W119.G-DX2CSdUqEWNT4l9hJXbFLhM4XcGjIba0RplBIVMcoYqTGf_J8FAqFhtCBWNOgfFJPjAvMcePAEFmVsiw2WsqQ7ntxxxsv9z9NFMMlhmHL0baBpfyeInwaQr6dr-Va83gwmSGGrkYHPRNCaSMiqA1Qhc6UAfJDRMUEfDUC1cmxoi7i77KgkUWsx8rZv2zsMzs-UrODnUO1Z9TZea87RYt8HIqH2sc0c8vS0BJWGAPgKJP_GhTJawq0oQu_V23jbDaTeDMjHkQjaVSIFrBff1LbmoUBv2hM6G4UrSzR2k0abHFD3Em9nQttCKkpNAGutwYJiKXRf7bmhc3nck0r73Q",
+      accessToken:
+          "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImV6MXBFRU9pcThra3dDVlJ3cnUyUCJ9.eyJodHRwczovL3Rlc2ZhZnVuZC1hcGkuZXhhbXBsZS5jb20vcm9sZXMiOlsiUmVjaXBpZW50Il0sImlzcyI6Imh0dHBzOi8vZGV2LWJkcnc1M2RxNzM2dXg1am4udXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDY3ZmY1OGRlMzQ3ODJkYTgxODliNDUxNyIsImF1ZCI6WyJ0ZXNmYWZ1bmQtYXBpIiwiaHR0cHM6Ly9kZXYtYmRydzUzZHE3MzZ1eDVqbi51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNzQ4NjkyMTI2LCJleHAiOjE3NDg3Nzg1MjYsInNjb3BlIjoib3BlbmlkIGVtYWlsIiwiYXpwIjoib2NCSlFQTG5samExaWNQTVE0T3V6QUpWeEgxaU5jTnAiLCJwZXJtaXNzaW9ucyI6W119.G-DX2CSdUqEWNT4l9hJXbFLhM4XcGjIba0RplBIVMcoYqTGf_J8FAqFhtCBWNOgfFJPjAvMcePAEFmVsiw2WsqQ7ntxxxsv9z9NFMMlhmHL0baBpfyeInwaQr6dr-Va83gwmSGGrkYHPRNCaSMiqA1Qhc6UAfJDRMUEfDUC1cmxoi7i77KgkUWsx8rZv2zsMzs-UrODnUO1Z9TZea87RYt8HIqH2sc0c8vS0BJWGAPgKJP_GhTJawq0oQu_V23jbDaTeDMjHkQjaVSIFrBff1LbmoUBv2hM6G4UrSzR2k0abHFD3Em9nQttCKkpNAGutwYJiKXRf7bmhc3nck0r73Q",
+      expiresAt: DateTime.fromMillisecondsSinceEpoch(1748165463000),
+      user: const UserProfile(
+        email: 'test1@example.com',
+        sub: 'auth0|67ff58de34782da8189b4517',
+      ),
+      tokenType: 'Bearer');
   bool _isLoading = false;
   String? _errorMsg;
 

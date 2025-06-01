@@ -120,8 +120,20 @@ class CampaignPost {
     this.publicPostDate,
     required this.campaignId,
   });
-}
 
+  // Add the fromJson method for deserialization
+  factory CampaignPost.fromJson(Map<String, dynamic> json) {
+    return CampaignPost(
+      id: json['id'],
+      title: json['title'],
+      content: json['content'],
+      publicPostDate: json['publicPostDate'] != null
+          ? DateTime.parse(json['publicPostDate'])
+          : null,
+      campaignId: json['campaignId'],
+    );
+  }
+}
 enum CampaignCategories {
   charity('Charity'),
   education('Education'),
