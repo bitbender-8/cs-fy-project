@@ -510,115 +510,67 @@ final List<Campaign> dummyCampaigns = [
 
 final List<CampaignRequest> dummyCampaignRequests = [
   GoalAdjustmentRequest(
-    id: 'req6',
-    campaignId: 'c1', // Linked to 'Clean Water for All'
-    ownerRecipientId: 'r1',
-    title: 'Request to Increase Goal (Phase 2)',
-    justification:
-        'Successful initial phase complete. Aiming for a larger impact with an increased target.',
-    requestDate: DateTime.now().subtract(const Duration(days: 5)),
-    newGoal: '20000', // Requesting to increase goal to 20000
-  ),
-  EndDateExtensionRequest(
-    id: 'req7',
-    campaignId: 'c5', // Linked to 'Rescue Animals Now'
-    ownerRecipientId: 'r5',
-    title: 'Extend Campaign Deadline',
-    justification:
-        'To accommodate recent partnership opportunities and expand reach.',
-    requestDate: DateTime.now().subtract(const Duration(days: 3)),
-    newEndDate: DateTime.now()
-        .add(const Duration(days: 45)), // Requesting to extend by 15 days
+    id: 'req-001',
+    campaignId: 'camp-abc-123',
+    ownerRecipientId: 'user-xyz-789',
+    title: 'Adjust Q3 Fundraising Goal',
+    justification: 'Initial projections were too conservative, seeing strong donor interest.',
+    requestDate: DateTime(2025, 7, 15, 10, 0, 0),
+    resolutionDate: DateTime(2025, 7, 16, 14, 30, 0),
+    resolutionType: ResolutionType.accepted,
+    newGoal: BigInt.from(75000),
   ),
   StatusChangeRequest(
-    id: 'req8',
-    campaignId: 'c6', // Linked to 'Build a Community Center' (Pending)
-    ownerRecipientId: 'r6',
-    title: 'Request for Campaign Approval',
-    justification:
-        'Completed all required documentation and permits for review.',
-    requestDate: DateTime.now().subtract(const Duration(days: 2)),
-    newStatus: CampaignStatus.live, // Requesting to change status to live
+    id: 'req-002',
+    campaignId: 'camp-def-456',
+    ownerRecipientId: 'user-uvw-123',
+    title: 'Pause Campaign: "Winter Coat Drive"',
+    justification: 'Unexpected logistical issues with storage and distribution partners.',
+    requestDate: DateTime(2025, 11, 5, 9, 15, 0),
+    resolutionDate: DateTime(2025, 11, 5, 17, 0, 0),
+    resolutionType: ResolutionType.accepted,
+    newStatus: CampaignStatus.paused, // Assuming CampaignStatus.paused exists
   ),
   PostUpdateRequest(
-    id: 'req9',
-    campaignId: 'c9', // Linked to 'Plant Trees for the Future'
-    ownerRecipientId: 'r9',
-    title: 'Submit New Campaign Update',
-    justification:
-        'Sharing progress on tree planting locations and volunteer turnout.',
-    requestDate: DateTime.now().subtract(const Duration(days: 1)),
-    newPost: CampaignPost(
-      // Dummy CampaignPost for the request
-      id: 'temp_p9', // Temporary ID for the request
-      title: 'Update: Planting Progress!',
-      content:
-          'We planted over 500 trees this weekend thanks to our volunteers!',
-      publicPostDate: DateTime.now()
-          .subtract(const Duration(hours: 8)), // Date for the *new* post
-      campaignId: 'c9',
-    ),
-  ),
-  GoalAdjustmentRequest(
-    id: 'req1',
-    campaignId: 'c1', // Linked to 'Clean Water for All'
-    ownerRecipientId: 'r1',
-    title: 'Request to Increase Goal',
-    justification:
-        'We have received overwhelming support and believe we can reach a higher target.',
-    requestDate: DateTime.now().subtract(const Duration(days: 3)),
-    newGoal: '15000', // Requesting to increase goal to 15000
+    id: 'req-003',
+    campaignId: 'camp-ghi-789',
+    ownerRecipientId: 'user-rst-456',
+    title: 'Request for New Campaign Update Post',
+    justification: 'Need to share success story from recent donation impact.',
+    requestDate: DateTime(2025, 8, 1, 11, 0, 0),
+    resolutionType: null, // Pending
+    newPostId: 'post-jkl-101',
   ),
   EndDateExtensionRequest(
-    id: 'req2',
-    campaignId: 'c4', // Linked to 'Save the Rainforest'
-    ownerRecipientId: 'r4',
-    title: 'Request to Extend End Date',
-    justification:
-        'We need more time to reach our goal due to unforeseen challenges.',
-    requestDate: DateTime.now().subtract(const Duration(days: 5)),
-    resolutionDate: DateTime.now()
-        .subtract(const Duration(days: 2)), // Example of a resolved request
-    newEndDate: DateTime.now()
-        .add(const Duration(days: 60)), // Requesting to extend by 15 days
-  ),
-  StatusChangeRequest(
-    id: 'req3',
-    campaignId: 'c2', // Linked to 'Education for Every Child' (Pending)
-    ownerRecipientId: 'r2',
-    title: 'Request to Change Status to Live',
-    justification:
-        'All necessary documentation is now complete. Ready to launch.',
-    requestDate: DateTime.now().subtract(const Duration(days: 1)),
-    newStatus: CampaignStatus.live,
-  ),
-  PostUpdateRequest(
-    id: 'req4',
-    campaignId: 'c5', // Linked to 'Rescue Animals Now'
-    ownerRecipientId: 'r5',
-    title: 'Request to Publish New Update',
-    justification: 'Sharing heartwarming success stories of recent rescues.',
-    requestDate: DateTime.now().subtract(const Duration(days: 1)),
-    newPost: CampaignPost(
-      // Dummy CampaignPost for the request
-      id: 'temp_p8', // Temporary ID for the request
-      title: 'Update: Adoption Success!',
-      content: 'Two of our long-term residents have found their forever homes.',
-      publicPostDate: DateTime.now()
-          .subtract(const Duration(hours: 12)), // Date for the *new* post
-      campaignId: 'c5',
-    ),
+    id: 'req-004',
+    campaignId: 'camp-jkl-101',
+    ownerRecipientId: 'user-opq-789',
+    title: 'Extend "School Supplies Drive" Deadline',
+    justification: 'Close to goal, a local school wants to contribute next week.',
+    requestDate: DateTime(2025, 8, 25, 16, 30, 0),
+    resolutionDate: DateTime(2025, 8, 26, 10, 0, 0),
+    resolutionType: ResolutionType.rejected,
+    newEndDate: DateTime(2025, 9, 15),
   ),
   GoalAdjustmentRequest(
-    id: 'req5',
-    campaignId: 'c9', // Linked to 'Plant Trees for the Future'
-    ownerRecipientId: 'r9',
-    title: 'Second Goal Adjustment Request',
-    justification:
-        'Due to strong momentum, we are pushing for an even higher target.',
-    requestDate: DateTime.now().subtract(const Duration(days: 1)),
-    resolutionDate: DateTime.now()
-        .subtract(const Duration(hours: 6)), // Another resolved request
-    newGoal: '60000', // Requesting to increase goal to 60000
+    id: 'req-005',
+    campaignId: 'camp-mno-202',
+    ownerRecipientId: 'user-lmn-654',
+    title: 'Increase Target for "Tech for Teens"',
+    justification: 'Received a matching grant offer if we raise an additional 5k.',
+    requestDate: DateTime(2025, 9, 10, 13, 0, 0),
+    resolutionType: null, // Pending
+    newGoal: BigInt.from(25000),
+  ),
+  StatusChangeRequest(
+    id: 'req-006',
+    campaignId: 'camp-pqr-303',
+    ownerRecipientId: 'user-ijk-321',
+    title: 'Mark "Community Garden" as Completed',
+    justification: 'All funds disbursed and project objectives met.',
+    requestDate: DateTime(2025, 10, 20, 14,45, 0),
+    resolutionDate: DateTime(2025, 10, 21, 9,0,0),
+    resolutionType: ResolutionType.accepted,
+    newStatus: CampaignStatus.completed, // Assuming CampaignStatus.completed exists
   ),
 ];
