@@ -21,15 +21,16 @@ class Campaign {
   DateTime? submissionDate;
   DateTime? verificationDate;
   DateTime? denialDate;
-  List<CampaignDocument>? documents;
+  List<CampaignDocument> documents;
   PaymentInfo? paymentInfo;
+  String? totalDonated;
 
-  @JsonKey(includeToJson: false, includeFromJson: false)
-  List<CampaignDonation>? campaignDonations;
   @JsonKey(includeToJson: false, includeFromJson: false)
   List<CampaignPost>? campaignPosts;
   @JsonKey(includeToJson: false, includeFromJson: false)
-  Recipient? ownerRecipient;
+  Recipient? campaignOwner;
+  @JsonKey(includeFromJson: true, includeToJson: false)
+  bool? isPublic;
 
   Campaign({
     this.id,
@@ -44,11 +45,12 @@ class Campaign {
     this.submissionDate,
     this.verificationDate,
     this.denialDate,
-    this.documents,
+    this.documents = const [],
     required this.paymentInfo,
-    this.campaignDonations,
     this.campaignPosts,
-    this.ownerRecipient,
+    this.campaignOwner,
+    this.totalDonated,
+    this.isPublic,
   });
 
   factory Campaign.fromJson(Map<String, dynamic> json) =>
@@ -64,18 +66,45 @@ class Campaign {
         : difference;
   }
 
-  double get totalDonated {
-    final donations = campaignDonations ?? [];
-    final goalAmount = double.tryParse(fundraisingGoal) ?? 0.0;
-
-    if (goalAmount == 0) {
-      return 0.0;
-    }
-
-    return donations.fold<double>(0.0, (sum, donation) {
-      final amount = double.tryParse(donation.grossAmount) ?? 0.0;
-      return sum + amount;
-    });
+  Campaign copyWith(
+      {String? id,
+      String? ownerRecipientId,
+      String? title,
+      String? description,
+      String? fundraisingGoal,
+      CampaignStatus? status,
+      String? category,
+      DateTime? launchDate,
+      DateTime? endDate,
+      DateTime? submissionDate,
+      DateTime? verificationDate,
+      DateTime? denialDate,
+      List<CampaignDocument>? documents,
+      PaymentInfo? paymentInfo,
+      String? totalDonated,
+      List<CampaignPost>? campaignPosts,
+      Recipient? campaignOwner,
+      bool? isPublic}) {
+    return Campaign(
+      id: id ?? this.id,
+      ownerRecipientId: ownerRecipientId ?? this.ownerRecipientId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      fundraisingGoal: fundraisingGoal ?? this.fundraisingGoal,
+      status: status ?? this.status,
+      category: category ?? this.category,
+      launchDate: launchDate ?? this.launchDate,
+      endDate: endDate ?? this.endDate,
+      submissionDate: submissionDate ?? this.submissionDate,
+      verificationDate: verificationDate ?? this.verificationDate,
+      denialDate: denialDate ?? this.denialDate,
+      documents: documents ?? this.documents,
+      paymentInfo: paymentInfo ?? this.paymentInfo,
+      campaignPosts: campaignPosts ?? this.campaignPosts,
+      campaignOwner: campaignOwner ?? this.campaignOwner,
+      totalDonated: totalDonated ?? this.totalDonated,
+      isPublic: isPublic ?? this.isPublic,
+    );
   }
 }
 
@@ -175,10 +204,8 @@ enum CampaignCategories {
   charity('Charity'),
   education('Education'),
   health('Health'),
-  environment('Environment'),
   animalWelfare('Animal Welfare'),
   community('Community'),
-  artsAndCulture('Arts and Culture'),
   youth('Youth');
 
   final String value;

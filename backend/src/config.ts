@@ -2,7 +2,8 @@ export const config = {
   // Server Config
   ENV: process.env.ENV ?? "Development",
   PORT: process.env.PORT ?? 4000,
-  UPLOAD_DIR: process.env.UPLOAD_DIR ?? "./uploads",
+  PUBLIC_UPLOAD_DIR: `${process.env.UPLOAD_DIR ?? "uploads"}/public`,
+  PRIVATE_UPLOAD_DIR: `${process.env.UPLOAD_DIR ?? "uploads"}/private`,
   MAX_FILE_NO: parseInt(process.env.MAX_FILE_NO ?? "5"),
   MAX_FILE_SIZE_MB: process.env.MAX_FILE_SIZE_MB ?? 10,
   FILE_EXTENSIONS: process.env.FILE_EXTENSIONS ?? ".pdf;.doc;.docx",

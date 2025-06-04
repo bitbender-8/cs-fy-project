@@ -8,18 +8,6 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/error.types.js";
 import { config } from "../config.js";
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, config.UPLOAD_DIR);
-    },
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `${randomUUID()}${ext}`);
-    },
-  }),
-});
-
 /**
  * Middleware to validate and handle multiple file uploads.
  *
@@ -31,8 +19,24 @@ const upload = multer({
 export function validateFileUpload(
   fileFieldName: string,
   expectedFileTypes: "Images" | "Files" | "Both",
+  destinationPath: string,
   maxFileCount: number = config.MAX_FILE_NO,
 ) {
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        if (!fs.existsSync(destinationPath)) {
+          fs.mkdirSync(destinationPath, { recursive: true });
+        }
+        cb(null, destinationPath);
+      },
+      filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `${randomUUID()}${ext}`);
+      },
+    }),
+  });
+
   return async (req: Request, res: Response, next: NextFunction) => {
     // Check if request contains multipart/form-data
     if (

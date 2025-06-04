@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   MIN_STRING_LENGTH,
   validBoolean,
+  validCampaignRequestDecision,
   validCampaignRequestType,
   validDate,
   validNonEmptyString,
@@ -15,6 +16,7 @@ export const campaignRequestFilterSchema = z
     campaignId: validUuid(),
     requestType: validCampaignRequestType(),
     isResolved: validBoolean(),
+    resolutionType: validCampaignRequestDecision(),
     minRequestDate: validDate(true),
     maxRequestDate: validDate(true),
     minResolutionDate: validDate(true),

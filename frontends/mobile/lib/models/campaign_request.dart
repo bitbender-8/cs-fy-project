@@ -18,15 +18,18 @@ abstract class CampaignRequest {
   String justification;
   DateTime? requestDate;
   DateTime? resolutionDate;
+  RequestType requestType;
 
-  CampaignRequest(
-      {this.id,
-      required this.campaignId,
-      required this.ownerRecipientId,
-      required this.title,
-      required this.justification,
-      this.requestDate,
-      this.resolutionDate});
+  CampaignRequest({
+    this.id,
+    required this.campaignId,
+    required this.ownerRecipientId,
+    required this.title,
+    required this.justification,
+    required this.requestType,
+    this.requestDate,
+    this.resolutionDate,
+  });
 }
 
 class GoalAdjustmentRequest extends CampaignRequest {
@@ -41,7 +44,7 @@ class GoalAdjustmentRequest extends CampaignRequest {
     super.requestDate,
     super.resolutionDate,
     required this.newGoal,
-  });
+  }) : super(requestType: RequestType.goalAdjustment);
 }
 
 class StatusChangeRequest extends CampaignRequest {
@@ -56,7 +59,7 @@ class StatusChangeRequest extends CampaignRequest {
     super.requestDate,
     super.resolutionDate,
     required this.newStatus,
-  });
+  }) : super(requestType: RequestType.statusChange);
 }
 
 class PostUpdateRequest extends CampaignRequest {
@@ -71,7 +74,7 @@ class PostUpdateRequest extends CampaignRequest {
     super.requestDate,
     super.resolutionDate,
     required this.newPost,
-  });
+  }) : super(requestType: RequestType.postUpdate);
 }
 
 class EndDateExtensionRequest extends CampaignRequest {
@@ -86,5 +89,5 @@ class EndDateExtensionRequest extends CampaignRequest {
     super.requestDate,
     super.resolutionDate,
     required this.newEndDate,
-  });
+  }) : super(requestType: RequestType.endDateExtension);
 }

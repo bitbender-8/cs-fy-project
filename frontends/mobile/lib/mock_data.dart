@@ -183,22 +183,7 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 20)),
     submissionDate: DateTime.now().subtract(const Duration(days: 15)),
     verificationDate: DateTime.now().subtract(const Duration(days: 14)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd1',
-        grossAmount: '250.00',
-        serviceFee: '5.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        campaignId: 'c1',
-      ),
-      CampaignDonation(
-        id: 'd2',
-        grossAmount: '500.00',
-        serviceFee: '10.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        campaignId: 'c1',
-      ),
-    ],
+
     campaignPosts: [
       CampaignPost(
         id: 'p1',
@@ -208,7 +193,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c1',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r1'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -226,9 +210,8 @@ final List<Campaign> dummyCampaigns = [
     launchDate: null,
     endDate: DateTime.now().add(const Duration(days: 60)),
     submissionDate: DateTime.now().subtract(const Duration(days: 1)),
-    campaignDonations: [],
+
     campaignPosts: [],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r2'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441232347890,
       chapaBankName: 'Example Bank',
@@ -248,22 +231,6 @@ final List<Campaign> dummyCampaigns = [
     submissionDate: DateTime.now().subtract(const Duration(days: 100)),
     verificationDate: DateTime.now().subtract(const Duration(days: 95)),
     denialDate: null,
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd3',
-        grossAmount: '10000.00',
-        serviceFee: '200.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 50)),
-        campaignId: 'c3',
-      ),
-      CampaignDonation(
-        id: 'd4',
-        grossAmount: '12000.00',
-        serviceFee: '240.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        campaignId: 'c3',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p2',
@@ -273,7 +240,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c3',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r3'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 243234567890,
       chapaBankName: 'Health Bank',
@@ -292,15 +258,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 45)),
     submissionDate: DateTime.now().subtract(const Duration(days: 7)),
     verificationDate: DateTime.now().subtract(const Duration(days: 6)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd5',
-        grossAmount: '300.00',
-        serviceFee: '6.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        campaignId: 'c4',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p3',
@@ -310,7 +267,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c4',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r4'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234523424,
       chapaBankName: 'Example 2 Bank',
@@ -329,15 +285,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 30)),
     submissionDate: DateTime.now().subtract(const Duration(days: 5)),
     verificationDate: DateTime.now().subtract(const Duration(days: 4)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd6',
-        grossAmount: '100.00',
-        serviceFee: '2.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        campaignId: 'c5',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p4',
@@ -347,7 +294,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c5',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r5'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -365,9 +311,7 @@ final List<Campaign> dummyCampaigns = [
     launchDate: null,
     endDate: DateTime.now().add(const Duration(days: 90)),
     submissionDate: DateTime.now().subtract(const Duration(days: 2)),
-    campaignDonations: [],
     campaignPosts: [],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r6'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -386,22 +330,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 35)),
     submissionDate: DateTime.now().subtract(const Duration(days: 9)),
     verificationDate: DateTime.now().subtract(const Duration(days: 8)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd7',
-        grossAmount: '50.00',
-        serviceFee: '1.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        campaignId: 'c7',
-      ),
-      CampaignDonation(
-        id: 'd8',
-        grossAmount: '75.00',
-        serviceFee: '1.50',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        campaignId: 'c7',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p5',
@@ -411,7 +339,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c7',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r7'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -431,22 +358,6 @@ final List<Campaign> dummyCampaigns = [
     submissionDate: DateTime.now().subtract(const Duration(days: 70)),
     verificationDate: DateTime.now().subtract(const Duration(days: 65)),
     denialDate: null,
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd9',
-        grossAmount: '5000.00',
-        serviceFee: '100.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 40)),
-        campaignId: 'c8',
-      ),
-      CampaignDonation(
-        id: 'd10',
-        grossAmount: '7000.00',
-        serviceFee: '140.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-        campaignId: 'c8',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p6',
@@ -456,7 +367,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c8',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r8'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -475,22 +385,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 50)),
     submissionDate: DateTime.now().subtract(const Duration(days: 17)),
     verificationDate: DateTime.now().subtract(const Duration(days: 16)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd11',
-        grossAmount: '200.00',
-        serviceFee: '4.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 10)),
-        campaignId: 'c9',
-      ),
-      CampaignDonation(
-        id: 'd12',
-        grossAmount: '300.00',
-        serviceFee: '6.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        campaignId: 'c9',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p7',
@@ -500,7 +394,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c9',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r9'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',

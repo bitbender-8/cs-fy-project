@@ -168,12 +168,13 @@ void showInfoSnackBar(BuildContext context, String message) {
 /// [message] The error message to display.
 void showErrorSnackBar(BuildContext context, String message) {
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context)
-      .hideCurrentSnackBar(); // Hide any previous snackbar
+
+  final errorColor = Theme.of(context).colorScheme.error;
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(message),
-      backgroundColor: Theme.of(context).colorScheme.error,
+      backgroundColor: errorColor,
     ),
   );
 }
@@ -185,24 +186,27 @@ void showErrorSnackBar(BuildContext context, String message) {
 /// [onSuccess] A callback function to execute if the response indicates success.
 /// [successMessage] An optional success message for the SnackBar.
 /// Returns true if the operation was successful, false otherwise.
-bool handleServiceResponse<T>(
+Future<bool> handleServiceResponse<T>(
   BuildContext context,
   ServiceResult<T> result, {
-  VoidCallback? onSuccess,
+  FutureOr<void> Function()? onSuccess,
   void Function(Map<String, List<String>>)? onValidationErrors,
   String? successMessage,
-}) {
+}) async {
   if (!context.mounted) return false;
 
-  if (result.data != null) {
+  if (result.error == null) {
     if (successMessage != null) {
       showInfoSnackBar(context, successMessage);
     }
-    onSuccess?.call();
+    if (onSuccess != null) {
+      await onSuccess();
+    }
     return true;
   } else {
     if (result.error is ProblemDetails) {
       final problem = result.error as ProblemDetails;
+
       if (problem.fieldFailures != null && problem.fieldFailures!.isNotEmpty) {
         final Map<String, List<String>> fieldErrors = {};
         for (var failure in problem.fieldFailures!) {

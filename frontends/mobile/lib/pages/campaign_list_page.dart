@@ -6,6 +6,7 @@ import 'package:mobile/models/server/errors.dart';
 import 'package:mobile/models/server/filters.dart';
 import 'package:mobile/services/campaign_service.dart';
 import 'package:mobile/services/providers.dart';
+import 'package:mobile/services/recipient_service.dart';
 import 'package:provider/provider.dart';
 
 class CampaignListPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class CampaignListPage extends StatefulWidget {
 
 class _CampaignListPageState extends State<CampaignListPage> {
   final List<Campaign> _campaigns = [];
-  bool _isLoading = true, _hasMore = true, _initialLoadAttempted = false;
+  bool _isLoading = false, _hasMore = true, _initialLoadAttempted = false;
   int _currentPage = 1;
 
   final TextEditingController _searchController = TextEditingController();
@@ -145,18 +146,30 @@ class _CampaignListPageState extends State<CampaignListPage> {
       );
     } else {
       // Display the list of campaigns, or a small loader at the bottom if more are loading
-      return ListView.builder(
-        controller: _scrollController,
-        itemCount: _campaigns.length + (_hasMore && _isLoading ? 1 : 0),
-        itemBuilder: (context, index) => index == _campaigns.length
-            ? const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            : CampaignCard(
-                campaignData: _campaigns[index],
-                isPublic: widget.isPublicList,
-              ),
+      return RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            _campaigns.clear();
+            _currentPage = 1;
+            _hasMore = true;
+            _initialLoadAttempted = false;
+          });
+          await _fetchCampaigns();
+        },
+        child: ListView.builder(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: _campaigns.length + (_hasMore && _isLoading ? 1 : 0),
+          itemBuilder: (context, index) => index == _campaigns.length
+              ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : CampaignCard(
+                  campaignData: _campaigns[index],
+                  isPublic: widget.isPublicList,
+                ),
+        ),
       );
     }
   }
@@ -176,16 +189,22 @@ class _CampaignListPageState extends State<CampaignListPage> {
 
     setState(() {
       _isLoading = true;
-      if (!_initialLoadAttempted) _initialLoadAttempted = true;
     });
-
-    filters = filters.copyWith(page: _currentPage);
-    debugPrint(
-      "[INFO]: Fetching page: $_currentPage with filters: ${filters.toMap()}",
-    );
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final accessToken = userProvider.credentials?.accessToken;
+    final recipientService = Provider.of<RecipientService>(
+      context,
+      listen: false,
+    );
+
+    filters = filters.copyWith(
+      page: _currentPage,
+      ownerRecipientId: widget.isPublicList ? null : userProvider.user?.id,
+    );
+    debugPrint(
+      "[INFO]: Fetching page: $_currentPage with filters: ${filters.toMap()}",
+    );
 
     if (!widget.isPublicList && accessToken == null) {
       showErrorSnackBar(context, 'Authentication error. Please log in again.');
@@ -198,29 +217,64 @@ class _CampaignListPageState extends State<CampaignListPage> {
       listen: false,
     ).fetchCampaigns(filters, widget.isPublicList ? null : accessToken);
 
-    if (!mounted) {
-      setState(() => _isLoading = false);
-      return;
-    }
+    if (!mounted) return;
 
-    handleServiceResponse(context, result, onSuccess: () {
-      if (result.data != null) {
-        setState(() {
-          _campaigns.addAll(
-            result.data!.toTypedList((data) => Campaign.fromJson(data)),
-          );
-          _currentPage++;
+    await handleServiceResponse(context, result, onSuccess: () async {
+      if (result.data == null) return;
 
-          // Check if there are more pages based on API response
-          _hasMore = result.data!.pageNo < result.data!.pageCount;
+      final newCampaigns = result.data!.toTypedList(
+        (data) => Campaign.fromJson(data),
+      );
+
+      final campaignsWithOwners = <Campaign>[];
+
+      for (final campaign in newCampaigns) {
+        if (!mounted) return;
+
+        try {
+          if (campaign.campaignOwner == null) {
+            final recipientResult = await recipientService.getRecipientById(
+              campaign.ownerRecipientId,
+              accessToken,
+            );
+
+            final owner = recipientResult.data;
+            if (owner != null) {
+              campaignsWithOwners.add(campaign.copyWith(campaignOwner: owner));
+            } else {
+              debugPrint(
+                  "[WARNING]: Failed to fetch recipient for campaign ${campaign.id}");
+              campaignsWithOwners.add(campaign);
+            }
+          } else {
+            campaignsWithOwners.add(campaign);
+          }
+        } catch (e) {
           debugPrint(
-              "Fetched page: ${result.data!.pageNo}, Total pages: ${result.data!.pageCount}, Has more: $_hasMore");
-        });
+              "[ERROR]: Exception fetching recipient for campaign ${campaign.id}: $e");
+          campaignsWithOwners.add(campaign);
+        }
       }
+
+      if (!mounted) return;
+
+      setState(() {
+        _campaigns.addAll(campaignsWithOwners);
+        _currentPage++;
+        _hasMore = result.data!.pageNo < result.data!.pageCount;
+
+        debugPrint(
+          "[INFO]: Fetched page ${result.data!.pageNo}, "
+          "Total pages: ${result.data!.pageCount}, Has more: $_hasMore",
+        );
+      });
     }, onValidationErrors: (error) {
       debugPrint("[ERROR]: Error fetching campaigns $error");
     });
 
-    if (mounted) setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (!_initialLoadAttempted) _initialLoadAttempted = true;
+    }
   }
 }

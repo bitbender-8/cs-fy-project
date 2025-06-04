@@ -197,6 +197,12 @@ export async function getCampaignRequests(
     paramIndex++;
   }
 
+  if (filterParams.resolutionType) {
+    whereClauses.push(`req."resolutionType" = $${paramIndex}`);
+    values.push(filterParams.resolutionType);
+    paramIndex++;
+  }
+
   if (filterParams.isResolved !== undefined) {
     whereClauses.push(
       `req."resolutionDate" ${filterParams.isResolved ? "IS NOT NULL" : "IS NULL"}`,

@@ -17,7 +17,7 @@ class CampaignPostInfoPage extends StatelessWidget {
     return Scaffold(
       appBar: const CustomAppBar(pageTitle: 'Campaign Post Details'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -28,14 +28,11 @@ class CampaignPostInfoPage extends StatelessWidget {
                 color: colorScheme.onSurface,
               ),
             ),
-            const Divider(height: 24.0),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 18,
-                  color: colorScheme.primary,
-                ),
+                Icon(Icons.calendar_today,
+                    size: 18, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   DateFormat('MMM d, yyyy').format(
@@ -43,16 +40,18 @@ class CampaignPostInfoPage extends StatelessWidget {
                   ),
                   style: textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 10),
+            Divider(color: colorScheme.outlineVariant, thickness: 1.2),
+            const SizedBox(height: 10),
             Text(
               campaignPost.content,
               style: textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurface,
+                height: 1.6,
               ),
               textAlign: TextAlign.justify,
             ),

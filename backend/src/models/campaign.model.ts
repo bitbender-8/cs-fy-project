@@ -42,6 +42,7 @@ export const CampaignSchema = z.object({
   category: validNonEmptyString(MIN_STRING_LENGTH, 50),
   launchDate: validDate(false).optional(),
   endDate: validDate(false),
+  totalDonated: validMoneyAmount(),
 
   // Sensitive fields
   isPublic: z.boolean().optional(),

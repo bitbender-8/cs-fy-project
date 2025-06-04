@@ -29,6 +29,6 @@ Map<String, dynamic> _$AppNotificationToJson(AppNotification instance) =>
     };
 
 const _$UserTypeEnumMap = {
-  UserType.recipient: 'recipient',
-  UserType.supervisor: 'supervisor',
+  UserType.recipient: 'Recipient',
+  UserType.supervisor: 'Supervisor',
 };

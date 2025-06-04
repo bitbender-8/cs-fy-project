@@ -10,7 +10,7 @@ abstract class ListFilter {
   Map<String, String>? toMap();
 }
 
-class RecipientFilters extends ListFilter {
+class RecipientFilter extends ListFilter {
   String? auth0UserId;
   String? name;
   String? email;
@@ -19,7 +19,7 @@ class RecipientFilters extends ListFilter {
   DateTime? maxBirthDate;
   String? phoneNo;
 
-  RecipientFilters({
+  RecipientFilter({
     this.auth0UserId,
     this.name,
     this.email,
@@ -62,6 +62,7 @@ class CampaignFilter extends ListFilter {
   DateTime? maxVerificationDate;
   DateTime? minDenialDate;
   DateTime? maxDenialDate;
+  String? ownerRecipientId;
   bool? isPublic;
 
   CampaignFilter({
@@ -78,6 +79,7 @@ class CampaignFilter extends ListFilter {
     this.maxVerificationDate,
     this.minDenialDate,
     this.maxDenialDate,
+    this.ownerRecipientId,
     this.isPublic,
     super.page,
     super.limit,
@@ -99,6 +101,7 @@ class CampaignFilter extends ListFilter {
       'maxVerificationDate': maxVerificationDate?.toIso8601String(),
       'minDenialDate': minDenialDate?.toIso8601String(),
       'maxDenialDate': maxDenialDate?.toIso8601String(),
+      'ownerRecipientId': ownerRecipientId,
       'isPublic': isPublic?.toString(),
       'page': page.toString(),
       'limit': limit.toString(),
@@ -122,6 +125,7 @@ class CampaignFilter extends ListFilter {
     DateTime? maxVerificationDate,
     DateTime? minDenialDate,
     DateTime? maxDenialDate,
+    String? ownerRecipientId,
     bool? isPublic,
     int? page,
     int? limit,
@@ -140,9 +144,38 @@ class CampaignFilter extends ListFilter {
       maxVerificationDate: maxVerificationDate ?? this.maxVerificationDate,
       minDenialDate: minDenialDate ?? this.minDenialDate,
       maxDenialDate: maxDenialDate ?? this.maxDenialDate,
+      ownerRecipientId: ownerRecipientId ?? this.ownerRecipientId,
       isPublic: isPublic ?? this.isPublic,
       page: page ?? this.page,
       limit: limit ?? this.limit,
     );
+  }
+}
+
+class NotificationFilter extends ListFilter {
+  bool? isRead;
+  DateTime? minCreatedAt;
+  DateTime? maxCreatedAt;
+
+  NotificationFilter({
+    this.isRead,
+    this.minCreatedAt,
+    this.maxCreatedAt,
+    super.page,
+    super.limit,
+  });
+
+  @override
+  Map<String, String>? toMap() {
+    final map = <String, String?>{
+      'isRead': isRead?.toString(),
+      'minCreatedAt': minCreatedAt?.toIso8601String(),
+      'maxCreatedAt': maxCreatedAt?.toIso8601String(),
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+
+    map.removeWhere((key, value) => value == null);
+    return map.isEmpty ? null : Map<String, String>.from(map);
   }
 }

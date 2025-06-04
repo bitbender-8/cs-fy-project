@@ -14,7 +14,10 @@ import {
   PaginatedList,
 } from "../utils/utils.js";
 import { query } from "../db.js";
-import { CampaignFilterParams } from "../models/filters/campaign-filters.js";
+import {
+  CampaignDocumentFilterParams,
+  CampaignFilterParams,
+} from "../models/filters/campaign-filters.js";
 import { randomUUID, UUID } from "crypto";
 import { AppError } from "../errors/error.types.js";
 import { buildUpdateQueryString } from "./repo-utils.js";
@@ -143,13 +146,15 @@ export async function getCampaigns(
       return {
         ...rest,
         fundraisingGoal: fromIntToMoneyStr(BigInt(fundraisingGoal)),
-        documents: await getCampaignDocuments(campaign.id),
+        documents: (await getCampaignDocuments({ campaignId: campaign.id }))
+          .items,
+        totalDonated: await getCampaignDonationTotal(campaign.id),
         paymentInfo: {
           chapaBankCode,
           chapaBankName,
           bankAccountNo,
         },
-      } as Campaign;
+      };
     })
   );
 
@@ -311,7 +316,9 @@ export async function updateCampaign(
     }
   }
 
-  updatedCampaign.documents.concat(await getCampaignDocuments(campaignId));
+  updatedCampaign.documents.concat(
+    (await getCampaignDocuments({ campaignId })).items
+  );
 
   return updatedCampaign;
 }
@@ -371,28 +378,62 @@ export async function insertCampaignDocument(
 }
 
 export async function getCampaignDocuments(
-  campaignId: UUID
-): Promise<CampaignDocument[]> {
-  const result = await query(
-    `SELECT 
+  filterParams: CampaignDocumentFilterParams = {}
+): Promise<PaginatedList<CampaignDocument>> {
+  const limit = filterParams.limit ?? config.PAGE_SIZE;
+  const pageNo = filterParams.page ?? 1;
+
+  const whereClauses: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  if (filterParams.campaignId) {
+    whereClauses.push(`"campaignId" = $${paramIndex++}`);
+    values.push(filterParams.campaignId);
+  }
+
+  if (filterParams.documentUrl) {
+    whereClauses.push(`"documentUrl" = $${paramIndex++}`);
+    values.push(filterParams.documentUrl);
+  }
+
+  if (filterParams.redactedDocumentUrl) {
+    whereClauses.push(`"redactedDocumentUrl" = $${paramIndex++}`);
+    values.push(filterParams.redactedDocumentUrl);
+  }
+
+  const whereClause =
+    whereClauses.length > 0 ? ` WHERE ${whereClauses.join(" AND ")}` : "";
+
+  const countQuery = `SELECT COUNT(*) FROM "CampaignDocuments"${whereClause}`;
+  const countResult = await query(countQuery, values);
+  const totalRecords = parseInt(countResult.rows[0].count, 10);
+  const totalPages = Math.max(Math.ceil(totalRecords / limit), 1);
+
+  const queryString = `
+    SELECT
       "campaignId",
       "documentUrl",
       "redactedDocumentUrl"
-     FROM
+    FROM
       "CampaignDocuments"
-     WHERE
-      "campaignId" = $1
-     ORDER BY
+    ${whereClause}
+    ORDER BY
       "documentUrl" ASC
-    `,
-    [campaignId]
-  );
+    LIMIT $${paramIndex}
+    OFFSET $${paramIndex + 1}
+  `;
 
-  if (!result || result.rows.length === 0) {
-    return [];
-  }
+  values.push(limit, (pageNo - 1) * limit);
 
-  return result.rows;
+  const result = await query(queryString, values);
+  const documents: CampaignDocument[] = result.rows;
+
+  return {
+    items: documents,
+    pageCount: totalPages,
+    pageNo: pageNo,
+  };
 }
 
 // Updates only the redactedDocumentUrl
@@ -441,4 +482,21 @@ export async function updateCampaignDocument(
         throw error;
     }
   }
+}
+
+export async function getCampaignDonationTotal(
+  campaignId: UUID
+): Promise<string> {
+  const result = await query(
+    `SELECT SUM("grossAmount" - "serviceFee") AS "netDonations" 
+     FROM "CampaignDonation"
+     WHERE "campaignId" = $1`,
+    [campaignId]
+  );
+
+  if (!result || result.rows.length === 0 || !result.rows[0].netDonations) {
+    return "0";
+  }
+
+  return fromIntToMoneyStr(BigInt(result.rows[0].netDonations)) ?? "0";
 }

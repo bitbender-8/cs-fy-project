@@ -552,7 +552,7 @@ class _AddCampaignPageState extends State<AddCampaignPage>
     final accessToken = userProvider.credentials?.accessToken;
 
     if (accessToken == null) {
-      showErrorSnackBar(context, 'Authentication error. Please log in again.');
+      showErrorSnackBar(context, 'You are not logged in. Please log in again.');
       setState(() => _isLoading = false);
       return;
     }

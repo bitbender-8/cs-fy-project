@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/home.dart';
 import 'package:mobile/services/campaign_service.dart';
+import 'package:mobile/services/file_service.dart';
+import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:mobile/services/recipient_service.dart';
 import 'package:provider/provider.dart';
@@ -8,14 +10,30 @@ import 'package:provider/provider.dart';
 void main() => runApp(
       MultiProvider(
         providers: [
-          Provider<RecipientService>(
-            create: (_) => RecipientService(),
-          ),
-          Provider<CampaignService>(
-            create: (_) => CampaignService(),
-          ),
-          ChangeNotifierProvider<UserProvider>(
-            create: (_) => UserProvider(),
+          // Providers
+          Provider<RecipientService>(create: (_) => RecipientService()),
+          Provider<CampaignService>(create: (_) => CampaignService()),
+          Provider<FileService>(create: (_) => FileService()),
+          Provider<NotificationService>(create: (_) => NotificationService()),
+
+          // ChangeNotifierProviders
+          ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+
+          // Add the NotificationProvider using ChangeNotifierProxyProvider
+          // It needs access to NotificationService and UserProvider
+          ChangeNotifierProxyProvider<NotificationService,
+              NotificationProvider>(
+            create: (context) => NotificationProvider(
+              context.read<NotificationService>(),
+              context.read<UserProvider>(),
+            ),
+            // The `update` function is called when a dependency changes.
+            update: (
+              context,
+              notificationService,
+              notificationProvider,
+            ) =>
+                notificationProvider!,
           ),
         ],
         child: const TesfaFundApp(),

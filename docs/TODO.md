@@ -5,6 +5,8 @@
 - [ ] (bitbender-8): The when document urls are stored, they probably need to have the domain appended to them so that they can be served properly.
 - [ ] (bitbender-8): Consider adding a page that shows a list of recipients or at A SEARCH CAMPAIGN BY RECIPIENT FEATURE.
 - DOC-UPDATE: Update diagrams marked with `[update at end]` at the testing phase.
+- [ ] (bitbender-8): Beautify as much as you can of the frontends but prioritize the following:
+  - Campaign Info page (Mobile). Also consider adding a public recipient profile page.
 
 ## Things to discuss
 

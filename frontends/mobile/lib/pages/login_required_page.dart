@@ -22,7 +22,72 @@ class LoginRequiredPage extends StatefulWidget {
 class _LoginRequiredPageState extends State<LoginRequiredPage> {
   bool _isLoading = false;
 
-  // Handle Login Logic
+  @override
+  Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      color: colorScheme.surface,
+      child: Center(
+        child: _isLoading
+            ? const CircularProgressIndicator()
+            : Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        size: 48,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'You must be logged in to see this content.',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: StyledElevatedButton(
+                              onPressed: () async => await _handleLogin(
+                                context,
+                                userProvider,
+                              ),
+                              label: 'Log In',
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: StyledElevatedButton(
+                              onPressed: () async => await _handleSignUp(
+                                context,
+                                userProvider,
+                              ),
+                              label: 'Sign Up',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  //****** Helper functions
   Future<void> _handleLogin(
     BuildContext context,
     UserProvider userProvider,
@@ -57,7 +122,7 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
       listen: false,
     );
     final result = await recipientService.getRecipients(
-      RecipientFilters(auth0UserId: credentials.user.sub),
+      RecipientFilter(auth0UserId: credentials.user.sub),
       credentials.accessToken,
     );
 
@@ -100,7 +165,6 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
     });
   }
 
-  // Handle Sign Up Logic
   Future<void> _handleSignUp(
     BuildContext context,
     UserProvider userProvider,
@@ -168,8 +232,6 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
     );
     final profilePicture = recipientData['profilePicture'];
 
-    debugPrint("Recipient: ${jsonEncode(recipient)}");
-
     // Attempt to Create Recipient
     final result = await recipientService.createRecipient(
       recipient,
@@ -215,75 +277,8 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
     }
 
     UserProvider.debugPrintUserProviderState(userProvider);
-
     setState(() {
       _isLoading = false;
     });
-  }
-
-  // Build Method
-  @override
-  Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      color: colorScheme.surface,
-      child: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lock_outline,
-                        size: 48,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'You must be logged in to see this content.',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: StyledElevatedButton(
-                              onPressed: () async => await _handleLogin(
-                                context,
-                                userProvider,
-                              ),
-                              label: 'Log In',
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: StyledElevatedButton(
-                              onPressed: () async => await _handleSignUp(
-                                context,
-                                userProvider,
-                              ),
-                              label: 'Sign Up',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-      ),
-    );
   }
 }

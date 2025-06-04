@@ -31,11 +31,14 @@ Campaign _$CampaignFromJson(Map<String, dynamic> json) => Campaign(
           ? null
           : DateTime.parse(json['denialDate'] as String),
       documents: (json['documents'] as List<dynamic>?)
-          ?.map((e) => CampaignDocument.fromJson(e as Map<String, dynamic>))
-          .toList(),
+              ?.map((e) => CampaignDocument.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
       paymentInfo: json['paymentInfo'] == null
           ? null
           : PaymentInfo.fromJson(json['paymentInfo'] as Map<String, dynamic>),
+      totalDonated: json['totalDonated'] as String?,
+      isPublic: json['isPublic'] as bool?,
     );
 
 Map<String, dynamic> _$CampaignToJson(Campaign instance) => <String, dynamic>{
@@ -52,8 +55,9 @@ Map<String, dynamic> _$CampaignToJson(Campaign instance) => <String, dynamic>{
       'submissionDate': instance.submissionDate?.toIso8601String(),
       'verificationDate': instance.verificationDate?.toIso8601String(),
       'denialDate': instance.denialDate?.toIso8601String(),
-      'documents': instance.documents?.map((e) => e.toJson()).toList(),
+      'documents': instance.documents.map((e) => e.toJson()).toList(),
       'paymentInfo': instance.paymentInfo?.toJson(),
+      'totalDonated': instance.totalDonated,
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

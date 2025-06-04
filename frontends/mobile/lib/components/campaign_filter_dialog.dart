@@ -73,18 +73,19 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildFilterCard(
-                        colorScheme: colorScheme,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: SwitchListTile(
-                          title: Text('Only Public Campaigns',
-                              style: TextStyle(color: colorScheme.onSurface)),
-                          value: _isPublic,
-                          onChanged: (val) => setState(() => _isPublic = val),
-                          activeColor: colorScheme.primary,
-                          contentPadding: EdgeInsets.zero,
+                      if (widget.showSensitiveFields)
+                        _buildFilterCard(
+                          colorScheme: colorScheme,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: SwitchListTile(
+                            title: Text('Only Public Campaigns',
+                                style: TextStyle(color: colorScheme.onSurface)),
+                            value: _isPublic,
+                            onChanged: (val) => setState(() => _isPublic = val),
+                            activeColor: colorScheme.primary,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 12),
                       _buildFilterCard(
                         colorScheme: colorScheme,

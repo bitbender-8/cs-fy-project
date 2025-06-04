@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:mobile/pages/notifications_page.dart';
 import 'package:mobile/utils/utils.dart';
 

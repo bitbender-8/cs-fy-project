@@ -28,11 +28,12 @@ class AppNotification {
 }
 
 enum UserType {
-  recipient("Recipient"),
-  supervisor("Supervisor");
+  @JsonValue("Recipient")
+  recipient,
 
-  final String value;
-  const UserType(this.value);
+  @JsonValue("Supervisor")
+  supervisor;
+
   static UserType? fromString(String value) {
     switch (value) {
       case "Supervisor":

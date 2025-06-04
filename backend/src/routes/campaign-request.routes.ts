@@ -386,16 +386,7 @@ campaignRequestRouter.delete(
       case "Recipient": {
         const userUuid = await getUuidFromAuth0Id(req.auth?.payload.sub ?? "");
 
-        // Check that the authenticated recipient owns the campaign request
-        if (campaignRequest.ownerRecipientId === userUuid) {
-          deleteResult = await deleteCampaignRequest(campaignRequestId);
-
-          if (campaignRequest.requestType === "Post Update") {
-            deleteResult &&= await deleteCampaignPost(
-              campaignRequest.newPost.id,
-            );
-          }
-        } else {
+        if (campaignRequest.ownerRecipientId !== userUuid) {
           const problemDetails: ProblemDetails = {
             title: "Permission Denied",
             status: 403,
@@ -404,9 +395,36 @@ campaignRequestRouter.delete(
           res.status(problemDetails.status).json(problemDetails);
           return;
         }
+
+        if (campaignRequest.resolutionDate !== null) {
+          const problemDetails: ProblemDetails = {
+            title: "Validation Failure",
+            status: 400,
+            detail: "You cannot modify a resolved campaign request",
+          };
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+
+        deleteResult = await deleteCampaignRequest(campaignRequestId);
+
+        if (campaignRequest.requestType === "Post Update") {
+          deleteResult &&= await deleteCampaignPost(campaignRequest.newPost.id);
+        }
+
         break;
       }
       case "Supervisor": {
+        if (campaignRequest.resolutionDate !== null) {
+          const problemDetails: ProblemDetails = {
+            title: "Validation Failure",
+            status: 400,
+            detail: "You cannot modify a resolved campaign request",
+          };
+          res.status(problemDetails.status).json(problemDetails);
+          return;
+        }
+
         deleteResult = await deleteCampaignRequest(campaignRequestId);
 
         if (campaignRequest.requestType === "Post Update") {

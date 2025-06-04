@@ -20,29 +20,31 @@ class RecipientService {
     String accessToken,
   ) async {
     final recipientUrl = Uri.parse(baseUrl);
-
     final request = http.MultipartRequest('POST', recipientUrl);
     request.headers['Authorization'] = 'Bearer $accessToken';
 
-    // Add fields from recipientData
-    request.fields['firstName'] = recipientData.firstName;
-    request.fields['middleName'] = recipientData.middleName;
-    request.fields['lastName'] = recipientData.lastName;
-    if (recipientData.dateOfBirth != null) {
-      request.fields['dateOfBirth'] =
-          recipientData.dateOfBirth!.toIso8601String();
-    }
-    if (recipientData.phoneNo != null) {
-      request.fields['phoneNo'] = recipientData.phoneNo!;
-    }
-    request.fields['bio'] = recipientData.bio;
+    final fields = {
+      'firstName': recipientData.firstName,
+      'middleName': recipientData.middleName,
+      'lastName': recipientData.lastName,
+      'bio': recipientData.bio,
+      if (recipientData.dateOfBirth != null)
+        'dateOfBirth': recipientData.dateOfBirth!.toIso8601String(),
+      if (recipientData.phoneNo != null) 'phoneNo': recipientData.phoneNo!
+    };
 
     if (recipientData.socialMediaHandles != null) {
       for (var i = 0; i < recipientData.socialMediaHandles!.length; i++) {
-        request.fields['socialMediaHandles[$i]'] =
+        fields['socialMediaHandles[$i][socialMediaHandle]'] =
             recipientData.socialMediaHandles![i].socialMediaHandle;
+
+        if (recipientData.socialMediaHandles![i].recipientId != null) {
+          fields['socialMediaHandles[$i][recipientId]'] =
+              recipientData.socialMediaHandles![i].recipientId!;
+        }
       }
     }
+    request.fields.addAll(fields);
 
     // Add profile picture if it exists
     if (profilePicture != null) {
@@ -96,14 +98,14 @@ class RecipientService {
 
   Future<ServiceResult<Recipient>> getRecipientById(
     String recipientId,
-    String accessToken,
+    String? accessToken,
   ) async {
     Uri getUrl = Uri.parse("$baseUrl/$recipientId");
 
     try {
       final response = await http.get(getUrl, headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
+        if (accessToken != null && accessToken.isNotEmpty)
+          'Authorization': 'Bearer $accessToken',
       });
 
       if (response.statusCode == 200) {
@@ -126,7 +128,7 @@ class RecipientService {
   }
 
   Future<ServiceResult<PaginatedList<Recipient>>> getRecipients(
-    RecipientFilters filters,
+    RecipientFilter filters,
     String accessToken,
   ) async {
     Uri getUrl = Uri.parse(baseUrl);
@@ -164,7 +166,7 @@ class RecipientService {
     }
   }
 
-  Future<ServiceResult<bool>> deleteAuth0User(
+  Future<ServiceResult<bool?>> deleteAuth0User(
     String auth0UserId,
     String accessToken,
   ) async {
@@ -178,20 +180,100 @@ class RecipientService {
       if (response.statusCode == 204) {
         return (data: true, error: null);
       } else {
-        debugPrint(
-            '[REQUEST_ERROR]: Error deleting Auth0 user. ${response.statusCode} - ${response.body}');
         return (
-          data: false,
+          data: null,
           error: ProblemDetails.fromJson(jsonDecode(response.body)),
         );
       }
     } catch (e) {
       debugPrint('[REQUEST_ERROR]: Error sending delete request. $e');
       return (
-        data: false,
+        data: null,
         error: SimpleError(
           'Failed to send delete request. Check your Internet.',
         ),
+      );
+    }
+  }
+
+  /// Recipient id should be in recipientData
+  Future<ServiceResult<bool>> updateRecipient(
+    Recipient recipientData,
+    File? profilePicture,
+    String accessToken,
+  ) async {
+    final recipientUrl = Uri.parse("$baseUrl/${recipientData.id}");
+    final request = http.MultipartRequest('PUT', recipientUrl);
+    request.headers['Authorization'] = 'Bearer $accessToken';
+
+    final fields = {
+      'firstName': recipientData.firstName,
+      'middleName': recipientData.middleName,
+      'lastName': recipientData.lastName,
+      'bio': recipientData.bio,
+      if (recipientData.dateOfBirth != null)
+        'dateOfBirth': recipientData.dateOfBirth!.toIso8601String(),
+      if (recipientData.phoneNo != null) 'phoneNo': recipientData.phoneNo!
+    };
+
+    if (recipientData.socialMediaHandles != null) {
+      for (var i = 0; i < recipientData.socialMediaHandles!.length; i++) {
+        fields['socialMediaHandles[$i][socialMediaHandle]'] =
+            recipientData.socialMediaHandles![i].socialMediaHandle;
+
+        if (recipientData.socialMediaHandles![i].recipientId != null) {
+          fields['socialMediaHandles[$i][recipientId]'] =
+              recipientData.socialMediaHandles![i].recipientId!;
+        }
+      }
+    }
+    request.fields.addAll(fields);
+
+    // Add profile picture if it exists
+    if (profilePicture != null) {
+      final stream = http.ByteStream(profilePicture.openRead());
+      final length = await profilePicture.length();
+      final filename = profilePicture.path.split('/').last;
+      final mimeType =
+          lookupMimeType(profilePicture.path) ?? 'application/octet-stream';
+      final mimeSplit = mimeType.split('/');
+
+      request.files.add(
+        http.MultipartFile(
+          'profilePicture',
+          stream,
+          length,
+          filename: filename,
+          contentType: MediaType(mimeSplit[0], mimeSplit[1]),
+        ),
+      );
+    }
+
+    debugPrint("[REQUEST_BODY]: ${request.fields.toString()}");
+    try {
+      final streamedResponse = await request.send();
+      final createResponse = await http.Response.fromStream(streamedResponse);
+      debugPrint("RESPONSE: ${jsonEncode(createResponse.body)}");
+
+      if (createResponse.statusCode != 204) {
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(createResponse.body)),
+        );
+      }
+
+      return (
+        data: true,
+        error: null,
+      );
+    } catch (e) {
+      debugPrint("[REQUEST_ERROR]: $e");
+
+      return (
+        data: null,
+        error: SimpleError(
+          'Failed to send a request to the server. Check your Internet.',
+        )
       );
     }
   }

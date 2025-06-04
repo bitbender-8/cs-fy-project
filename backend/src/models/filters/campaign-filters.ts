@@ -4,6 +4,7 @@ import {
   validBoolean,
   validCampaignStatus,
   validDate,
+  validUrl,
   validUuid,
 } from "../../utils/zod-helpers.js";
 
@@ -43,3 +44,16 @@ export const SENSITIVE_CAMPAIGN_FILTERS = [
 ] as const;
 export type SensitiveCampaignFilters =
   (typeof SENSITIVE_CAMPAIGN_FILTERS)[number];
+
+export type CampaignDocumentFilterParams = z.infer<
+  typeof CampaignDocumentFilterSchema
+>;
+export const CampaignDocumentFilterSchema = z
+  .object({
+    campaignId: validUuid(),
+    documentUrl: validUrl(),
+    redactedDocumentUrl: validUrl(),
+    page: z.coerce.number().int().positive(),
+    limit: z.coerce.number().int().positive(),
+  })
+  .partial();

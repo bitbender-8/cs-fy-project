@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/config.dart';
 import 'package:mobile/models/recipient.dart';
 import 'package:mobile/models/server/errors.dart';
 import 'package:mobile/services/providers.dart';
+import 'package:mobile/services/recipient_service.dart';
 import 'package:mobile/utils/validators.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +24,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage>
     with FormErrorHelpers<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _dateOfBirthController = TextEditingController();
   bool _isEditing = false;
   bool _isLoading = false;
 
@@ -36,6 +40,12 @@ class _ProfilePageState extends State<ProfilePage>
     super.initState();
     _editableRecipient = widget.initialRecipient.copyWith();
 
+    if (_editableRecipient.dateOfBirth != null) {
+      _dateOfBirthController.text = DateFormat('MMMM dd, yyyy').format(
+        _editableRecipient.dateOfBirth!.toLocal(),
+      );
+    }
+
     _socialHandleErrors.addAll(List.generate(
       _editableRecipient.socialMediaHandles?.length ?? 0,
       (_) => null,
@@ -44,6 +54,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   @override
   void dispose() {
+    _dateOfBirthController.dispose();
     _newSocialHandleController.dispose();
     super.dispose();
   }
@@ -74,7 +85,8 @@ class _ProfilePageState extends State<ProfilePage>
                               ? FileImage(_profilePicture!)
                               : _editableRecipient.profilePictureUrl != null
                                   ? NetworkImage(
-                                      _editableRecipient.profilePictureUrl!)
+                                      "$apiUrl/files/public/${_editableRecipient.profilePictureUrl}",
+                                    )
                                   : null,
                           child: (_profilePicture == null &&
                                   _editableRecipient.profilePictureUrl == null)
@@ -179,14 +191,14 @@ class _ProfilePageState extends State<ProfilePage>
                       prefixIcon: const Icon(Icons.calendar_month),
                       errorText: getServerError('dateOfBirth'),
                     ),
-                    initialValue: _editableRecipient.dateOfBirth != null
-                        ? DateFormat('MM/dd/yy')
-                            .format(_editableRecipient.dateOfBirth!)
-                        : '',
+                    controller: _dateOfBirthController,
                     onTap: () async {
                       if (_isEditing) await _selectDateOfBirth(context);
                     },
-                    validator: (val) => validDate(val, isPast: true),
+                    validator: (_) => validDate(
+                      _editableRecipient.dateOfBirth?.toIso8601String(),
+                      isPast: true,
+                    ),
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
@@ -205,18 +217,14 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
-                    readOnly: !_isEditing,
-                    decoration: InputDecoration(
+                    readOnly: true,
+                    decoration: const InputDecoration(
                       labelText: 'Email',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.email),
-                      errorText: getServerError('email'),
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email),
                     ),
                     initialValue: _editableRecipient.email ?? '',
                     keyboardType: TextInputType.emailAddress,
-                    validator: (val) => validEmail(val),
-                    onSaved: (val) => _editableRecipient =
-                        _editableRecipient.copyWith(email: val ?? ''),
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
@@ -244,7 +252,7 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                       if (_isEditing)
                         TextButton.icon(
-                          onPressed: _showAddSocialHandleDialog,
+                          onPressed: () => _showAddSocialHandleDialog(context),
                           icon: Icon(
                             Icons.add_link,
                             color: colorScheme.primary,
@@ -330,7 +338,9 @@ class _ProfilePageState extends State<ProfilePage>
                         const SizedBox(width: 16.0),
                         Expanded(
                           child: TextButton(
-                            onPressed: _isLoading ? null : _submitChanges,
+                            onPressed: _isLoading
+                                ? null
+                                : () => _submitChanges(context),
                             style: TextButton.styleFrom(
                               backgroundColor: _isLoading
                                   ? Colors.grey // Indicate loading
@@ -342,10 +352,7 @@ class _ProfilePageState extends State<ProfilePage>
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white)
-                                : const Text('Submit'),
+                            child: const Text('Submit'),
                           ),
                         ),
                       ],
@@ -366,39 +373,105 @@ class _ProfilePageState extends State<ProfilePage>
           ),
         // Show Floating Action Button ONLY when NOT in editing mode
         if (!_isEditing)
-          Positioned(
-            bottom: 16.0,
-            right: 16.0,
-            child: FloatingActionButton(
-              onPressed: _isLoading ? null : _toggleEditMode,
-              child: const Icon(Icons.edit), // Fixed edit icon
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: FloatingActionButton(
+                  onPressed: _isLoading ? null : _toggleEditMode,
+                  child: const Icon(Icons.edit),
+                ),
+              ),
             ),
           ),
       ],
     );
   }
 
+  //****** Helper functions
   void _logout() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.logout();
   }
 
-  void _submitChanges() {
-    // FIXME:
-    if (_formKey.currentState?.validate() ?? false) {
-      _formKey.currentState?.save();
-      setState(() {
-        _isLoading = true;
-      });
-      Future.delayed(const Duration(seconds: 2), () {
+  void _submitChanges(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+      clearAllServerErrors();
+    });
+
+    // Validate form fields
+    final isFormValid = _formKey.currentState!.validate();
+
+    // Validate social media handles
+    bool allHandlesValid = true;
+    for (int i = 0;
+        i < (_editableRecipient.socialMediaHandles?.length ?? 0);
+        i++) {
+      final handle =
+          _editableRecipient.socialMediaHandles![i].socialMediaHandle;
+      final error = validNonEmptyString(handle, max: 100);
+      _socialHandleErrors[i] = error;
+      if (error != null) {
+        allHandlesValid = false;
+      }
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    // Stop if any validations failed
+    if (!isFormValid || !allHandlesValid) return;
+
+    // Save form data
+    _formKey.currentState!.save();
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final accessToken = userProvider.credentials?.accessToken;
+    final recipientService =
+        Provider.of<RecipientService>(context, listen: false);
+
+    if (accessToken == null) {
+      showErrorSnackBar(context, 'You are not logged in. Please log in again.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    print(jsonEncode(_editableRecipient.toJson()));
+
+    final result = await recipientService.updateRecipient(
+      _editableRecipient,
+      _profilePicture,
+      accessToken,
+    );
+
+    if (!context.mounted) return;
+
+    await handleServiceResponse(
+      context,
+      result,
+      successMessage: 'Profile updated successfully.',
+      onSuccess: () {
+        if (mounted) {
+          setState(() {
+            _isEditing = false;
+            _profilePicture = null;
+          });
+        }
+      },
+      onValidationErrors: (errors) {
         setState(() {
-          _isLoading = false;
-          _isEditing = false;
+          setServerErrors(errors);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
-      });
+        _formKey.currentState?.validate();
+      },
+    );
+
+    if (context.mounted) {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -408,6 +481,7 @@ class _ProfilePageState extends State<ProfilePage>
       if (!_isEditing) {
         _editableRecipient = widget.initialRecipient.copyWith();
         _profilePicture = null;
+
         clearAllServerErrors();
         _socialHandleErrors.clear();
         _socialHandleErrors.addAll(List.generate(
@@ -430,6 +504,8 @@ class _ProfilePageState extends State<ProfilePage>
     if (mounted && picked != null && picked != _editableRecipient.dateOfBirth) {
       setState(() {
         _editableRecipient = _editableRecipient.copyWith(dateOfBirth: picked);
+        _dateOfBirthController.text =
+            DateFormat('MMMM dd, yyyy').format(picked);
         clearServerError('dateOfBirth');
       });
     }
@@ -445,7 +521,7 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
-  Future<void> _showAddSocialHandleDialog() async {
+  Future<void> _showAddSocialHandleDialog(BuildContext context) async {
     _newSocialHandleController.clear();
     String? newHandle = await showDialog<String>(
       context: context,
@@ -500,15 +576,26 @@ class _ProfilePageState extends State<ProfilePage>
     );
 
     if (newHandle != null && newHandle.isNotEmpty) {
-      _addSocialHandle(newHandle);
+      if (!context.mounted) return;
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final String? currentRecipientId = userProvider.user?.id;
+
+      if (currentRecipientId != null) {
+        _addSocialHandle(newHandle, currentRecipientId);
+      } else {
+        showErrorSnackBar(
+          context,
+          'Could not add handle: Recipient ID not found.',
+        );
+      }
     }
   }
 
-  void _addSocialHandle(String handle) {
+  void _addSocialHandle(String handle, String recipientId) {
     setState(() {
       _editableRecipient.socialMediaHandles ??= [];
       _editableRecipient.socialMediaHandles!.add(
-        SocialMediaHandle(socialMediaHandle: handle),
+        SocialMediaHandle(socialMediaHandle: handle, recipientId: recipientId),
       );
       _socialHandleErrors.add(null);
     });

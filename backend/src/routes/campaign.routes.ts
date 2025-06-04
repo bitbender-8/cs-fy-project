@@ -37,6 +37,8 @@ import { validateStatusTransitions } from "../services/campaign.service.js";
 import { validUrl } from "../utils/zod-helpers.js";
 import { UUID } from "crypto";
 import { deleteFiles } from "../services/fie.service.js";
+import { config } from "../config.js";
+import path from "path";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
@@ -75,7 +77,7 @@ export const campaignRouter: Router = Router();
 campaignRouter.put(
   "/:id",
   requireAuth,
-  validateFileUpload("redactedDocuments", "Both"),
+  validateFileUpload("redactedDocuments", "Both", config.PUBLIC_UPLOAD_DIR),
   validateRequestBody(updateCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) !== "Supervisor") {
@@ -140,9 +142,10 @@ campaignRouter.put(
       }
 
       // Validating each documentId to make sure that it exists and belongs to this campaign
-      const validDocumentUrls = (await getCampaignDocuments(campaignId)).map(
-        (result) => result.documentUrl
-      );
+      const validDocumentUrls = (
+        await getCampaignDocuments({ campaignId })
+      ).items.map((result) => result.documentUrl);
+
       const invalidDocumentIds = documentIds.filter(
         (id) => !validDocumentUrls.includes(id)
       );
@@ -164,7 +167,7 @@ campaignRouter.put(
         updatedCampaignData.documents.push({
           campaignId: originalCampaign.id,
           documentUrl: documentIds[i],
-          redactedDocumentUrl: `${process.env.UPLOAD_DIR}/${req.files[i].filename}`,
+          redactedDocumentUrl: `${req.files[i].filename}`,
         });
       }
     } else if (documentIds && documentIds.length !== 0) {
@@ -253,7 +256,12 @@ campaignRouter.put(
     // Delete old redacted files *after* update to prevent data inconsistencies if update fails.
     const oldRedactedDocUrls = originalCampaign.documents
       .filter((document) => documentIds?.includes(document.documentUrl))
-      .map((document) => document.redactedDocumentUrl)
+      .map((document) =>
+        // Redacted documents are in public upload directory
+        document.redactedDocumentUrl
+          ? path.join(config.PUBLIC_UPLOAD_DIR, document.redactedDocumentUrl)
+          : null
+      )
       .filter((url) => url !== undefined && url !== null);
 
     await deleteFiles(oldRedactedDocUrls);
@@ -266,7 +274,7 @@ campaignRouter.put(
 campaignRouter.post(
   "/",
   requireAuth,
-  validateFileUpload("documents", "Both"),
+  validateFileUpload("documents", "Both", config.PRIVATE_UPLOAD_DIR),
   validateRequestBody(createCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
     // TODO(bitbender-8): Add a check for whether the campaign has a status of "Pending Review"
@@ -286,7 +294,7 @@ campaignRouter.post(
     const documentUrls: string[] = [];
     if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
       for (const file of req.files) {
-        documentUrls.push(`${process.env.UPLOAD_DIR}/${file.filename}`);
+        documentUrls.push(`${file.filename}`);
       }
     } else {
       const problemDetails: ProblemDetails = {
@@ -365,15 +373,22 @@ campaignRouter.get(
         ...result,
         items: result.items.map((campaign) => ({
           ...excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS),
-          redactedDocumentUrls: campaign.documents
-            .map((doc) => doc.redactedDocumentUrl)
-            .filter((url): url is string => url !== undefined),
+          documents: campaign.documents
+            .map(
+              (doc) =>
+                ({
+                  campaignId: doc.campaignId,
+                  redactedDocumentUrl: doc.redactedDocumentUrl,
+                }) as CampaignDocument
+            )
+            .filter(
+              (doc): doc is CampaignDocument =>
+                doc.redactedDocumentUrl !== undefined
+            ),
         })),
       };
     };
 
-    // REMOVE
-    console.log(userRole);
     switch (userRole) {
       case "Supervisor":
         campaigns = await getCampaigns(queryParams);

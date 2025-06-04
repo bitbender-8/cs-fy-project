@@ -102,7 +102,7 @@ class CampaignService {
       final createResponse = await http.Response.fromStream(streamedResponse);
 
       debugPrint(
-        "[CAMPAIGN_CREATE_RESPONSE]: ${createResponse.statusCode} - ${createResponse.body}",
+        "[RESPONSE]: ${createResponse.statusCode} - ${createResponse.body}",
       );
 
       if (createResponse.statusCode == 201) {
@@ -130,9 +130,7 @@ class CampaignService {
   ) async {
     Uri uri = Uri.parse(baseUrl);
     final queryParams = filters.toMap();
-    if (queryParams != null) {
-      uri = uri.replace(queryParameters: queryParams);
-    }
+    if (queryParams != null) uri = uri.replace(queryParameters: queryParams);
 
     debugPrint("[REQUEST_URI]: $uri");
 
@@ -141,11 +139,10 @@ class CampaignService {
         uri,
         headers: {'Authorization': 'Bearer $accessToken'},
       );
-      debugPrint("RESPONSE: ${jsonEncode(response.body)}");
+      debugPrint("[RESPONSE]: ${response.body}");
 
+      final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode == 200) {
-        final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
-
         return (
           data: PaginatedList<Campaign>.fromJson(
             decodedBody,
@@ -154,10 +151,7 @@ class CampaignService {
           error: null,
         );
       } else {
-        return (
-          data: null,
-          error: ProblemDetails.fromJson(jsonDecode(response.body))
-        );
+        return (data: null, error: ProblemDetails.fromJson(decodedBody));
       }
     } catch (e) {
       debugPrint("[REQUEST_ERROR]: $e");
