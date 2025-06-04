@@ -4,6 +4,7 @@ import 'package:mobile/pages/add_campaign_page.dart';
 import 'package:mobile/pages/login_required_page.dart';
 import 'package:mobile/pages/profile_page.dart';
 import 'package:mobile/pages/campaign_list_page.dart';
+import 'package:mobile/pages/campaign_requests_page.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:provider/provider.dart';
 
@@ -50,8 +51,6 @@ class _HomeState extends State<Home> {
     final userProvider = Provider.of<UserProvider>(context);
     final bool isLoggedIn = userProvider.credentials != null;
 
-    // Define navPages outside of the build method if they don't depend on context or mutable state
-    // For now, keeping it here as it depends on `isLoggedIn`
     List<NavPage> navPages = [
       const NavPage(
         title: '    Public\nCampaigns',
@@ -74,7 +73,7 @@ class _HomeState extends State<Home> {
       NavPage(
         title: 'Campaign\n requests',
         pageWidget: isLoggedIn
-            ? const Center(child: Text('Campaign Requests Page'))
+            ? const CampaignRequestsPage()
             : const LoginRequiredPage(),
         icon: Icons.list_alt,
       ),

@@ -10,6 +10,25 @@ enum RequestType {
   const RequestType(this.value);
 }
 
+enum ResolutionType {
+  accepted,
+  rejected;
+
+  static ResolutionType? fromString(String? value) {
+    if (value == null) return null;
+    try {
+      return ResolutionType.values.byName(value);
+    } catch (e) {
+      for (var entry in ResolutionType.values) {
+        if (entry.name.toLowerCase() == value.toLowerCase()) {
+          return entry;
+        }
+      }
+      return null;
+    }
+  }
+}
+
 abstract class CampaignRequest {
   String? id;
   String campaignId;
@@ -19,6 +38,7 @@ abstract class CampaignRequest {
   DateTime? requestDate;
   DateTime? resolutionDate;
   RequestType requestType;
+  ResolutionType? resolutionType;
 
   CampaignRequest({
     this.id,
@@ -29,11 +49,13 @@ abstract class CampaignRequest {
     required this.requestType,
     this.requestDate,
     this.resolutionDate,
+    this.resolutionType
   });
 }
 
 class GoalAdjustmentRequest extends CampaignRequest {
   String newGoal;
+
 
   GoalAdjustmentRequest({
     super.id,
@@ -43,12 +65,14 @@ class GoalAdjustmentRequest extends CampaignRequest {
     required super.justification,
     super.requestDate,
     super.resolutionDate,
+    super.resolutionType,
     required this.newGoal,
   }) : super(requestType: RequestType.goalAdjustment);
 }
 
 class StatusChangeRequest extends CampaignRequest {
   CampaignStatus newStatus;
+
 
   StatusChangeRequest({
     super.id,
@@ -58,6 +82,7 @@ class StatusChangeRequest extends CampaignRequest {
     required super.justification,
     super.requestDate,
     super.resolutionDate,
+    super.resolutionType,
     required this.newStatus,
   }) : super(requestType: RequestType.statusChange);
 }
@@ -73,6 +98,7 @@ class PostUpdateRequest extends CampaignRequest {
     required super.justification,
     super.requestDate,
     super.resolutionDate,
+    super.resolutionType,
     required this.newPost,
   }) : super(requestType: RequestType.postUpdate);
 }
@@ -88,6 +114,7 @@ class EndDateExtensionRequest extends CampaignRequest {
     required super.justification,
     super.requestDate,
     super.resolutionDate,
+    super.resolutionType,
     required this.newEndDate,
   }) : super(requestType: RequestType.endDateExtension);
 }
