@@ -300,7 +300,6 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
       <form
         action={submitCampaignUpdate}
-        method="POST"
         className="flex flex-col gap-3"
       >
         <h2 className="text-primary">Update campaign</h2>
