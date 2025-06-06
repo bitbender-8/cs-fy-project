@@ -39,7 +39,7 @@ export default function BroswseCampaignsTableHolder({
     }
     if (campaign.status === "Live") {
       liveCampaignsCount++;
-      pendingLaunchCampaigns.push(campaign);
+      liveCampaigns.push(campaign);
     }
   });
 

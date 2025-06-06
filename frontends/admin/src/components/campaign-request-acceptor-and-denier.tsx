@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
+import { DialogDecline } from "./dialog-decline";
 
 type CampaignRequestAccepterAndDenierProps = {
   requestType:
@@ -52,12 +53,7 @@ export default function CampaignRequestAccepterAndDenier({
         Approve
       </Button>
 
-      <Button
-        variant="destructive"
-        onClick={() => handleRequestAction("reject")}
-      >
-        Decline
-      </Button>
+      <DialogDecline onDecline={() => handleRequestAction("reject")} />
     </>
   );
 }
