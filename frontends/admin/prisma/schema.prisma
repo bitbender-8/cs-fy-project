@@ -15,9 +15,10 @@ model Campaign {
   fundraisingGoal         BigInt
   status                  CampaignStatus
   category                String                    @db.VarChar(100)
-  chapaBankCode           Int?
-  chapaBankName           String?                   @db.VarChar(50)
+  paymentMethod           String                    @db.VarChar(100)
+  phoneNo                 String?                   @db.VarChar(20)
   bankAccountNo           String?                   @db.VarChar(16)
+  bankName                String?                   @db.VarChar(50)
   submissionDate          DateTime                  @default(now()) @db.Timestamptz(6)
   verificationDate        DateTime?                 @db.Timestamptz(6)
   denialDate              DateTime?                 @db.Timestamptz(6)
