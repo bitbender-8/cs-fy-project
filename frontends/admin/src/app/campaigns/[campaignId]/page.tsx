@@ -187,6 +187,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         <ChangeCampaignVisibilityDropdownMenu
           status={status}
           campaignId={campaignId}
+          title={title}
         />
       </div>
 
