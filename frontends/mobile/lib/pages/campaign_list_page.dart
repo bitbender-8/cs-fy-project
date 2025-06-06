@@ -24,7 +24,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
 
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  CampaignFilter filters = CampaignFilter();
+  CampaignFilter _filters = CampaignFilter();
 
   @override
   void initState() {
@@ -55,7 +55,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
               onPressed: () {
                 _searchController.clear();
                 setState(() {
-                  filters = filters.copyWith(title: null);
+                  _filters = _filters.copyWith(title: null);
                 });
               },
             ),
@@ -77,7 +77,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
                   decoration: searchBarDecoration,
                   onSubmitted: (value) {
                     setState(() {
-                      filters.title = value.isEmpty ? null : value;
+                      _filters.title = value.isEmpty ? null : value;
                       _campaigns.clear();
                       _currentPage = 1;
                       _hasMore = true;
@@ -93,14 +93,14 @@ class _CampaignListPageState extends State<CampaignListPage> {
                   final newFilters = await showDialog<CampaignFilter>(
                     context: context,
                     builder: (context) => CampaignFilterDialog(
-                      currentFilters: filters,
+                      currentFilters: _filters,
                       showSensitiveFields: !widget.isPublicList,
                     ),
                   );
 
                   if (newFilters != null && mounted) {
                     setState(() {
-                      filters = newFilters.copyWith(title: filters.title);
+                      _filters = newFilters.copyWith(title: _filters.title);
                       _campaigns.clear();
                       _currentPage = 1;
                       _hasMore = true;
@@ -167,8 +167,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
                 )
               : CampaignCard(
                   campaignData: _campaigns[index],
-                  isPublic: widget.isPublicList,
-                ),
+                  isPublic: widget.isPublicList),
         ),
       );
     }
@@ -198,12 +197,12 @@ class _CampaignListPageState extends State<CampaignListPage> {
       listen: false,
     );
 
-    filters = filters.copyWith(
+    _filters = _filters.copyWith(
       page: _currentPage,
       ownerRecipientId: widget.isPublicList ? null : userProvider.user?.id,
     );
     debugPrint(
-      "[INFO]: Fetching page: $_currentPage with filters: ${filters.toMap()}",
+      "[INFO]: Fetching page: $_currentPage with filters: ${_filters.toMap()}",
     );
 
     if (!widget.isPublicList && accessToken == null) {
@@ -215,10 +214,9 @@ class _CampaignListPageState extends State<CampaignListPage> {
     final result = await Provider.of<CampaignService>(
       context,
       listen: false,
-    ).fetchCampaigns(filters, widget.isPublicList ? null : accessToken);
+    ).getCampaigns(_filters, widget.isPublicList ? null : accessToken);
 
     if (!mounted) return;
-
     await handleServiceResponse(context, result, onSuccess: () async {
       if (result.data == null) return;
 

@@ -1,5 +1,6 @@
 import 'package:mobile/config.dart';
 import 'package:mobile/models/campaign.dart';
+import 'package:mobile/models/campaign_request.dart';
 
 abstract class ListFilter {
   int page;
@@ -8,6 +9,7 @@ abstract class ListFilter {
   ListFilter({this.page = 1, this.limit = pageSize});
 
   Map<String, String>? toMap();
+  ListFilter copyWith({int? page, int? limit});
 }
 
 class RecipientFilter extends ListFilter {
@@ -45,6 +47,29 @@ class RecipientFilter extends ListFilter {
 
     map.removeWhere((key, value) => value == null);
     return map.isEmpty ? null : Map<String, String>.from(map);
+  }
+
+  @override
+  RecipientFilter copyWith({
+    String? auth0UserId,
+    String? name,
+    String? email,
+    DateTime? minBirthDate,
+    DateTime? maxBirthDate,
+    String? phoneNo,
+    int? page,
+    int? limit,
+  }) {
+    return RecipientFilter(
+      auth0UserId: auth0UserId ?? this.auth0UserId,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      minBirthDate: minBirthDate ?? this.minBirthDate,
+      maxBirthDate: maxBirthDate ?? this.maxBirthDate,
+      phoneNo: phoneNo ?? this.phoneNo,
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
+    );
   }
 }
 
@@ -111,6 +136,7 @@ class CampaignFilter extends ListFilter {
     return map.isEmpty ? null : Map<String, String>.from(map);
   }
 
+  @override
   CampaignFilter copyWith({
     String? title,
     CampaignStatus? status,
@@ -177,5 +203,102 @@ class NotificationFilter extends ListFilter {
 
     map.removeWhere((key, value) => value == null);
     return map.isEmpty ? null : Map<String, String>.from(map);
+  }
+
+  @override
+  NotificationFilter copyWith({
+    bool? isRead,
+    DateTime? minCreatedAt,
+    DateTime? maxCreatedAt,
+    int? page,
+    int? limit,
+  }) {
+    return NotificationFilter(
+      isRead: isRead ?? this.isRead,
+      minCreatedAt: minCreatedAt ?? this.minCreatedAt,
+      maxCreatedAt: maxCreatedAt ?? this.maxCreatedAt,
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
+    );
+  }
+}
+
+class CampaignRequestFilter extends ListFilter {
+  String? ownerRecipientId;
+  String? campaignId;
+  CampaignRequestType? campaignRequestType;
+  bool? isResolved;
+  ResolutionType? resolutionType;
+  DateTime? minRequestDate;
+  DateTime? maxRequestDate;
+  DateTime? minResolutionDate;
+  DateTime? maxResolutionDate;
+  String? title;
+
+  CampaignRequestFilter({
+    this.ownerRecipientId,
+    this.campaignId,
+    this.campaignRequestType,
+    this.isResolved,
+    this.resolutionType,
+    this.minRequestDate,
+    this.maxRequestDate,
+    this.minResolutionDate,
+    this.maxResolutionDate,
+    this.title,
+    super.page,
+    super.limit,
+  });
+
+  @override
+  Map<String, String>? toMap() {
+    final map = <String, String?>{
+      'ownerRecipientId': ownerRecipientId,
+      'campaignId': campaignId,
+      'requestType': campaignRequestType?.toString().split('.').last,
+      'isResolved': isResolved?.toString(),
+      'resolutionType': resolutionType?.toString().split('.').last,
+      'minRequestDate': minRequestDate?.toIso8601String(),
+      'maxRequestDate': maxRequestDate?.toIso8601String(),
+      'minResolutionDate': minResolutionDate?.toIso8601String(),
+      'maxResolutionDate': maxResolutionDate?.toIso8601String(),
+      'title': title,
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+
+    map.removeWhere((key, value) => value == null);
+    return map.isEmpty ? null : Map<String, String>.from(map);
+  }
+
+  @override
+  CampaignRequestFilter copyWith({
+    String? ownerRecipientId,
+    String? campaignId,
+    CampaignRequestType? campaignRequestType,
+    bool? isResolved,
+    ResolutionType? resolutionType,
+    DateTime? minRequestDate,
+    DateTime? maxRequestDate,
+    DateTime? minResolutionDate,
+    DateTime? maxResolutionDate,
+    String? title,
+    int? page,
+    int? limit,
+  }) {
+    return CampaignRequestFilter(
+      ownerRecipientId: ownerRecipientId ?? this.ownerRecipientId,
+      campaignId: campaignId ?? this.campaignId,
+      campaignRequestType: campaignRequestType ?? this.campaignRequestType,
+      isResolved: isResolved ?? this.isResolved,
+      resolutionType: resolutionType ?? this.resolutionType,
+      minRequestDate: minRequestDate ?? this.minRequestDate,
+      maxRequestDate: maxRequestDate ?? this.maxRequestDate,
+      minResolutionDate: minResolutionDate ?? this.minResolutionDate,
+      maxResolutionDate: maxResolutionDate ?? this.maxResolutionDate,
+      title: title ?? this.title,
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
+    );
   }
 }

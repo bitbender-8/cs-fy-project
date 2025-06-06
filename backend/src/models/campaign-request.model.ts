@@ -66,6 +66,7 @@ export const LOCKED_CAMPAIGN_REQUEST_FIELDS = [
   "id",
   "resolutionDate",
   "requestDate",
+  "resolutionType",
   "campaignId",
 ] as const;
 export type LockedCampaignRequestFields =

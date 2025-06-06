@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/home.dart';
+import 'package:mobile/services/campaign_request_service.dart';
 import 'package:mobile/services/campaign_service.dart';
 import 'package:mobile/services/file_service.dart';
 import 'package:mobile/services/notification_service.dart';
@@ -15,6 +16,9 @@ void main() => runApp(
           Provider<CampaignService>(create: (_) => CampaignService()),
           Provider<FileService>(create: (_) => FileService()),
           Provider<NotificationService>(create: (_) => NotificationService()),
+          Provider<CampaignRequestService>(
+            create: (_) => CampaignRequestService(),
+          ),
 
           // ChangeNotifierProviders
           ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),

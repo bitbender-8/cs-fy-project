@@ -76,7 +76,7 @@ class _CampaignCardState extends State<CampaignCard> {
                       borderRadius: BorderRadius.circular(4.0),
                     ),
                     child: Text(
-                      widget.campaignData.status.toString(),
+                      widget.campaignData.status?.value ?? 'Unknown',
                       style: currentTheme.textTheme.bodySmall?.copyWith(
                         color: currentTheme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.bold,

@@ -32,20 +32,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
-  void _onDestinationTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _addNewCampaign() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddCampaignPage(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -108,6 +94,21 @@ class _HomeState extends State<Home> {
         onDestinationSelected: _onDestinationTapped,
       ),
       floatingActionButton: navPages[_selectedIndex].floatingActionButton,
+    );
+  }
+
+  //****** Helper methods
+  void _onDestinationTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void _addNewCampaign() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AddCampaignPage(),
+      ),
     );
   }
 }

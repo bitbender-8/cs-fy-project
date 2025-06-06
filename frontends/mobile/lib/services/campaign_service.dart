@@ -124,7 +124,7 @@ class CampaignService {
     }
   }
 
-  Future<ServiceResult<PaginatedList<Campaign>>> fetchCampaigns(
+  Future<ServiceResult<PaginatedList<Campaign>>> getCampaigns(
     CampaignFilter filters,
     String? accessToken,
   ) async {

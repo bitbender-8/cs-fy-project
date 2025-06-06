@@ -106,7 +106,7 @@ class _CampaignInfoPageState extends State<CampaignInfoPage> {
       _buildInfoRow(
         context: context,
         label: 'Status:',
-        value: "\n${widget.campaign.status?.value ?? 'N/A'}",
+        value: "\n${widget.campaign.status?.value ?? "Unknown"}",
         icon: Icons.info_outline,
         secondLabel: 'Category:',
         secondValue: widget.campaign.category,

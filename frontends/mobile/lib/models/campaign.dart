@@ -119,9 +119,6 @@ enum CampaignStatus {
 
   final String value;
   const CampaignStatus(this.value);
-
-  @override
-  String toString() => value;
 }
 
 class CampaignStatusConverter implements JsonConverter<CampaignStatus, String> {
@@ -181,14 +178,14 @@ class CampaignDonation {
 
 @JsonSerializable(explicitToJson: true)
 class CampaignPost {
-  String id;
+  String? id;
   String title;
   String content;
   DateTime? publicPostDate;
   String campaignId;
 
   CampaignPost({
-    required this.id,
+    this.id,
     required this.title,
     required this.content,
     this.publicPostDate,

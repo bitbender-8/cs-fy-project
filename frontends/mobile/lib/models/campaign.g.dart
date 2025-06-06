@@ -105,7 +105,7 @@ Map<String, dynamic> _$CampaignDonationToJson(CampaignDonation instance) =>
     };
 
 CampaignPost _$CampaignPostFromJson(Map<String, dynamic> json) => CampaignPost(
-      id: json['id'] as String,
+      id: json['id'] as String?,
       title: json['title'] as String,
       content: json['content'] as String,
       publicPostDate: json['publicPostDate'] == null
