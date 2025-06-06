@@ -155,7 +155,7 @@ export function generateCampaigns(
 ): Campaign[] {
   const campiagns: Campaign[] = [];
   const categories: string[] = [];
-  const bankNames = ["Commercial Bank of Ethiopia", "Awash Bank", ""];
+  const bankNames = ["Commercial Bank of Ethiopia", "Awash Bank"];
 
   for (let i = 0; i < noOfCategories; i++) {
     const category = faker.lorem.words({ min: 1, max: 3 });
@@ -200,7 +200,7 @@ export function generateCampaigns(
       ownerRecipientId: faker.helpers.arrayElement(recipients).id as UUID,
       title: faker.lorem.words(),
       description: faker.lorem.sentences({ min: 2, max: 4 }),
-      fundraisingGoal: faker.finance.amount({ min: 0, max: 10000, dec: 2 }),
+      fundraisingGoal: faker.finance.amount({ min: 500, max: 10000, dec: 2 }),
       status: faker.helpers.arrayElement(CAMPAIGN_STATUSES),
       category: faker.helpers.arrayElement(categories),
       paymentInfo: {
@@ -208,6 +208,8 @@ export function generateCampaigns(
         chapaBankName: faker.helpers.arrayElement(bankNames),
         bankAccountNo: faker.finance.accountNumber(16),
       },
+      // this is a synthesized field, so it is ignored by the seed function
+      totalDonated: "0",
       isPublic: faker.datatype.boolean(),
       submissionDate,
       verificationDate,
@@ -218,27 +220,60 @@ export function generateCampaigns(
     };
 
     campaign.documents = [...documents];
-
     campiagns.push(campaign);
   }
 
   return campiagns;
 }
-
 export function generateCampaignDonations(
   campaigns: Campaign[],
-  avgDonationPerCampaign: number,
+  avgDonationAmountForCampaign: number = 50,
 ): CampaignDonation[] {
   const campaignDonations: CampaignDonation[] = [];
 
   for (const campaign of campaigns) {
-    // Random variation around avg
-    const donationCount = Math.round(
-      avgDonationPerCampaign * (1 + (Math.random() - 0.5)),
-    );
+    let currentTotalDonated = 0;
+    const fundraisingGoal = parseFloat(campaign.fundraisingGoal);
 
-    for (let i = 0; i < donationCount; i++) {
-      const grossAmount = faker.finance.amount({ min: 5, max: 10000 });
+    let donationAttempts = 0;
+    const maxDonationAttempts = 500;
+
+    while (
+      currentTotalDonated < fundraisingGoal &&
+      donationAttempts < maxDonationAttempts
+    ) {
+      const remainingGoal = fundraisingGoal - currentTotalDonated;
+
+      const maxPossibleDonation = Math.max(
+        5,
+        Math.min(avgDonationAmountForCampaign * 2, remainingGoal * 0.8),
+      );
+
+      const minDonationAmount = 5;
+      const actualMaxDonation = Math.max(
+        minDonationAmount,
+        maxPossibleDonation,
+      );
+
+      let grossAmount = faker.finance.amount({
+        min: minDonationAmount,
+        max: actualMaxDonation,
+        dec: 2,
+      });
+
+      const donationAmount = parseFloat(grossAmount);
+
+      if (currentTotalDonated + donationAmount > fundraisingGoal) {
+        if (remainingGoal > 0.01) {
+          grossAmount = (remainingGoal - 0.01).toFixed(2);
+          if (parseFloat(grossAmount) <= 0) {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+
       const serviceFee = (
         parseFloat(grossAmount) *
         faker.number.float({ min: 0.01, max: 0.1, fractionDigits: 2 })
@@ -254,7 +289,11 @@ export function generateCampaignDonations(
       };
 
       campaignDonations.push(campaignDonation);
+      currentTotalDonated += parseFloat(grossAmount);
+      donationAttempts++;
     }
+
+    campaign.totalDonated = currentTotalDonated.toFixed(2);
   }
 
   return campaignDonations;

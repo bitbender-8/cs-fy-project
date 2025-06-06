@@ -1,45 +1,47 @@
-import 'package:mobile/models/campaign.dart'; // Assuming CampaignStatus and CampaignPost are here
+import 'package:json_annotation/json_annotation.dart';
+import 'package:mobile/models/campaign.dart';
 
-enum RequestType {
+part 'campaign_request.g.dart';
+
+@JsonEnum(valueField: 'value')
+enum CampaignRequestType {
   goalAdjustment("Goal Adjustment"),
   postUpdate("Post Update"),
   endDateExtension("End Date Extension"),
   statusChange("Status Change");
 
   final String value;
-  const RequestType(this.value);
+  const CampaignRequestType(this.value);
+
+  static CampaignRequestType fromValue(String value) {
+    return CampaignRequestType.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => throw ArgumentError(
+        "Unknown CampaignRequestType value: $value",
+      ),
+    );
+  }
 }
 
+@JsonEnum(valueField: 'value')
 enum ResolutionType {
-  accepted,
-  rejected;
+  accepted("Accepted"),
+  rejected("Rejected");
 
-  static ResolutionType? fromString(String? value) {
-    if (value == null) return null;
-    try {
-      return ResolutionType.values.byName(value);
-    } catch (e) {
-      // Handle cases where the string might be lowercase or different casing
-      for (var entry in ResolutionType.values) {
-        if (entry.name.toLowerCase() == value.toLowerCase()) {
-          return entry;
-        }
-      }
-      return null; // Or throw an error if strict matching is required
-    }
-  }
+  final String value;
+  const ResolutionType(this.value);
 }
 
 abstract class CampaignRequest {
   String? id;
   String campaignId;
-  String ownerRecipientId; // Kept as per existing model structure
+  String ownerRecipientId;
   String title;
   String justification;
   DateTime? requestDate;
   DateTime? resolutionDate;
+  CampaignRequestType requestType;
   ResolutionType? resolutionType;
-  String get type; // Abstract getter for the type discriminator
 
   CampaignRequest({
     this.id,
@@ -47,52 +49,52 @@ abstract class CampaignRequest {
     required this.ownerRecipientId,
     required this.title,
     required this.justification,
+    required this.requestType,
     this.requestDate,
     this.resolutionDate,
     this.resolutionType,
   });
 
-  // Factory method for deserialization
   factory CampaignRequest.fromJson(Map<String, dynamic> json) {
-    final type = json['type'] as String?;
-    switch (type) {
-      case 'GOAL_ADJUSTMENT_REQUEST':
+    final String? apiRequestTypeString = json['requestType'] as String?;
+    if (apiRequestTypeString == null) {
+      throw Exception('Missing "requestType" in CampaignRequest JSON: $json');
+    }
+
+    CampaignRequestType requestType;
+    try {
+      requestType = CampaignRequestType.values.firstWhere(
+        (type) =>
+            type.value.toLowerCase() == apiRequestTypeString.toLowerCase(),
+        orElse: () => CampaignRequestType.values.firstWhere(
+            (type) =>
+                type.name.toLowerCase() == apiRequestTypeString.toLowerCase(),
+            orElse: () => throw Exception(
+                'Unknown or unmatchable campaign request type string from API: $apiRequestTypeString')),
+      );
+    } catch (e) {
+      throw Exception(
+          'Failed to parse campaign request type "$apiRequestTypeString": $e');
+    }
+
+    switch (requestType) {
+      case CampaignRequestType.goalAdjustment:
         return GoalAdjustmentRequest.fromJson(json);
-      case 'STATUS_CHANGE_REQUEST':
+      case CampaignRequestType.statusChange:
         return StatusChangeRequest.fromJson(json);
-      case 'POST_UPDATE_REQUEST':
+      case CampaignRequestType.postUpdate:
         return PostUpdateRequest.fromJson(json);
-      case 'END_EXTENSION_REQUEST':
+      case CampaignRequestType.endDateExtension:
         return EndDateExtensionRequest.fromJson(json);
-      default:
-        // Fallback or error if type is unknown or missing
-        // For robustness, you might want to check if other fields can identify the type
-        // or throw a more specific error.
-        // This example assumes 'type' is always present for valid requests.
-        if (json.containsKey('newGoal')) {
-          return GoalAdjustmentRequest.fromJson(json..putIfAbsent('type', () => 'GOAL_ADJUSTMENT_REQUEST'));
-        }
-        if (json.containsKey('newStatus')) {
-          return StatusChangeRequest.fromJson(json..putIfAbsent('type', () => 'STATUS_CHANGE_REQUEST'));
-        }
-        if (json.containsKey('newPostId')) {
-          return PostUpdateRequest.fromJson(json..putIfAbsent('type', () => 'POST_UPDATE_REQUEST'));
-        }
-        if (json.containsKey('newEndDate')) {
-          return EndDateExtensionRequest.fromJson(json..putIfAbsent('type', () => 'END_EXTENSION_REQUEST'));
-        }
-        throw Exception('Unknown or missing request type in JSON: $type');
     }
   }
 
   Map<String, dynamic> toJson();
 }
 
+@JsonSerializable(explicitToJson: true)
 class GoalAdjustmentRequest extends CampaignRequest {
-  BigInt newGoal;
-
-  @override
-  String get type => 'GOAL_ADJUSTMENT_REQUEST';
+  String newGoal;
 
   GoalAdjustmentRequest({
     super.id,
@@ -104,46 +106,18 @@ class GoalAdjustmentRequest extends CampaignRequest {
     super.resolutionDate,
     super.resolutionType,
     required this.newGoal,
-  });
+  }) : super(requestType: CampaignRequestType.goalAdjustment);
 
-  factory GoalAdjustmentRequest.fromJson(Map<String, dynamic> json) {
-    return GoalAdjustmentRequest(
-      id: json['id'],
-      campaignId: json['campaignId'],
-      ownerRecipientId: json['ownerRecipientId'],
-      title: json['title'],
-      justification: json['justification'],
-      requestDate: json['requestDate'] != null
-          ? DateTime.parse(json['requestDate'])
-          : null,
-      resolutionDate: json['resolutionDate'] != null
-          ? DateTime.parse(json['resolutionDate'])
-          : null,
-      resolutionType: ResolutionType.fromString(json['resolutionType']),
-      newGoal: BigInt.parse(json['newGoal'].toString()),
-    );
-  }
+  factory GoalAdjustmentRequest.fromJson(Map<String, dynamic> json) =>
+      _$GoalAdjustmentRequestFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'campaignId': campaignId,
-        'ownerRecipientId': ownerRecipientId,
-        'title': title,
-        'justification': justification,
-        'requestDate': requestDate?.toIso8601String(),
-        'resolutionDate': resolutionDate?.toIso8601String(),
-        'resolutionType': resolutionType?.name,
-        'newGoal': newGoal.toString(),
-        'type': type,
-      };
+  Map<String, dynamic> toJson() => _$GoalAdjustmentRequestToJson(this);
 }
 
+@JsonSerializable(explicitToJson: true)
 class StatusChangeRequest extends CampaignRequest {
   CampaignStatus newStatus;
-
-  @override
-  String get type => 'STATUS_CHANGE_REQUEST';
 
   StatusChangeRequest({
     super.id,
@@ -155,72 +129,18 @@ class StatusChangeRequest extends CampaignRequest {
     super.resolutionDate,
     super.resolutionType,
     required this.newStatus,
-  });
+  }) : super(requestType: CampaignRequestType.statusChange);
 
-  factory StatusChangeRequest.fromJson(Map<String, dynamic> json) {
-    // 1. Parse all the shared CampaignRequest fields as before:
-    final id = json['id'] as String?;
-    final campaignId = json['campaignId'] as String;
-    final ownerRecipientId = json['ownerRecipientId'] as String;
-    final title = json['title'] as String;
-    final justification = json['justification'] as String;
-    final requestDate = json['requestDate'] != null
-        ? DateTime.parse(json['requestDate'] as String)
-        : null;
-    final resolutionDate = json['resolutionDate'] != null
-        ? DateTime.parse(json['resolutionDate'] as String)
-        : null;
-    final resolutionType =
-        ResolutionType.fromString(json['resolutionType'] as String?);
-
-    // 2. Now, do a case‐insensitive lookup for the "newStatus" string:
-    final rawStatus = json['newStatus'] as String?;
-    if (rawStatus == null) {
-      throw Exception("StatusChangeRequest JSON missing 'newStatus': $json");
-    }
-
-    // Attempt to find a matching CampaignStatus by comparing .name.toLowerCase()
-    final lowerIncoming = rawStatus.toLowerCase();
-    final matchingStatus = CampaignStatus.values.firstWhere(
-      (enumVal) => enumVal.name.toLowerCase() == lowerIncoming,
-      orElse: () {
-        // If nothing matches, throw a more descriptive exception:
-        throw Exception("Invalid CampaignStatus: '$rawStatus'");
-      },
-    );
-
-    return StatusChangeRequest(
-      id: id,
-      campaignId: campaignId,
-      ownerRecipientId: ownerRecipientId,
-      title: title,
-      justification: justification,
-      requestDate: requestDate,
-      resolutionDate: resolutionDate,
-      resolutionType: resolutionType,
-      newStatus: matchingStatus,
-    );
-  }
+  factory StatusChangeRequest.fromJson(Map<String, dynamic> json) =>
+      _$StatusChangeRequestFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'campaignId': campaignId,
-        'ownerRecipientId': ownerRecipientId,
-        'title': title,
-        'justification': justification,
-        'requestDate': requestDate?.toIso8601String(),
-        'resolutionDate': resolutionDate?.toIso8601String(),
-        'resolutionType': resolutionType?.name,
-        'newStatus': newStatus.name,
-        'type': type,
-      };
+  Map<String, dynamic> toJson() => _$StatusChangeRequestToJson(this);
 }
-class PostUpdateRequest extends CampaignRequest {
-  String newPostId; // Changed from CampaignPost to String
 
-  @override
-  String get type => 'POST_UPDATE_REQUEST';
+@JsonSerializable(explicitToJson: true)
+class PostUpdateRequest extends CampaignRequest {
+  CampaignPost newPost;
 
   PostUpdateRequest({
     super.id,
@@ -231,47 +151,19 @@ class PostUpdateRequest extends CampaignRequest {
     super.requestDate,
     super.resolutionDate,
     super.resolutionType,
-    required this.newPostId,
-  });
+    required this.newPost,
+  }) : super(requestType: CampaignRequestType.postUpdate);
 
-  factory PostUpdateRequest.fromJson(Map<String, dynamic> json) {
-    return PostUpdateRequest(
-      id: json['id'],
-      campaignId: json['campaignId'],
-      ownerRecipientId: json['ownerRecipientId'],
-      title: json['title'],
-      justification: json['justification'],
-      requestDate: json['requestDate'] != null
-          ? DateTime.parse(json['requestDate'])
-          : null,
-      resolutionDate: json['resolutionDate'] != null
-          ? DateTime.parse(json['resolutionDate'])
-          : null,
-      resolutionType: ResolutionType.fromString(json['resolutionType']),
-      newPostId: json['newPostId'], // Changed to parse newPostId
-    );
-  }
+  factory PostUpdateRequest.fromJson(Map<String, dynamic> json) =>
+      _$PostUpdateRequestFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'campaignId': campaignId,
-        'ownerRecipientId': ownerRecipientId,
-        'title': title,
-        'justification': justification,
-        'requestDate': requestDate?.toIso8601String(),
-        'resolutionDate': resolutionDate?.toIso8601String(),
-        'resolutionType': resolutionType?.name,
-        'newPostId': newPostId,
-        'type': type,
-      };
+  Map<String, dynamic> toJson() => _$PostUpdateRequestToJson(this);
 }
 
+@JsonSerializable(explicitToJson: true)
 class EndDateExtensionRequest extends CampaignRequest {
   DateTime newEndDate;
-
-  @override
-  String get type => 'END_EXTENSION_REQUEST';
 
   EndDateExtensionRequest({
     super.id,
@@ -283,37 +175,11 @@ class EndDateExtensionRequest extends CampaignRequest {
     super.resolutionDate,
     super.resolutionType,
     required this.newEndDate,
-  });
+  }) : super(requestType: CampaignRequestType.endDateExtension);
 
-  factory EndDateExtensionRequest.fromJson(Map<String, dynamic> json) {
-    return EndDateExtensionRequest(
-      id: json['id'],
-      campaignId: json['campaignId'],
-      ownerRecipientId: json['ownerRecipientId'],
-      title: json['title'],
-      justification: json['justification'],
-      requestDate: json['requestDate'] != null
-          ? DateTime.parse(json['requestDate'])
-          : null,
-      resolutionDate: json['resolutionDate'] != null
-          ? DateTime.parse(json['resolutionDate'])
-          : null,
-      resolutionType: ResolutionType.fromString(json['resolutionType']),
-      newEndDate: DateTime.parse(json['newEndDate']),
-    );
-  }
+  factory EndDateExtensionRequest.fromJson(Map<String, dynamic> json) =>
+      _$EndDateExtensionRequestFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'campaignId': campaignId,
-        'ownerRecipientId': ownerRecipientId,
-        'title': title,
-        'justification': justification,
-        'requestDate': requestDate?.toIso8601String(),
-        'resolutionDate': resolutionDate?.toIso8601String(),
-        'resolutionType': resolutionType?.name,
-        'newEndDate': newEndDate.toIso8601String(),
-        'type': type,
-      };
+  Map<String, dynamic> toJson() => _$EndDateExtensionRequestToJson(this);
 }

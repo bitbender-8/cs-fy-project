@@ -37,19 +37,23 @@ import { validateStatusTransitions } from "../services/campaign.service.js";
 import { validUrl } from "../utils/zod-helpers.js";
 import { UUID } from "crypto";
 import { deleteFiles } from "../services/fie.service.js";
+import { config } from "../config.js";
+import path from "path";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
 };
 
 const createCampaignSchema = CampaignSchema.pick(
-  CREATEABLE_CAMPAIGN_FIELDS.reduce(
+  CREATEABLE_CAMPAIGN_FIELDS.filter(
+    (field) => field !== "documents" && field !== "ownerRecipientId"
+  ).reduce(
     (acc, field) => ({
       ...acc,
       [field]: true,
     }),
-    {} as { [key in CreateableCampaignFields]: true },
-  ),
+    {} as { [key in CreateableCampaignFields]: true }
+  )
 );
 
 const updateCampaignSchema = CampaignSchema.pick(
@@ -58,8 +62,8 @@ const updateCampaignSchema = CampaignSchema.pick(
       ...acc,
       [field]: true,
     }),
-    {} as { [key in UpdateableCampaignFields]: true },
-  ),
+    {} as { [key in UpdateableCampaignFields]: true }
+  )
 )
   .extend({ documentIds: z.array(validUrl()) })
   .partial();
@@ -73,7 +77,7 @@ export const campaignRouter: Router = Router();
 campaignRouter.put(
   "/:id",
   requireAuth,
-  validateFileUpload("redactedDocuments", "Both"),
+  validateFileUpload("redactedDocuments", "Both", config.PUBLIC_UPLOAD_DIR),
   validateRequestBody(updateCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) !== "Supervisor") {
@@ -108,7 +112,7 @@ campaignRouter.put(
     if (updatedCampaignData.status) {
       const validationResult = validateStatusTransitions(
         originalCampaign.status,
-        updatedCampaignData.status,
+        updatedCampaignData.status
       );
 
       if (!validationResult.isValid) {
@@ -138,11 +142,12 @@ campaignRouter.put(
       }
 
       // Validating each documentId to make sure that it exists and belongs to this campaign
-      const validDocumentUrls = (await getCampaignDocuments(campaignId)).map(
-        (result) => result.documentUrl,
-      );
+      const validDocumentUrls = (
+        await getCampaignDocuments({ campaignId })
+      ).items.map((result) => result.documentUrl);
+
       const invalidDocumentIds = documentIds.filter(
-        (id) => !validDocumentUrls.includes(id),
+        (id) => !validDocumentUrls.includes(id)
       );
 
       if (invalidDocumentIds.length > 0) {
@@ -162,7 +167,7 @@ campaignRouter.put(
         updatedCampaignData.documents.push({
           campaignId: originalCampaign.id,
           documentUrl: documentIds[i],
-          redactedDocumentUrl: `${process.env.UPLOAD_DIR}/${req.files[i].filename}`,
+          redactedDocumentUrl: `${req.files[i].filename}`,
         });
       }
     } else if (documentIds && documentIds.length !== 0) {
@@ -245,28 +250,34 @@ campaignRouter.put(
         "id",
         "ownerRecipientId",
         "paymentInfo",
-      ]),
+      ])
     );
 
     // Delete old redacted files *after* update to prevent data inconsistencies if update fails.
     const oldRedactedDocUrls = originalCampaign.documents
       .filter((document) => documentIds?.includes(document.documentUrl))
-      .map((document) => document.redactedDocumentUrl)
+      .map((document) =>
+        // Redacted documents are in public upload directory
+        document.redactedDocumentUrl
+          ? path.join(config.PUBLIC_UPLOAD_DIR, document.redactedDocumentUrl)
+          : null
+      )
       .filter((url) => url !== undefined && url !== null);
 
     await deleteFiles(oldRedactedDocUrls);
     res.status(204).send();
 
     return;
-  },
+  }
 );
 
 campaignRouter.post(
   "/",
   requireAuth,
-  validateFileUpload("documents", "Both"),
+  validateFileUpload("documents", "Both", config.PRIVATE_UPLOAD_DIR),
   validateRequestBody(createCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
+    // TODO(bitbender-8): Add a check for whether the campaign has a status of "Pending Review"
     if (getUserRole(req.auth) !== "Recipient") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
@@ -283,7 +294,7 @@ campaignRouter.post(
     const documentUrls: string[] = [];
     if (req.files && Array.isArray(req.files) && req.files.length !== 0) {
       for (const file of req.files) {
-        documentUrls.push(`${process.env.UPLOAD_DIR}/${file.filename}`);
+        documentUrls.push(`${file.filename}`);
       }
     } else {
       const problemDetails: ProblemDetails = {
@@ -302,19 +313,19 @@ campaignRouter.post(
           ({
             documentUrl: url,
             // Suppressing errors since insertCampaign handles campaignId creation on its own
-          }) as { campaignId: UUID; documentUrl: string },
+          }) as { campaignId: UUID; documentUrl: string }
       ),
     });
 
     res
       .set(
         "Location",
-        `${req.protocol}://${req.get("host")}/campaigns/${insertedCampaign.id}`,
+        `${req.protocol}://${req.get("host")}/campaigns/${insertedCampaign.id}`
       )
       .status(201)
       .json(insertedCampaign);
     return;
-  },
+  }
 );
 
 campaignRouter.get(
@@ -341,7 +352,7 @@ campaignRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_CAMPAIGN_FILTERS,
+      SENSITIVE_CAMPAIGN_FILTERS
     );
 
     let campaigns: PaginatedList<RedactedCampaign> | PaginatedList<Campaign>;
@@ -362,9 +373,18 @@ campaignRouter.get(
         ...result,
         items: result.items.map((campaign) => ({
           ...excludeProperties(campaign, SENSITIVE_CAMPAIGN_FIELDS),
-          redactedDocumentUrls: campaign.documents
-            .map((doc) => doc.redactedDocumentUrl)
-            .filter((url): url is string => url !== undefined),
+          documents: campaign.documents
+            .map(
+              (doc) =>
+                ({
+                  campaignId: doc.campaignId,
+                  redactedDocumentUrl: doc.redactedDocumentUrl,
+                }) as CampaignDocument
+            )
+            .filter(
+              (doc): doc is CampaignDocument =>
+                doc.redactedDocumentUrl !== undefined
+            ),
         })),
       };
     };
@@ -393,7 +413,7 @@ campaignRouter.get(
 
     res.status(200).json(campaigns);
     return;
-  },
+  }
 );
 
 campaignRouter.get(
@@ -422,7 +442,7 @@ campaignRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         const tempCampaign = (
@@ -455,5 +475,5 @@ campaignRouter.get(
     }
 
     return;
-  },
+  }
 );

@@ -25,16 +25,6 @@ class _SignupPageState extends State<SignupPage> {
   final _socialController = TextEditingController();
   final _dobController = TextEditingController();
 
-  Future<void> _pickProfilePicture() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() {
-        _profilePicture = File(picked.path);
-      });
-    }
-  }
-
   @override
   void dispose() {
     _socialController.dispose();
@@ -42,27 +32,13 @@ class _SignupPageState extends State<SignupPage> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _dateOfBirth ?? DateTime(2000),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _dateOfBirth = picked;
-        _dobController.text =
-            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(pageTitle: "Recipient Sign Up"),
+      appBar: const CustomAppBar(
+        pageTitle: "Recipient Sign Up",
+        showNotificationIcon: false,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -70,12 +46,38 @@ class _SignupPageState extends State<SignupPage> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           child: ListView(
             children: [
+              // Header Section
+              const Text(
+                'Create Your Account',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Please provide your information to create your recipient profile',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+
+              // Profile Picture Section
+              const Text(
+                'Profile Information',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Column(
                     children: [
-                      const Text('Profile Picture'),
-                      const SizedBox(height: 12),
+                      const Text(
+                        'Profile Picture',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Tap to upload',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
                       InkWell(
                         onTap: _pickProfilePicture,
                         child: CircleAvatar(
@@ -98,8 +100,9 @@ class _SignupPageState extends State<SignupPage> {
                         const SizedBox(height: 8),
                         TextFormField(
                           decoration: const InputDecoration(
-                            labelText: "First name",
+                            labelText: "First name*",
                             border: OutlineInputBorder(),
+                            hintText: "Enter your first name",
                           ),
                           validator: (value) =>
                               validNonEmptyString(value, max: 50),
@@ -110,6 +113,7 @@ class _SignupPageState extends State<SignupPage> {
                           decoration: const InputDecoration(
                             labelText: "Middle name",
                             border: OutlineInputBorder(),
+                            hintText: "Enter your middle name (optional)",
                           ),
                           validator: (value) =>
                               validNonEmptyString(value, max: 50),
@@ -123,51 +127,69 @@ class _SignupPageState extends State<SignupPage> {
               const SizedBox(height: 12),
               TextFormField(
                 decoration: const InputDecoration(
-                  labelText: "Last name",
+                  labelText: "Last name*",
                   border: OutlineInputBorder(),
+                  hintText: "Enter your last name",
                 ),
                 validator: (value) => validNonEmptyString(value, max: 50),
                 onSaved: (value) => _lastName = value,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
               TextFormField(
                 decoration: const InputDecoration(
-                  labelText: "Phone number",
+                  labelText: "Bio*",
                   border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.phone,
-                validator: (value) => validPhoneNo(value),
-                onSaved: (value) => _phoneNo = value,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Bio",
-                  border: OutlineInputBorder(),
+                  hintText: "Tell us about yourself (max 500 characters)",
+                  alignLabelWithHint: true,
                 ),
                 maxLines: 3,
                 validator: (value) => validNonEmptyString(value, max: 500),
                 onSaved: (value) => _bio = value,
               ),
               const SizedBox(height: 12),
-              // Styled Date Picker
+              // Date of Birth Picker
               TextFormField(
                 controller: _dobController,
                 readOnly: true,
                 decoration: const InputDecoration(
-                  labelText: "Date of Birth",
+                  labelText: "Date of Birth*",
                   border: OutlineInputBorder(),
+                  hintText: "Select your date of birth",
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
                 onTap: () => _selectDate(context),
                 validator: (value) => validDate(value, isPast: true),
               ),
+              const SizedBox(height: 20),
+
+              const Text(
+                'Contact Details',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: "Phone number*",
+                  border: OutlineInputBorder(),
+                  hintText: "Enter your phone number",
+                  prefixIcon: Icon(Icons.phone),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) => validPhoneNo(value),
+                onSaved: (value) => _phoneNo = value,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Add links to your social media profiles (optional)',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _socialController,
                 decoration: InputDecoration(
-                  labelText: "Add Social Media URL",
+                  labelText: "Social Media URL",
                   border: const OutlineInputBorder(),
+                  hintText: "https://example.com/yourprofile",
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
@@ -181,14 +203,25 @@ class _SignupPageState extends State<SignupPage> {
                         });
                       } else {
                         setState(() {
-                          // Optionally show error in a snackbar or below the field
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error)),
+                            SnackBar(
+                              content: Text(error),
+                              behavior: SnackBarBehavior.floating,
+                            ),
                           );
                         });
                       }
                     },
                   ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Help text for social media
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Text(
+                  'Example: https://facebook.com/yourname or https://twitter.com/yourhandle',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ),
               const SizedBox(height: 8),
@@ -203,14 +236,10 @@ class _SignupPageState extends State<SignupPage> {
                         label: Text(
                           _socialMediaHandles[i],
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimary, // Text color
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .primary, // Background color
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         onDeleted: () {
                           setState(() {
                             _socialMediaHandles.removeAt(i);
@@ -231,7 +260,14 @@ class _SignupPageState extends State<SignupPage> {
                   );
                 }),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
+
+              // Form Submission
+              const Text(
+                '* indicates required fields',
+                style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+              ),
+              const SizedBox(height: 16),
               StyledElevatedButton(
                 onPressed: () {
                   bool socialValid = true;
@@ -256,12 +292,40 @@ class _SignupPageState extends State<SignupPage> {
                     });
                   }
                 },
-                label: 'Continue',
+                label: 'Create Account',
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  //****** Helper functions
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _dateOfBirth ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _dateOfBirth = picked;
+        _dobController.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
+  Future<void> _pickProfilePicture() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _profilePicture = File(picked.path);
+      });
+    }
   }
 }

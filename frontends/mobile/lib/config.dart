@@ -1,12 +1,19 @@
+const int pageSize = 10;
 const double maxMoneyAmount = 100000;
 const int maxFileNo = 5;
 const int maxFileSizeMb = 5;
-const List<String> allowedFileExtensions = ["jpg", "jpeg", "png", "gif"];
-
-const String auth0Domain = 'dev-bdrw53dq736ux5jn.us.auth0.com';
-const String auth0ClientId = 'pTnlXmVhzu6OPuOiQXUEhhcOwBNecaDt';
+const List<String> allowedFileExtensions = [
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "pdf",
+  "doc",
+  "docx"
+];
+const String auth0Domain = 'dev-tesfafund.us.auth0.com';
+const String auth0ClientId = 'XLxuKulvsmo4L6vdpd7waBRupIYT5hvb';
 const String auth0Audience = 'tesfafund-api';
 const String auth0RedirectScheme = 'com.example.mobile';
 const String auth0Namespace = 'https://tesfafund-api.example.com';
-const String apiUrl = 'http://10.4.102.122:4000';
-const String placeholderAccessToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImV6MXBFRU9pcThra3dDVlJ3cnUyUCJ9.eyJodHRwczovL3Rlc2ZhZnVuZC1hcGkuZXhhbXBsZS5jb20vcm9sZXMiOlsiUmVjaXBpZW50Il0sImlzcyI6Imh0dHBzOi8vZGV2LWJkcnc1M2RxNzM2dXg1am4udXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDY3ZmY1OGRlMzQ3ODJkYTgxODliNDUxNyIsImF1ZCI6WyJ0ZXNmYWZ1bmQtYXBpIiwiaHR0cHM6Ly9kZXYtYmRydzUzZHE3MzZ1eDVqbi51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNzQ4NjkyMTI2LCJleHAiOjE3NDg3Nzg1MjYsInNjb3BlIjoib3BlbmlkIGVtYWlsIiwiYXpwIjoib2NCSlFQTG5samExaWNQTVE0T3V6QUpWeEgxaU5jTnAiLCJwZXJtaXNzaW9ucyI6W119.G-DX2CSdUqEWNT4l9hJXbFLhM4XcGjIba0RplBIVMcoYqTGf_J8FAqFhtCBWNOgfFJPjAvMcePAEFmVsiw2WsqQ7ntxxxsv9z9NFMMlhmHL0baBpfyeInwaQr6dr-Va83gwmSGGrkYHPRNCaSMiqA1Qhc6UAfJDRMUEfDUC1cmxoi7i77KgkUWsx8rZv2zsMzs-UrODnUO1Z9TZea87RYt8HIqH2sc0c8vS0BJWGAPgKJP_GhTJawq0oQu_V23jbDaTeDMjHkQjaVSIFrBff1LbmoUBv2hM6G4UrSzR2k0abHFD3Em9nQttCKkpNAGutwYJiKXRf7bmhc3nck0r73Q';
+const String apiUrl = 'http://192.168.207.120:4000';

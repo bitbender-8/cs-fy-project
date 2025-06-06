@@ -19,6 +19,7 @@ import {
   SENSITIVE_USER_FIELDS,
   SensitiveUserFields,
   SocialMediaHandle,
+  SocialMediaHandleSchema,
 } from "../models/user.model.js";
 import {
   deleteAuth0User,
@@ -36,17 +37,30 @@ import {
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
-import { validUrl } from "../utils/zod-helpers.js";
+import { validUrl, validUuid } from "../utils/zod-helpers.js";
+import { config } from "../config.js";
+import { deleteFiles } from "../services/fie.service.js";
+import path from "path";
 
 export const recipientRouter: Router = Router();
 
 // A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
-const recipientUpdateSchema = RecipientSchema.omit(
-  LOCKED_USER_FIELDS.reduce(
+const recipientUpdateSchema = RecipientSchema.omit({
+  ...LOCKED_USER_FIELDS.reduce(
     (acc, field) => ({ ...acc, [field]: true }),
-    {} as { [key in LockedUserFields]: true },
+    {} as { [key in LockedUserFields]: true }
   ),
-);
+  socialMediaHandles: true,
+}).extend({
+  socialMediaHandles: z
+    .array(
+      SocialMediaHandleSchema.extend({
+        id: validUuid().optional(),
+      })
+    )
+    .optional(),
+});
+
 const recipientCreateSchema = RecipientSchema.omit({
   id: true,
   email: true,
@@ -57,10 +71,47 @@ const recipientCreateSchema = RecipientSchema.omit({
   socialMediaHandles: z.array(validUrl()).optional(),
 });
 
+const profilePictureDir = config.PUBLIC_UPLOAD_DIR;
+recipientRouter.post(
+  "/",
+  requireAuth,
+  validateFileUpload("profilePicture", "Images", profilePictureDir, 1),
+  validateRequestBody(recipientCreateSchema),
+  async (req: Request, res: Response): Promise<void> => {
+    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
+    const auth0User = await getAuth0User(auth0UserIdFromJwt as string);
+
+    await assignRoleToAuth0User(auth0UserIdFromJwt, "Recipient");
+
+    // Validated recipient data from middleware
+    const recipientData = req.body as z.infer<typeof recipientCreateSchema>;
+    const recipient: Omit<Recipient, "id"> = {
+      ...recipientData,
+      email: auth0User.email,
+      auth0UserId: auth0User.userId,
+      socialMediaHandles: recipientData.socialMediaHandles?.map((value) => {
+        return { socialMediaHandle: value } as SocialMediaHandle;
+      }),
+      profilePictureUrl: req.file ? `${req.file.filename}` : undefined,
+    };
+
+    // Store recipient in DB
+    const insertedRecipient = await insertRecipient(recipient);
+    res
+      .set(
+        "Location",
+        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`
+      )
+      .status(201)
+      .json(insertedRecipient);
+    return;
+  }
+);
+
 recipientRouter.put(
   "/:id",
   requireAuth,
-  validateFileUpload("profilePicture", "Images"),
+  validateFileUpload("profilePicture", "Images", profilePictureDir, 1),
   validateRequestBody(recipientUpdateSchema),
   async (req: Request, res: Response): Promise<void> => {
     if (getUserRole(req.auth) !== "Recipient") {
@@ -74,8 +125,9 @@ recipientRouter.put(
     }
 
     const recipientId = validateUuidParam(req.params.id);
-    const checkRecipient = (await getRecipients({ id: recipientId })).items[0];
-    if (!checkRecipient || Object.keys(checkRecipient).length === 0) {
+    const existingRecipient = (await getRecipients({ id: recipientId }))
+      .items[0];
+    if (!existingRecipient || Object.keys(existingRecipient).length === 0) {
       const problemDetails: ProblemDetails = {
         title: "Not Found",
         status: 404,
@@ -86,11 +138,8 @@ recipientRouter.put(
     }
 
     const recipientIdFromJwt = await getUuidFromAuth0Id(
-      req.auth?.payload.sub ?? "",
+      req.auth?.payload.sub ?? ""
     );
-    // Validated recipient update data from middleware
-    const recipient: Omit<Recipient, LockedUserFields> = req.body;
-
     // Check that the authenticated recipient owns the data they are trying to modify
     if (recipientId !== recipientIdFromJwt) {
       const problemDetails: ProblemDetails = {
@@ -102,11 +151,28 @@ recipientRouter.put(
       return;
     }
 
-    await updateRecipient(recipientId, recipient);
-    res.status(204).send();
+    const recipientUpdateData: Omit<Recipient, LockedUserFields> = req.body;
 
+    let oldProfilePictureUrl: string | undefined;
+
+    if (req.file) {
+      recipientUpdateData.profilePictureUrl = req.file.filename;
+      oldProfilePictureUrl = existingRecipient.profilePictureUrl;
+    } else if (recipientUpdateData.profilePictureUrl === null) {
+      oldProfilePictureUrl = existingRecipient.profilePictureUrl;
+    }
+
+    await updateRecipient(recipientId, recipientUpdateData);
+
+    if (oldProfilePictureUrl) {
+      await deleteFiles([
+        path.join(config.PUBLIC_UPLOAD_DIR, oldProfilePictureUrl),
+      ]);
+    }
+
+    res.status(204).send();
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -133,7 +199,7 @@ recipientRouter.get(
     const queryParams = parsedQueryParams.data;
     const publicQueryParams = excludeProperties(
       queryParams,
-      SENSITIVE_USER_FILTERS,
+      SENSITIVE_USER_FILTERS
     );
     const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
 
@@ -154,14 +220,14 @@ recipientRouter.get(
       recipients = {
         ...result,
         items: result.items.map((recipient) =>
-          excludeProperties(recipient, SENSITIVE_USER_FIELDS),
+          excludeProperties(recipient, SENSITIVE_USER_FIELDS)
         ),
       };
     }
 
     res.status(200).json(recipients);
     return;
-  },
+  }
 );
 
 recipientRouter.get(
@@ -178,7 +244,7 @@ recipientRouter.get(
         break;
       case "Recipient": {
         const userIdFromJwt = await getUuidFromAuth0Id(
-          req.auth?.payload.sub ?? "",
+          req.auth?.payload.sub ?? ""
         );
 
         if (userIdFromJwt === recipientId) {
@@ -196,7 +262,7 @@ recipientRouter.get(
                 id: recipientId,
               })
             ).items[0],
-            SENSITIVE_USER_FIELDS,
+            SENSITIVE_USER_FIELDS
           );
         }
         break;
@@ -209,7 +275,7 @@ recipientRouter.get(
               id: recipientId,
             })
           ).items[0],
-          SENSITIVE_USER_FIELDS,
+          SENSITIVE_USER_FIELDS
         );
     }
 
@@ -225,45 +291,7 @@ recipientRouter.get(
     }
 
     return;
-  },
-);
-
-recipientRouter.post(
-  "/",
-  requireAuth,
-  validateFileUpload("profilePicture", "Images", 1),
-  validateRequestBody(recipientCreateSchema),
-  async (req: Request, res: Response): Promise<void> => {
-    const auth0UserIdFromJwt = req.auth?.payload.sub ?? "";
-    const auth0User = await getAuth0User(auth0UserIdFromJwt as string);
-
-    await assignRoleToAuth0User(auth0UserIdFromJwt, "Recipient");
-
-    // Validated recipient data from middleware
-    const recipientData = req.body as z.infer<typeof recipientCreateSchema>;
-    const recipient: Omit<Recipient, "id"> = {
-      ...recipientData,
-      email: auth0User.email,
-      auth0UserId: auth0User.userId,
-      socialMediaHandles: recipientData.socialMediaHandles?.map((value) => {
-        return { socialMediaHandle: value } as SocialMediaHandle;
-      }),
-      profilePictureUrl: req.file
-        ? `${process.env.UPLOAD_DIR}/${req?.file?.filename}`
-        : undefined,
-    };
-
-    // Store recipient in DB
-    const insertedRecipient = await insertRecipient(recipient);
-    res
-      .set(
-        "Location",
-        `${req.protocol}://${req.get("host")}/recipients/${insertedRecipient.id}`,
-      )
-      .status(201)
-      .json(insertedRecipient);
-    return;
-  },
+  }
 );
 
 recipientRouter.delete(
@@ -320,7 +348,7 @@ recipientRouter.delete(
     }
 
     res.status(204).send();
-  },
+  }
 );
 
 // TODO (bitbender-8): Add route to openapi.yml
@@ -344,5 +372,5 @@ recipientRouter.delete(
 
     await deleteAuth0User(auth0UserId);
     res.status(204).send();
-  },
+  }
 );

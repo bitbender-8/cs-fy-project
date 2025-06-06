@@ -1,26 +1,36 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mobile/models/payment_info.dart';
 import 'package:mobile/models/recipient.dart';
 
+part 'campaign.g.dart';
+
+@JsonSerializable(explicitToJson: true)
 class Campaign {
   String? id;
   String ownerRecipientId;
   String title;
   String description;
   String fundraisingGoal;
+
+  @CampaignStatusConverter()
   CampaignStatus? status;
+
   String category;
   DateTime? launchDate;
-  DateTime endDate;
+  DateTime? endDate;
   DateTime? submissionDate;
   DateTime? verificationDate;
   DateTime? denialDate;
-  List<CampaignDocument>? documents;
+  List<CampaignDocument> documents;
   PaymentInfo? paymentInfo;
+  String? totalDonated;
 
-  //TODO: Not Json serialized
-  List<CampaignDonation>? campaignDonations;
+  @JsonKey(includeToJson: false, includeFromJson: false)
   List<CampaignPost>? campaignPosts;
-  Recipient? ownerRecipient;
+  @JsonKey(includeToJson: false, includeFromJson: false)
+  Recipient? campaignOwner;
+  @JsonKey(includeFromJson: true, includeToJson: false)
+  bool? isPublic;
 
   Campaign({
     this.id,
@@ -35,34 +45,70 @@ class Campaign {
     this.submissionDate,
     this.verificationDate,
     this.denialDate,
-    this.documents,
-    this.paymentInfo,
-    this.campaignDonations,
+    this.documents = const [],
+    required this.paymentInfo,
     this.campaignPosts,
-    this.ownerRecipient,
+    this.campaignOwner,
+    this.totalDonated,
+    this.isPublic,
   });
 
-  Duration get timeRemaining {
+  factory Campaign.fromJson(Map<String, dynamic> json) =>
+      _$CampaignFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CampaignToJson(this);
+
+  Duration? get timeRemaining {
     final now = DateTime.now();
-    final difference = endDate.difference(now);
-    return difference.isNegative ? Duration.zero : difference;
+    final difference = endDate?.difference(now);
+    return difference != null && difference.isNegative
+        ? Duration.zero
+        : difference;
   }
 
-  double get totalDonated {
-    final donations = campaignDonations ?? [];
-    final goalAmount = double.tryParse(fundraisingGoal) ?? 0.0;
-
-    if (goalAmount == 0) {
-      return 0.0;
-    }
-
-    return donations.fold<double>(0.0, (sum, donation) {
-      final amount = double.tryParse(donation.grossAmount) ?? 0.0;
-      return sum + amount;
-    });
+  Campaign copyWith(
+      {String? id,
+      String? ownerRecipientId,
+      String? title,
+      String? description,
+      String? fundraisingGoal,
+      CampaignStatus? status,
+      String? category,
+      DateTime? launchDate,
+      DateTime? endDate,
+      DateTime? submissionDate,
+      DateTime? verificationDate,
+      DateTime? denialDate,
+      List<CampaignDocument>? documents,
+      PaymentInfo? paymentInfo,
+      String? totalDonated,
+      List<CampaignPost>? campaignPosts,
+      Recipient? campaignOwner,
+      bool? isPublic}) {
+    return Campaign(
+      id: id ?? this.id,
+      ownerRecipientId: ownerRecipientId ?? this.ownerRecipientId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      fundraisingGoal: fundraisingGoal ?? this.fundraisingGoal,
+      status: status ?? this.status,
+      category: category ?? this.category,
+      launchDate: launchDate ?? this.launchDate,
+      endDate: endDate ?? this.endDate,
+      submissionDate: submissionDate ?? this.submissionDate,
+      verificationDate: verificationDate ?? this.verificationDate,
+      denialDate: denialDate ?? this.denialDate,
+      documents: documents ?? this.documents,
+      paymentInfo: paymentInfo ?? this.paymentInfo,
+      campaignPosts: campaignPosts ?? this.campaignPosts,
+      campaignOwner: campaignOwner ?? this.campaignOwner,
+      totalDonated: totalDonated ?? this.totalDonated,
+      isPublic: isPublic ?? this.isPublic,
+    );
   }
 }
 
+@JsonEnum(valueField: 'value')
 enum CampaignStatus {
   pendingReview("Pending Review"),
   verified("Verified"),
@@ -73,11 +119,24 @@ enum CampaignStatus {
 
   final String value;
   const CampaignStatus(this.value);
-
-  @override
-  String toString() => value;
 }
 
+class CampaignStatusConverter implements JsonConverter<CampaignStatus, String> {
+  const CampaignStatusConverter();
+
+  @override
+  CampaignStatus fromJson(String json) {
+    return CampaignStatus.values.firstWhere(
+      (e) => e.value == json,
+      orElse: () => throw ArgumentError('Unknown CampaignStatus: $json'),
+    );
+  }
+
+  @override
+  String toJson(CampaignStatus object) => object.value;
+}
+
+@JsonSerializable(explicitToJson: true)
 class CampaignDocument {
   String campaignId;
   String? documentUrl;
@@ -88,8 +147,14 @@ class CampaignDocument {
     this.documentUrl,
     this.redactedDocumentUrl,
   });
+
+  factory CampaignDocument.fromJson(Map<String, dynamic> json) =>
+      _$CampaignDocumentFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CampaignDocumentToJson(this);
 }
 
+@JsonSerializable(explicitToJson: true)
 class CampaignDonation {
   String id;
   String grossAmount;
@@ -104,55 +169,42 @@ class CampaignDonation {
     required this.createdAt,
     required this.campaignId,
   });
+
+  factory CampaignDonation.fromJson(Map<String, dynamic> json) =>
+      _$CampaignDonationFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CampaignDonationToJson(this);
 }
 
+@JsonSerializable(explicitToJson: true)
 class CampaignPost {
-  String id;
+  String? id;
   String title;
   String content;
   DateTime? publicPostDate;
   String campaignId;
 
   CampaignPost({
-    required this.id,
+    this.id,
     required this.title,
     required this.content,
     this.publicPostDate,
     required this.campaignId,
   });
 
-  // Add the fromJson method for deserialization
-  factory CampaignPost.fromJson(Map<String, dynamic> json) {
-    return CampaignPost(
-      id: json['id'],
-      title: json['title'],
-      content: json['content'],
-      publicPostDate: json['publicPostDate'] != null
-          ? DateTime.parse(json['publicPostDate'])
-          : null,
-      campaignId: json['campaignId'],
-    );
-  }
+  factory CampaignPost.fromJson(Map<String, dynamic> json) =>
+      _$CampaignPostFromJson(json);
+  Map<String, dynamic> toJson() => _$CampaignPostToJson(this);
 }
+
 enum CampaignCategories {
   charity('Charity'),
   education('Education'),
   health('Health'),
-  environment('Environment'),
   animalWelfare('Animal Welfare'),
   community('Community'),
-  artsAndCulture('Arts and Culture'),
   youth('Youth');
 
   final String value;
   const CampaignCategories(this.value);
-}
-
-enum PaymentMethods {
-  bankTransfer('Bank Transfer'),
-  mobileMoney('Mobile Money'),
-  creditCard('Credit Card');
-
-  final String value;
-  const PaymentMethods(this.value);
 }

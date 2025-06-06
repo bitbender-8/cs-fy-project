@@ -1,3 +1,4 @@
+import 'package:mobile/models/app_notification.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/campaign_request.dart';
 import 'package:mobile/models/payment_info.dart';
@@ -182,22 +183,7 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 20)),
     submissionDate: DateTime.now().subtract(const Duration(days: 15)),
     verificationDate: DateTime.now().subtract(const Duration(days: 14)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd1',
-        grossAmount: '250.00',
-        serviceFee: '5.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        campaignId: 'c1',
-      ),
-      CampaignDonation(
-        id: 'd2',
-        grossAmount: '500.00',
-        serviceFee: '10.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        campaignId: 'c1',
-      ),
-    ],
+
     campaignPosts: [
       CampaignPost(
         id: 'p1',
@@ -207,7 +193,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c1',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r1'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -225,9 +210,8 @@ final List<Campaign> dummyCampaigns = [
     launchDate: null,
     endDate: DateTime.now().add(const Duration(days: 60)),
     submissionDate: DateTime.now().subtract(const Duration(days: 1)),
-    campaignDonations: [],
+
     campaignPosts: [],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r2'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441232347890,
       chapaBankName: 'Example Bank',
@@ -247,22 +231,6 @@ final List<Campaign> dummyCampaigns = [
     submissionDate: DateTime.now().subtract(const Duration(days: 100)),
     verificationDate: DateTime.now().subtract(const Duration(days: 95)),
     denialDate: null,
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd3',
-        grossAmount: '10000.00',
-        serviceFee: '200.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 50)),
-        campaignId: 'c3',
-      ),
-      CampaignDonation(
-        id: 'd4',
-        grossAmount: '12000.00',
-        serviceFee: '240.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        campaignId: 'c3',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p2',
@@ -272,7 +240,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c3',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r3'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 243234567890,
       chapaBankName: 'Health Bank',
@@ -291,15 +258,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 45)),
     submissionDate: DateTime.now().subtract(const Duration(days: 7)),
     verificationDate: DateTime.now().subtract(const Duration(days: 6)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd5',
-        grossAmount: '300.00',
-        serviceFee: '6.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        campaignId: 'c4',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p3',
@@ -309,7 +267,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c4',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r4'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234523424,
       chapaBankName: 'Example 2 Bank',
@@ -328,15 +285,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 30)),
     submissionDate: DateTime.now().subtract(const Duration(days: 5)),
     verificationDate: DateTime.now().subtract(const Duration(days: 4)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd6',
-        grossAmount: '100.00',
-        serviceFee: '2.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        campaignId: 'c5',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p4',
@@ -346,7 +294,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c5',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r5'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -364,9 +311,7 @@ final List<Campaign> dummyCampaigns = [
     launchDate: null,
     endDate: DateTime.now().add(const Duration(days: 90)),
     submissionDate: DateTime.now().subtract(const Duration(days: 2)),
-    campaignDonations: [],
     campaignPosts: [],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r6'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -385,22 +330,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 35)),
     submissionDate: DateTime.now().subtract(const Duration(days: 9)),
     verificationDate: DateTime.now().subtract(const Duration(days: 8)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd7',
-        grossAmount: '50.00',
-        serviceFee: '1.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        campaignId: 'c7',
-      ),
-      CampaignDonation(
-        id: 'd8',
-        grossAmount: '75.00',
-        serviceFee: '1.50',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        campaignId: 'c7',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p5',
@@ -410,7 +339,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c7',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r7'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -430,22 +358,6 @@ final List<Campaign> dummyCampaigns = [
     submissionDate: DateTime.now().subtract(const Duration(days: 70)),
     verificationDate: DateTime.now().subtract(const Duration(days: 65)),
     denialDate: null,
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd9',
-        grossAmount: '5000.00',
-        serviceFee: '100.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 40)),
-        campaignId: 'c8',
-      ),
-      CampaignDonation(
-        id: 'd10',
-        grossAmount: '7000.00',
-        serviceFee: '140.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-        campaignId: 'c8',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p6',
@@ -455,7 +367,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c8',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r8'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -474,22 +385,6 @@ final List<Campaign> dummyCampaigns = [
     endDate: DateTime.now().add(const Duration(days: 50)),
     submissionDate: DateTime.now().subtract(const Duration(days: 17)),
     verificationDate: DateTime.now().subtract(const Duration(days: 16)),
-    campaignDonations: [
-      CampaignDonation(
-        id: 'd11',
-        grossAmount: '200.00',
-        serviceFee: '4.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 10)),
-        campaignId: 'c9',
-      ),
-      CampaignDonation(
-        id: 'd12',
-        grossAmount: '300.00',
-        serviceFee: '6.00',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        campaignId: 'c9',
-      ),
-    ],
     campaignPosts: [
       CampaignPost(
         id: 'p7',
@@ -499,7 +394,6 @@ final List<Campaign> dummyCampaigns = [
         campaignId: 'c9',
       ),
     ],
-    ownerRecipient: dummyRecipients.firstWhere((r) => r.id == 'r9'),
     paymentInfo: PaymentInfo(
       chapaBankCode: 23441234567890,
       chapaBankName: 'Example Bank',
@@ -510,67 +404,154 @@ final List<Campaign> dummyCampaigns = [
 
 final List<CampaignRequest> dummyCampaignRequests = [
   GoalAdjustmentRequest(
-    id: 'req-001',
-    campaignId: 'camp-abc-123',
-    ownerRecipientId: 'user-xyz-789',
-    title: 'Adjust Q3 Fundraising Goal',
-    justification: 'Initial projections were too conservative, seeing strong donor interest.',
-    requestDate: DateTime(2025, 7, 15, 10, 0, 0),
-    resolutionDate: DateTime(2025, 7, 16, 14, 30, 0),
-    resolutionType: ResolutionType.accepted,
-    newGoal: BigInt.from(75000),
-  ),
-  StatusChangeRequest(
-    id: 'req-002',
-    campaignId: 'camp-def-456',
-    ownerRecipientId: 'user-uvw-123',
-    title: 'Pause Campaign: "Winter Coat Drive"',
-    justification: 'Unexpected logistical issues with storage and distribution partners.',
-    requestDate: DateTime(2025, 11, 5, 9, 15, 0),
-    resolutionDate: DateTime(2025, 11, 5, 17, 0, 0),
-    resolutionType: ResolutionType.accepted,
-    newStatus: CampaignStatus.paused, // Assuming CampaignStatus.paused exists
-  ),
-  PostUpdateRequest(
-    id: 'req-003',
-    campaignId: 'camp-ghi-789',
-    ownerRecipientId: 'user-rst-456',
-    title: 'Request for New Campaign Update Post',
-    justification: 'Need to share success story from recent donation impact.',
-    requestDate: DateTime(2025, 8, 1, 11, 0, 0),
-    resolutionType: null, // Pending
-    newPostId: 'post-jkl-101',
+    id: 'req6',
+    campaignId: 'c1', // Linked to 'Clean Water for All'
+    ownerRecipientId: 'r1',
+    title: 'Request to Increase Goal (Phase 2)',
+    justification:
+        'Successful initial phase complete. Aiming for a larger impact with an increased target.',
+    requestDate: DateTime.now().subtract(const Duration(days: 5)),
+    newGoal: '20000', // Requesting to increase goal to 20000
   ),
   EndDateExtensionRequest(
-    id: 'req-004',
-    campaignId: 'camp-jkl-101',
-    ownerRecipientId: 'user-opq-789',
-    title: 'Extend "School Supplies Drive" Deadline',
-    justification: 'Close to goal, a local school wants to contribute next week.',
-    requestDate: DateTime(2025, 8, 25, 16, 30, 0),
-    resolutionDate: DateTime(2025, 8, 26, 10, 0, 0),
-    resolutionType: ResolutionType.rejected,
-    newEndDate: DateTime(2025, 9, 15),
-  ),
-  GoalAdjustmentRequest(
-    id: 'req-005',
-    campaignId: 'camp-mno-202',
-    ownerRecipientId: 'user-lmn-654',
-    title: 'Increase Target for "Tech for Teens"',
-    justification: 'Received a matching grant offer if we raise an additional 5k.',
-    requestDate: DateTime(2025, 9, 10, 13, 0, 0),
-    resolutionType: null, // Pending
-    newGoal: BigInt.from(25000),
+    id: 'req7',
+    campaignId: 'c5', // Linked to 'Rescue Animals Now'
+    ownerRecipientId: 'r5',
+    title: 'Extend Campaign Deadline',
+    justification:
+        'To accommodate recent partnership opportunities and expand reach.',
+    requestDate: DateTime.now().subtract(const Duration(days: 3)),
+    newEndDate: DateTime.now()
+        .add(const Duration(days: 45)), // Requesting to extend by 15 days
   ),
   StatusChangeRequest(
-    id: 'req-006',
-    campaignId: 'camp-pqr-303',
-    ownerRecipientId: 'user-ijk-321',
-    title: 'Mark "Community Garden" as Completed',
-    justification: 'All funds disbursed and project objectives met.',
-    requestDate: DateTime(2025, 10, 20, 14,45, 0),
-    resolutionDate: DateTime(2025, 10, 21, 9,0,0),
-    resolutionType: ResolutionType.accepted,
-    newStatus: CampaignStatus.completed, // Assuming CampaignStatus.completed exists
+    id: 'req8',
+    campaignId: 'c6', // Linked to 'Build a Community Center' (Pending)
+    ownerRecipientId: 'r6',
+    title: 'Request for Campaign Approval',
+    justification:
+        'Completed all required documentation and permits for review.',
+    requestDate: DateTime.now().subtract(const Duration(days: 2)),
+    newStatus: CampaignStatus.live, // Requesting to change status to live
+  ),
+  PostUpdateRequest(
+    id: 'req9',
+    campaignId: 'c9', // Linked to 'Plant Trees for the Future'
+    ownerRecipientId: 'r9',
+    title: 'Submit New Campaign Update',
+    justification:
+        'Sharing progress on tree planting locations and volunteer turnout.',
+    requestDate: DateTime.now().subtract(const Duration(days: 1)),
+    newPost: CampaignPost(
+      // Dummy CampaignPost for the request
+      id: 'temp_p9', // Temporary ID for the request
+      title: 'Update: Planting Progress!',
+      content:
+          'We planted over 500 trees this weekend thanks to our volunteers!',
+      publicPostDate: DateTime.now()
+          .subtract(const Duration(hours: 8)), // Date for the *new* post
+      campaignId: 'c9',
+    ),
+  ),
+  GoalAdjustmentRequest(
+    id: 'req1',
+    campaignId: 'c1', // Linked to 'Clean Water for All'
+    ownerRecipientId: 'r1',
+    title: 'Request to Increase Goal',
+    justification:
+        'We have received overwhelming support and believe we can reach a higher target.',
+    requestDate: DateTime.now().subtract(const Duration(days: 3)),
+    newGoal: '15000', // Requesting to increase goal to 15000
+  ),
+  EndDateExtensionRequest(
+    id: 'req2',
+    campaignId: 'c4', // Linked to 'Save the Rainforest'
+    ownerRecipientId: 'r4',
+    title: 'Request to Extend End Date',
+    justification:
+        'We need more time to reach our goal due to unforeseen challenges.',
+    requestDate: DateTime.now().subtract(const Duration(days: 5)),
+    resolutionDate: DateTime.now()
+        .subtract(const Duration(days: 2)), // Example of a resolved request
+    newEndDate: DateTime.now()
+        .add(const Duration(days: 60)), // Requesting to extend by 15 days
+  ),
+  StatusChangeRequest(
+    id: 'req3',
+    campaignId: 'c2', // Linked to 'Education for Every Child' (Pending)
+    ownerRecipientId: 'r2',
+    title: 'Request to Change Status to Live',
+    justification:
+        'All necessary documentation is now complete. Ready to launch.',
+    requestDate: DateTime.now().subtract(const Duration(days: 1)),
+    newStatus: CampaignStatus.live,
+  ),
+  PostUpdateRequest(
+    id: 'req4',
+    campaignId: 'c5', // Linked to 'Rescue Animals Now'
+    ownerRecipientId: 'r5',
+    title: 'Request to Publish New Update',
+    justification: 'Sharing heartwarming success stories of recent rescues.',
+    requestDate: DateTime.now().subtract(const Duration(days: 1)),
+    newPost: CampaignPost(
+      // Dummy CampaignPost for the request
+      id: 'temp_p8', // Temporary ID for the request
+      title: 'Update: Adoption Success!',
+      content: 'Two of our long-term residents have found their forever homes.',
+      publicPostDate: DateTime.now()
+          .subtract(const Duration(hours: 12)), // Date for the *new* post
+      campaignId: 'c5',
+    ),
+  ),
+  GoalAdjustmentRequest(
+    id: 'req5',
+    campaignId: 'c9', // Linked to 'Plant Trees for the Future'
+    ownerRecipientId: 'r9',
+    title: 'Second Goal Adjustment Request',
+    justification:
+        'Due to strong momentum, we are pushing for an even higher target.',
+    requestDate: DateTime.now().subtract(const Duration(days: 1)),
+    resolutionDate: DateTime.now()
+        .subtract(const Duration(hours: 6)), // Another resolved request
+    newGoal: '60000', // Requesting to increase goal to 60000
+  ),
+];
+
+final List<AppNotification> dummyNotifications = [
+  AppNotification(
+    id: '1',
+    subject: 'Campaign Update: New Goal!',
+    body: 'Our "Clean Water for All" campaign has reached 50% of its goal!',
+    createdAt: DateTime(2022, 12, 12, 9, 12),
+    isRead: false,
+    userId: 'user123',
+    userType: UserType.recipient,
+  ),
+  AppNotification(
+    id: '2',
+    subject: 'New Donation Received!',
+    body: 'You received a donation of 100 ETB for "Helping Hands".',
+    createdAt: DateTime(2022, 12, 12, 10, 30),
+    isRead: false,
+    userId: 'user123',
+    userType: UserType.recipient,
+  ),
+  AppNotification(
+    id: '3',
+    subject: 'Action Required: Verify Account',
+    body: 'Please verify your account details to continue using our services.',
+    createdAt: DateTime(2022, 12, 11, 15, 0),
+    isRead: true, // Example of an already read notification
+    userId: 'user456',
+    userType: UserType.supervisor,
+  ),
+  AppNotification(
+    id: '4',
+    subject: 'New Feature Alert!',
+    body: 'Discover our new analytics dashboard for campaign owners.',
+    createdAt: DateTime(2022, 12, 10, 18, 45),
+    isRead: false,
+    userId: 'user123',
+    userType: UserType.recipient,
   ),
 ];

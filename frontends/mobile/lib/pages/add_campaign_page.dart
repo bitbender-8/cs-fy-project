@@ -1,13 +1,17 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/models/server/errors.dart';
+import 'package:provider/provider.dart';
+
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/config.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/payment_info.dart';
+import 'package:mobile/services/campaign_service.dart';
+import 'package:mobile/services/providers.dart';
+import 'package:mobile/utils/utils.dart';
 import 'package:mobile/utils/validators.dart';
 
 class AddCampaignPage extends StatefulWidget {
@@ -17,9 +21,9 @@ class AddCampaignPage extends StatefulWidget {
   State<AddCampaignPage> createState() => _AddCampaignPageState();
 }
 
-class _AddCampaignPageState extends State<AddCampaignPage> {
+class _AddCampaignPageState extends State<AddCampaignPage>
+    with FormErrorHelpers<AddCampaignPage> {
   final _formKey = GlobalKey<FormState>();
-  final _endDateController = TextEditingController();
   bool _isLoading = false;
 
   String _title = '',
@@ -34,6 +38,31 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
     chapaBankName: ChapaBanks.commercialBankOfEthiopia.name,
     bankAccountNo: '',
   );
+
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _fundraisingGoalController =
+      TextEditingController();
+  final TextEditingController _bankAccountNoController =
+      TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController.text = _title;
+    _descriptionController.text = _description;
+    _fundraisingGoalController.text = _fundraisingGoal;
+    _bankAccountNoController.text = _paymentInfo.bankAccountNo;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _fundraisingGoalController.dispose();
+    _bankAccountNoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +79,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: ListView(
               children: [
                 const SizedBox(height: 8.0),
@@ -57,9 +87,46 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
                 const Divider(height: 24, thickness: 2.0),
                 ..._buildCampaignInformationSection(context, colorScheme),
                 const SizedBox(height: 20.0),
+                Text('Supporting Documents', style: titleStyle),
+                const Divider(height: 24, thickness: 2.0),
+                ..._buildSupportingDocumentsSection(context, colorScheme),
+                const SizedBox(height: 20.0),
                 Text('Payment Information', style: titleStyle),
                 const Divider(height: 24, thickness: 2.0),
                 ..._buildPaymentInfoSection(context, colorScheme),
+                const SizedBox(height: 40.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () async => await _submitCampaign(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.onPrimary,
+                          backgroundColor: colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text("Submit"),
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.onError,
+                          backgroundColor: colorScheme.error,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text("Cancel"),
+                      ),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
@@ -77,48 +144,67 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
     );
   }
 
+  //***** Page sections
   List<Widget> _buildCampaignInformationSection(
     BuildContext context,
     ColorScheme colorScheme,
   ) {
     return <Widget>[
       TextFormField(
+        controller: _titleController,
         decoration: InputDecoration(
           labelText: 'Campaign Title',
           hintText: 'Enter the campaign title',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.title, color: colorScheme.primary),
+          errorText: getServerError('title'),
         ),
         maxLength: 100,
+        onChanged: (value) {
+          setState(() => _title = value);
+          clearServerError('title');
+        },
         validator: (value) => validNonEmptyString(value, max: 100),
         onSaved: (value) => _title = value ?? '',
       ),
       const SizedBox(height: 10),
       TextFormField(
+        controller: _descriptionController,
         decoration: InputDecoration(
           labelText: 'Campaign Description',
           hintText: 'Enter the campaign description',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.description, color: colorScheme.primary),
+          errorText: getServerError('description'),
         ),
         maxLines: 5,
         maxLength: 500,
+        onChanged: (value) {
+          setState(() => _description = value);
+          clearServerError('description');
+        },
         validator: (value) => validNonEmptyString(value, max: 500),
         onSaved: (value) => _description = value ?? '',
       ),
       const SizedBox(height: 10),
       TextFormField(
+        controller: _fundraisingGoalController,
         decoration: InputDecoration(
           labelText: 'Fundraising Goal',
           hintText: 'Enter the fundraising goal',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.attach_money, color: colorScheme.primary),
           suffixText: 'ETB',
+          errorText: getServerError('fundraisingGoal'),
         ),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
         ],
+        onChanged: (value) {
+          setState(() => _fundraisingGoal = value);
+          clearServerError('fundraisingGoal');
+        },
         validator: (value) {
           final valResult = validMoneyAmount(value, maxMoneyAmount);
           if (valResult != null) return valResult;
@@ -132,18 +218,21 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
       ),
       const SizedBox(height: 16),
       TextFormField(
-        controller: _endDateController,
         decoration: InputDecoration(
           labelText: 'Campaign End Date',
           hintText: 'Enter the campaign end date',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.calendar_today, color: colorScheme.primary),
+          errorText: getServerError('endDate'),
         ),
         readOnly: true,
-        onTap: () => _selectEndDate(context),
-        validator: (value) => validDate(value, isPast: false),
-        onSaved: (newValue) =>
-            _endDate = DateTime.tryParse(newValue ?? '') ?? _endDate,
+        onTap: () async {
+          await _selectEndDate(context);
+          clearServerError('endDate');
+        },
+        initialValue: DateFormat('MMMM dd, yyyy').format(_endDate),
+        validator: (value) =>
+            validDate(_endDate.toIso8601String(), isPast: false),
       ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
@@ -152,6 +241,7 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
           hintText: 'Select a category',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.category, color: colorScheme.primary),
+          errorText: getServerError('category'),
         ),
         value: _category,
         items: CampaignCategories.values.map((category) {
@@ -160,7 +250,10 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
             child: Text(category.value),
           );
         }).toList(),
-        onChanged: (value) => setState(() => _category = value!),
+        onChanged: (value) {
+          setState(() => _category = value!);
+          clearServerError('category');
+        },
         validator: (value) {
           return validEnum(
             value,
@@ -170,41 +263,19 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
         },
         onSaved: (value) => _category = value!,
       ),
-      const SizedBox(height: 16),
-      Text(
-        'You may attach up to $maxFileNo files under the size of $maxFileSizeMb MB each. '
-        'Supported file types: PDF, JPG, PNG.',
-        style: Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.copyWith(color: colorScheme.onSurfaceVariant),
-      ),
-      OutlinedButton.icon(
-        label: Text(
-          'Attach Files',
-          style: TextStyle(color: colorScheme.primary),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: colorScheme.primary), // Green border
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-        ),
-        onPressed: _pickDocuments,
-      ),
     ];
   }
 
   List<Widget> _buildPaymentInfoSection(
       BuildContext context, ColorScheme colorScheme) {
     return <Widget>[
-      DropdownButtonFormField(
+      DropdownButtonFormField<int>(
         decoration: InputDecoration(
           labelText: 'Bank Name',
           hintText: 'Select your bank',
           border: const OutlineInputBorder(),
           prefixIcon: Icon(Icons.account_balance, color: colorScheme.primary),
+          errorText: getServerError('paymentInfo.chapaBankCode'),
         ),
         value: _paymentInfo.chapaBankCode,
         items: ChapaBanks.values.map((bank) {
@@ -225,28 +296,168 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
                 chapaBankName: selectedBank.name,
               );
             });
+            clearServerError('paymentInfo.chapaBankCode');
           }
         },
         validator: (value) => value == null ? 'Please select a bank' : null,
       ),
       const SizedBox(height: 16),
       TextFormField(
+        controller: _bankAccountNoController,
         decoration: InputDecoration(
           labelText: 'Bank Account Number',
           hintText: 'Enter bank account number',
           border: const OutlineInputBorder(),
           prefixIcon:
               Icon(Icons.account_balance_wallet, color: colorScheme.primary),
+          errorText: getServerError('paymentInfo.bankAccountNo'),
         ),
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: (value) => validBankAccountNo(value),
-        onSaved: (value) => _paymentInfo.bankAccountNo = value ?? '',
+        onChanged: (value) {
+          _paymentInfo.bankAccountNo = value;
+          clearServerError('paymentInfo.bankAccountNo');
+        },
       ),
     ];
   }
 
-  // Helper methods
+  List<Widget> _buildSupportingDocumentsSection(
+    BuildContext context,
+    ColorScheme colorScheme,
+  ) {
+    String? documentsServerError = getServerError('documents');
+    return <Widget>[
+      Text(
+        'You may attach up to $maxFileNo files under the size of $maxFileSizeMb MB each. '
+        'Supported file types: ${allowedFileExtensions.map(
+              (val) => val.toUpperCase(),
+            ).join(
+              ', ',
+            )}',
+        style: Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: colorScheme.onSurfaceVariant),
+      ),
+      const SizedBox(height: 8.0),
+      OutlinedButton.icon(
+        label: Text(
+          'Attach Files',
+          style: TextStyle(color: colorScheme.primary),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: colorScheme.primary), // Green border
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        ),
+        onPressed: () async {
+          await _pickDocuments();
+          clearServerError('documents');
+        },
+      ),
+      if (documentsServerError != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+          child: Text(
+            documentsServerError,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      const SizedBox(height: 16.0),
+      if (_supportingDocuments.isNotEmpty)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Selected Files:',
+                style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8.0),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: List.generate(_supportingDocuments.length, (index) {
+                final file = _supportingDocuments[index];
+                return Chip(
+                  avatar: Icon(
+                    getFileIconFromFileName(file.name),
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  label: Text(
+                    file.name,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  deleteIcon: const Icon(Icons.cancel, size: 18),
+                  deleteIconColor: Theme.of(context).colorScheme.onPrimary,
+                  onDeleted: _isLoading ? null : () => _removeDocument(index),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+    ];
+  }
+
+  //****** Helper methods
+  void _showSuccessDialog(BuildContext context) {
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 30),
+              SizedBox(width: 10),
+              Text(
+                'Success',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Your campaign application has been submitted successfully!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'OK',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -258,7 +469,6 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
     if (mounted && picked != null && picked != _endDate) {
       setState(() {
         _endDate = picked;
-        _endDateController.text = DateFormat('MMMM dd, yyyy').format(_endDate);
       });
     }
   }
@@ -274,42 +484,117 @@ class _AddCampaignPageState extends State<AddCampaignPage> {
     if (!mounted) return;
 
     if (result != null) {
-      // Validate selected files
-      List<PlatformFile> validFiles = [];
+      List<PlatformFile> newlySelectedValidFiles = [];
       for (PlatformFile file in result.files) {
         if (file.size <= maxFileSizeMb * 1024 * 1024) {
-          validFiles.add(file);
+          newlySelectedValidFiles.add(file);
         } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'File ${file.name} exceeds the $maxFileSizeMb MB limit.'),
-              ),
-            );
-          }
-        }
-      }
-
-      if ((_supportingDocuments.length + validFiles.length) > maxFileNo) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text('You can upload a maximum of $maxFileNo documents.'),
-            ),
+          showErrorSnackBar(
+            context,
+            'File ${file.name} exceeds the ${maxFileSizeMb}MB limit.',
           );
         }
-        validFiles =
-            validFiles.take(maxFileNo - _supportingDocuments.length).toList();
       }
 
-      // Guard setState with mounted check
+      if ((_supportingDocuments.length + newlySelectedValidFiles.length) >
+          maxFileNo) {
+        final numCanAdd = maxFileNo - _supportingDocuments.length;
+        if (numCanAdd <= 0) {
+          showErrorSnackBar(
+            context,
+            'You can upload a maximum of $maxFileNo documents.',
+          );
+          return;
+        }
+        newlySelectedValidFiles =
+            newlySelectedValidFiles.take(numCanAdd).toList();
+        showInfoSnackBar(
+          context,
+          'You can upload a maximum of $maxFileNo documents. Some files were not added.',
+        );
+      }
+
       if (mounted) {
         setState(() {
-          _supportingDocuments.addAll(validFiles);
+          _supportingDocuments.addAll(newlySelectedValidFiles);
         });
       }
     }
+  }
+
+  void _removeDocument(int index) {
+    setState(() {
+      _supportingDocuments.removeAt(index);
+    });
+  }
+
+  Future<void> _submitCampaign(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+      clearAllServerErrors();
+    });
+
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    _formKey.currentState!.save();
+
+    if (_supportingDocuments.isEmpty) {
+      showErrorSnackBar(
+          context, 'Supporting documents are required for campaign creation.');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final accessToken = userProvider.credentials?.accessToken;
+
+    if (accessToken == null) {
+      showErrorSnackBar(context, 'You are not logged in. Please log in again.');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    final campaignData = Campaign(
+      ownerRecipientId: userProvider.user?.id ?? '',
+      title: _title,
+      description: _description,
+      fundraisingGoal: _fundraisingGoal,
+      category: _category,
+      endDate: _endDate,
+      paymentInfo: _paymentInfo,
+    );
+
+    final response = await Provider.of<CampaignService>(
+      context,
+      listen: false,
+    ).createCampaign(
+      campaignData,
+      _supportingDocuments,
+      accessToken,
+    );
+
+    if (!context.mounted) return;
+
+    handleServiceResponse(
+      context,
+      response,
+      onSuccess: () {
+        if (mounted) {
+          _showSuccessDialog(context);
+        }
+      },
+      onValidationErrors: (errors) {
+        setState(() {
+          setServerErrors(errors);
+        });
+        // After setting errors, validate the form again to show them immediately. This causes the TextFormFields to re-evaluate their errorText.
+        _formKey.currentState?.validate();
+      },
+    );
+
+    if (context.mounted) setState(() => _isLoading = false);
   }
 }

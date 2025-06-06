@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+
+import 'package:mobile/pages/notifications_page.dart';
 import 'package:mobile/utils/utils.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String pageTitle;
+  final List<Widget> actions;
+  final bool showNotificationIcon;
 
   const CustomAppBar({
     super.key,
     required this.pageTitle,
+    this.actions = const [],
+    this.showNotificationIcon = true,
   });
 
   @override
@@ -24,19 +30,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: theme.colorScheme.primary,
       iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: IconButton(
-            icon: Icon(
-              Icons.notifications,
-              color: theme.colorScheme.onPrimary,
+        if (showNotificationIcon)
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.notifications),
+              tooltip: 'Notifications',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                );
+              },
             ),
-            tooltip: 'Notifications',
-            onPressed: () {
-              // TODO: Add your notification logic here
-            },
           ),
-        ),
+        ...actions
       ],
     );
   }

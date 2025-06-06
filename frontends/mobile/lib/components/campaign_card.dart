@@ -1,8 +1,10 @@
+// components/campaign_card.dart (Updated)
 import 'package:flutter/material.dart';
 import 'package:mobile/models/campaign.dart';
+import 'package:mobile/models/recipient.dart';
 import 'package:mobile/pages/campaign_info_page.dart';
 
-class CampaignCard extends StatelessWidget {
+class CampaignCard extends StatefulWidget {
   final Campaign campaignData;
   final bool isPublic;
 
@@ -13,18 +15,35 @@ class CampaignCard extends StatelessWidget {
   });
 
   @override
+  State<CampaignCard> createState() => _CampaignCardState();
+}
+
+class _CampaignCardState extends State<CampaignCard> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData currentTheme = Theme.of(context);
-    final campaignProgress = campaignData.totalDonated /
-        (double.tryParse(campaignData.fundraisingGoal) ?? 0);
+    final campaignProgress =
+        (double.tryParse(widget.campaignData.totalDonated ?? '0') ?? 0) /
+            (double.tryParse(widget.campaignData.fundraisingGoal) ?? 0);
+
+    final Recipient? owner = widget.campaignData.campaignOwner;
+    final String ownerFullName = owner?.fullName ?? 'Unknown Recipient';
 
     return InkWell(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => CampaignInfoPage(
-          campaign: campaignData,
-          isPublic: isPublic,
-        ),
-      )),
+      onTap: owner == null
+          ? null
+          : () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => CampaignInfoPage(
+                  campaign: widget.campaignData,
+                  campaignOwner: owner,
+                  isPublic: widget.isPublic,
+                ),
+              )),
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         elevation: 2.0,
@@ -41,7 +60,7 @@ class CampaignCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    campaignData.title,
+                    widget.campaignData.title,
                     style: currentTheme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: currentTheme.colorScheme.onSurface,
@@ -57,7 +76,7 @@ class CampaignCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4.0),
                     ),
                     child: Text(
-                      campaignData.status.toString(),
+                      widget.campaignData.status?.value ?? 'Unknown',
                       style: currentTheme.textTheme.bodySmall?.copyWith(
                         color: currentTheme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.bold,
@@ -67,22 +86,23 @@ class CampaignCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8.0),
+              // Display recipient name directly
               Text(
-                'Recipient: ${campaignData.ownerRecipient?.fullName}',
+                'Recipient: $ownerFullName',
                 style: currentTheme.textTheme.bodyMedium?.copyWith(
                   color: currentTheme.colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 4.0),
               Text(
-                'Days remaining: ${campaignData.timeRemaining.inDays}',
+                'Days remaining: ${widget.campaignData.timeRemaining?.inDays}',
                 style: currentTheme.textTheme.bodyMedium?.copyWith(
                   color: currentTheme.colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 8.0),
               Text(
-                'Goal: ${campaignData.fundraisingGoal} ETB',
+                'Goal: ${widget.campaignData.fundraisingGoal} ETB',
                 style: currentTheme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: currentTheme.colorScheme.onSurface,

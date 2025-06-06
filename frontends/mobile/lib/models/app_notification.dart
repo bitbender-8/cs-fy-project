@@ -1,4 +1,9 @@
-class Notification {
+import 'package:json_annotation/json_annotation.dart';
+
+part 'app_notification.g.dart';
+
+@JsonSerializable()
+class AppNotification {
   String id;
   String subject;
   String body;
@@ -7,7 +12,7 @@ class Notification {
   String userId;
   UserType userType;
 
-  Notification({
+  AppNotification({
     required this.id,
     required this.subject,
     required this.body,
@@ -16,14 +21,19 @@ class Notification {
     required this.userId,
     required this.userType,
   });
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) =>
+      _$AppNotificationFromJson(json);
+  Map<String, dynamic> toJson() => _$AppNotificationToJson(this);
 }
 
 enum UserType {
-  recipient("Recipient"),
-  supervisor("Supervisor");
+  @JsonValue("Recipient")
+  recipient,
 
-  final String value;
-  const UserType(this.value);
+  @JsonValue("Supervisor")
+  supervisor;
+
   static UserType? fromString(String value) {
     switch (value) {
       case "Supervisor":

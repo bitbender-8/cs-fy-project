@@ -1,20 +1,19 @@
 import { z } from "zod";
 
 import {
-  MIN_STRING_LENGTH,
   validBoolean,
   validCampaignStatus,
   validDate,
-  validNonEmptyString,
+  validUrl,
   validUuid,
 } from "../../utils/zod-helpers.js";
 
 export type CampaignFilterParams = z.infer<typeof CampaignFilterSchema>;
 export const CampaignFilterSchema = z
   .object({
-    title: validNonEmptyString(MIN_STRING_LENGTH, 100),
+    title: z.string(),
     status: validCampaignStatus(),
-    category: validNonEmptyString(MIN_STRING_LENGTH, 50),
+    category: z.string(),
     minLaunchDate: validDate(true),
     maxLaunchDate: validDate(true),
     minEndDate: validDate(false),
@@ -45,3 +44,16 @@ export const SENSITIVE_CAMPAIGN_FILTERS = [
 ] as const;
 export type SensitiveCampaignFilters =
   (typeof SENSITIVE_CAMPAIGN_FILTERS)[number];
+
+export type CampaignDocumentFilterParams = z.infer<
+  typeof CampaignDocumentFilterSchema
+>;
+export const CampaignDocumentFilterSchema = z
+  .object({
+    campaignId: validUuid(),
+    documentUrl: validUrl(),
+    redactedDocumentUrl: validUrl(),
+    page: z.coerce.number().int().positive(),
+    limit: z.coerce.number().int().positive(),
+  })
+  .partial();
