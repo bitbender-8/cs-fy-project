@@ -50,7 +50,11 @@ interface Notification {
   // Add other fields if needed by the component
 }
 
-export async function getUnreadNotificationsAction(): Promise<{ success: boolean; data?: Notification[]; message?: string }> {
+export async function getUnreadNotificationsAction(): Promise<{
+  success: boolean;
+  data?: Notification[];
+  message?: string;
+}> {
   try {
     const notifications = await prisma.notification.findMany({
       select: {
@@ -61,8 +65,8 @@ export async function getUnreadNotificationsAction(): Promise<{ success: boolean
         isRead: false,
       },
       orderBy: {
-        createdAt: 'desc', // Optional: order them
-      }
+        createdAt: "desc", // Optional: order them
+      },
     });
     return { success: true, data: notifications };
   } catch (error) {
@@ -71,7 +75,9 @@ export async function getUnreadNotificationsAction(): Promise<{ success: boolean
   }
 }
 
-export async function markNotificationsAsReadAction(notificationIds: string[]): Promise<{ success: boolean; message?: string }> {
+export async function markNotificationsAsReadAction(
+  notificationIds: string[],
+): Promise<{ success: boolean; message?: string }> {
   if (!notificationIds || notificationIds.length === 0) {
     return { success: true, message: "No notifications to mark as read." }; // Not an error, just nothing to do
   }
@@ -124,11 +130,11 @@ export async function updateSupervisorProfile(formData: FormData) {
   // const dateOfBirthString = formData.get("dateOfBirth") as string;
 
   if (firstName) dataToUpdate.firstName = firstName;
-  if (middleName !== null && middleName !== undefined) dataToUpdate.middleName = middleName; // Allow empty string for optional fields
+  if (middleName !== null && middleName !== undefined)
+    dataToUpdate.middleName = middleName; // Allow empty string for optional fields
   if (lastName) dataToUpdate.lastName = lastName;
   if (phoneNo !== null && phoneNo !== undefined) dataToUpdate.phoneNo = phoneNo;
   // if (dateOfBirthString) dataToUpdate.dateOfBirth = new Date(dateOfBirthString);
-
 
   if (Object.keys(dataToUpdate).length === 0) {
     return { success: false, error: "No data provided to update." };

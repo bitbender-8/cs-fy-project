@@ -14,7 +14,6 @@ type CampaignType = Prisma.CampaignGetPayload<{
   };
 }>;
 
-
 export async function PATCH(request: Request, { params }: StatusProps) {
   const { campaignId } = await params;
   const { status } = await request.json();
@@ -46,10 +45,7 @@ export async function PATCH(request: Request, { params }: StatusProps) {
     "Verified",
     "Denied",
   ];
-  if (
-    status !== "Completed" &&
-    status !== "Live"
-  ) {
+  if (status !== "Completed" && status !== "Live") {
     updateData.isPublic = false;
   }
 

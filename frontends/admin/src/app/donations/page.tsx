@@ -18,8 +18,8 @@ export default async function DonationsPage() {
       },
     },
     orderBy: {
-      createdAt: "desc"
-    }
+      createdAt: "desc",
+    },
   });
 
   return (

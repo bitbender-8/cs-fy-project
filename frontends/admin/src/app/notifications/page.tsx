@@ -3,7 +3,6 @@ import { notificationTableColumns } from "@/components/table-columns/notificatio
 import prisma from "@/lib/prisma";
 
 export default async function NotificationsPage() {
-
   const notifications = await prisma.notification.findMany({
     select: {
       id: true,
@@ -25,7 +24,10 @@ export default async function NotificationsPage() {
         <h1 className="text-primary">Browse Notifications</h1>
       </div>
 
-      <DataTableNotificationList columns={notificationTableColumns} data={notifications} />
+      <DataTableNotificationList
+        columns={notificationTableColumns}
+        data={notifications}
+      />
     </div>
   );
 }

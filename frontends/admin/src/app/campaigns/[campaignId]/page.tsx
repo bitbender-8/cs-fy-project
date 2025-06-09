@@ -141,7 +141,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     })),
   ].sort(
     (a, b) =>
-      new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
+      new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime(),
   );
 
   // const sampleAllRequests = [
@@ -332,7 +332,11 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       {/* Campaign donations table */}
       <div>
         <h2 className="text-primary mb-3">Campaign Donations</h2>
-        <DataTableDonationList columns={donationTableSpecificCampaignColumns} data={campaign.CampaignDonation} source="specific-campaign"/>
+        <DataTableDonationList
+          columns={donationTableSpecificCampaignColumns}
+          data={campaign.CampaignDonation}
+          source="specific-campaign"
+        />
       </div>
       <hr />
     </div>

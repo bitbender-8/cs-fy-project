@@ -43,14 +43,18 @@ export default async function ProfilePage() {
             </Avatar>
             <div>
               <CardTitle className="text-2xl">
-                {supervisor.firstName} {supervisor.middleName} {supervisor.lastName}
+                {supervisor.firstName} {supervisor.middleName}{" "}
+                {supervisor.lastName}
               </CardTitle>
               <CardDescription>Supervisor Profile</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-           <ProfileForm supervisor={supervisor} updateAction={updateSupervisorProfile} />
+          <ProfileForm
+            supervisor={supervisor}
+            updateAction={updateSupervisorProfile}
+          />
         </CardContent>
       </Card>
     </div>

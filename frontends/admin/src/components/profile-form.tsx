@@ -18,10 +18,15 @@ interface Supervisor {
 
 interface ProfileFormProps {
   supervisor: Supervisor;
-  updateAction: (formData: FormData) => Promise<{ success: boolean; error?: string; supervisor?: Supervisor }>;
+  updateAction: (
+    formData: FormData,
+  ) => Promise<{ success: boolean; error?: string; supervisor?: Supervisor }>;
 }
 
-export default function ProfileForm({ supervisor, updateAction }: ProfileFormProps) {
+export default function ProfileForm({
+  supervisor,
+  updateAction,
+}: ProfileFormProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -143,7 +148,12 @@ export default function ProfileForm({ supervisor, updateAction }: ProfileFormPro
       <div className="flex justify-end space-x-2">
         {isEditing ? (
           <>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isPending}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>

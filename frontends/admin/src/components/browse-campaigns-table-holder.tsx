@@ -28,12 +28,13 @@ const STATUS_OPTIONS = [
   { value: "Paused", label: "Paused" },
 ] as const;
 
-type CampaignStatusFilterType = typeof STATUS_OPTIONS[number]['value'];
+type CampaignStatusFilterType = (typeof STATUS_OPTIONS)[number]["value"];
 
 export default function BroswseCampaignsTableHolder({
   campaigns,
 }: BroswseCampaignsTableHolderProps) {
-  const [tableStatus, setTableStatus] = useState<CampaignStatusFilterType>("all");
+  const [tableStatus, setTableStatus] =
+    useState<CampaignStatusFilterType>("all");
 
   const campaignsToShow =
     tableStatus === "all"
@@ -52,7 +53,10 @@ export default function BroswseCampaignsTableHolder({
         </span>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-[200px] justify-start text-left font-normal bg-slate-400">
+            <Button
+              variant="outline"
+              className="w-[200px] justify-start text-left font-normal bg-slate-400"
+            >
               {currentStatusLabel}
             </Button>
           </DropdownMenuTrigger>
@@ -70,7 +74,10 @@ export default function BroswseCampaignsTableHolder({
       </div>
 
       <div>
-        <DataTableCampaignList columns={campaignTableColumns} data={campaignsToShow} />
+        <DataTableCampaignList
+          columns={campaignTableColumns}
+          data={campaignsToShow}
+        />
       </div>
     </>
   );

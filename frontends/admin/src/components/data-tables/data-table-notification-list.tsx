@@ -26,10 +26,10 @@ interface DataTableProps<TData extends { id: string }, TValue> {
   data: TData[];
 }
 
-export function DataTableNotificationList<TData extends { id: string }, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function DataTableNotificationList<
+  TData extends { id: string },
+  TValue,
+>({ columns, data }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
@@ -86,9 +86,7 @@ export function DataTableNotificationList<TData extends { id: string }, TValue>(
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

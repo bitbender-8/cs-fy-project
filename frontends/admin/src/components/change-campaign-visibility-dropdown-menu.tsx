@@ -33,7 +33,7 @@ export default function ChangeCampaignVisibilityDropdownMenu({
 }: ChangeCampaignVisibilityDropdownMenuProps) {
   const [position, setPosition] = useState(status);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
-    // Add a state flag to control the dropdown’s visibility:
+  // Add a state flag to control the dropdown’s visibility:
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
@@ -97,8 +97,7 @@ export default function ChangeCampaignVisibilityDropdownMenu({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Are you sure you want to change the campaign status for:{" "}
-              <br />
+              Are you sure you want to change the campaign status for: <br />
               <br />
               <p className="font-bold text-xl underline">{title}</p>
             </DialogTitle>

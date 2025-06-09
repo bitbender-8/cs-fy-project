@@ -1,4 +1,11 @@
-import { Search, Settings, LayoutDashboard, LogOutIcon, BellIcon, BadgeDollarSign } from "lucide-react";
+import {
+  Search,
+  Settings,
+  LayoutDashboard,
+  LogOutIcon,
+  BellIcon,
+  BadgeDollarSign,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -23,12 +30,12 @@ const itemsTop = [
     url: "/browse-campaigns",
     icon: Search,
   },
-    {
+  {
     title: "Notifications",
     url: "/notifications",
     icon: BellIcon,
   },
-    {
+  {
     title: "Donations",
     url: "/donations",
     icon: BadgeDollarSign,
