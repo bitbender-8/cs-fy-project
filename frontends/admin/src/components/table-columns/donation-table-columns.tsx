@@ -76,3 +76,54 @@ export const donationTableColumns: ColumnDef<DonationTableType>[] = [
     filterFn: "includesString", 
   },
 ];
+
+export const donationTableSpecificCampaignColumns: ColumnDef<DonationTableType>[] = [
+
+  {
+    accessorKey: "transactionRef",
+    header: () => <TableHeaderFormatter headerName="Transaction Ref" />,
+    filterFn: "includesString",
+  },
+  {
+    accessorKey: "grossAmount",
+    header: () => <TableHeaderFormatter headerName="Gross Amount" />,
+    cell: ({ row }) => {
+      const value = parseFloat(row.getValue("grossAmount"));
+      let formattedValue: string;
+
+      if (value >= 1_000_000) {
+        formattedValue = `ETB ${(value / 1_000_000).toFixed(1)} M`;
+      } else if (value >= 1_000) {
+        formattedValue = `ETB ${(value / 1_000).toFixed(1)} K`;
+      } else {
+        formattedValue = `ETB ${value.toLocaleString()}`;
+      }
+      return <div>{formattedValue}</div>;
+    },
+  },
+  {
+    accessorKey: "serviceFee",
+    header: () => <TableHeaderFormatter headerName="Service Fee" />,
+    cell: ({ row }) => {
+      const value = parseFloat(row.getValue("serviceFee"));
+      let formattedValue: string;
+
+       if (value >= 1_000_000) {
+        formattedValue = `ETB ${(value / 1_000_000).toFixed(1)} M`;
+      } else if (value >= 1_000) {
+        formattedValue = `ETB ${(value / 1_000).toFixed(1)} K`;
+      } else {
+        formattedValue = `ETB ${value.toLocaleString()}`;
+      }
+      return <div>{formattedValue}</div>;
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: () => <TableHeaderFormatter headerName="Donation Date" />,
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("createdAt"));
+      return <div>{date.toLocaleDateString()}</div>;
+    },
+  },
+];
