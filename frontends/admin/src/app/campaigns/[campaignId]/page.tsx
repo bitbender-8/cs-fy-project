@@ -70,8 +70,6 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         },
       },
     });
-
-    console.log("Campaign donations:", campaign?.CampaignDonation);
   } catch (error) {
     console.error("Error fetching campaign:", error);
     return <p>Error fetching campaign data</p>;

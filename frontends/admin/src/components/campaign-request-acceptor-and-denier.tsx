@@ -39,8 +39,6 @@ export default function CampaignRequestAccepterAndDenier({
         throw new Error(`Failed to ${action} request`);
       }
 
-      const data = await res.json();
-      console.log(`${action}d successfully:`, data);
       router.refresh();
     } catch (error) {
       console.error(`Error trying to ${action}:`, error);
