@@ -25,7 +25,7 @@ export default async function DonationsPage() {
   return (
     <div>
       <div className="flex justify-between items-center">
-        <h1 className="text-primary">Browse Campaigns</h1>
+        <h1 className="text-primary">Browse Donations</h1>
       </div>
 
       <DataTableDonationList columns={donationTableColumns} data={donations} />
