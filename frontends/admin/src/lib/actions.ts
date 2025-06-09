@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import prisma from "./prisma";
 import { randomUUID } from "crypto";
+import { auth0 } from "./auth0";
 
 export async function submitCampaignUpdate(formData: FormData) {
   const updateContent = formData.get("updateContent") as string;
@@ -94,5 +95,56 @@ export async function markNotificationsAsReadAction(notificationIds: string[]): 
   } catch (error) {
     console.error("Error marking notifications as read:", error);
     return { success: false, message: String(error) };
+  }
+}
+
+export async function updateSupervisorProfile(formData: FormData) {
+  "use server";
+  const session = await auth0.getSession();
+  if (!session?.user?.sub) {
+    // It's good practice to re-check auth in server actions
+    return { success: false, error: "User not authenticated" };
+  }
+
+  const auth0UserId = session.user.sub;
+
+  // Validate and sanitize your data here before updating the database
+  const dataToUpdate: {
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    phoneNo?: string;
+    // dateOfBirth?: Date; // Be careful with date parsing
+  } = {};
+
+  const firstName = formData.get("firstName") as string;
+  const middleName = formData.get("middleName") as string;
+  const lastName = formData.get("lastName") as string;
+  const phoneNo = formData.get("phoneNo") as string;
+  // const dateOfBirthString = formData.get("dateOfBirth") as string;
+
+  if (firstName) dataToUpdate.firstName = firstName;
+  if (middleName !== null && middleName !== undefined) dataToUpdate.middleName = middleName; // Allow empty string for optional fields
+  if (lastName) dataToUpdate.lastName = lastName;
+  if (phoneNo !== null && phoneNo !== undefined) dataToUpdate.phoneNo = phoneNo;
+  // if (dateOfBirthString) dataToUpdate.dateOfBirth = new Date(dateOfBirthString);
+
+
+  if (Object.keys(dataToUpdate).length === 0) {
+    return { success: false, error: "No data provided to update." };
+  }
+
+  try {
+    const updatedSupervisor = await prisma.supervisor.update({
+      where: { auth0UserId },
+      data: dataToUpdate,
+    });
+    // Revalidate the profile path to ensure fresh data is shown
+    revalidatePath("/profile"); // Next.js 13+ App Router feature
+    return { success: true, supervisor: updatedSupervisor };
+  } catch (error) {
+    console.error("Failed to update profile:", error);
+    // Be careful not to expose sensitive error details to the client
+    return { success: false, error: "An unexpected error occurred." };
   }
 }
