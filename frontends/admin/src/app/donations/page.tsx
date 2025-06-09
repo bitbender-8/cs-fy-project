@@ -19,7 +19,6 @@ export default async function DonationsPage() {
     },
   });
 
-  console.log(donations);
   return (
     <div>
       <div className="flex justify-between items-center">

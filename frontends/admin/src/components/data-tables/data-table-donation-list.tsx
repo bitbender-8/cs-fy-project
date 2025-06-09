@@ -20,7 +20,6 @@ import {
 import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight, SearchIcon } from "lucide-react";
 import { Input } from "../ui/input";
-import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData extends { id: string }, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,10 +37,6 @@ export function DataTableDonationList<TData extends { id: string }, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
-
-  console.log("Table Data:", table.getAllFlatColumns());
-
-  const router = useRouter();
 
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
@@ -93,10 +88,6 @@ export function DataTableDonationList<TData extends { id: string }, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      onClick={() =>
-                        router.push(`campaigns/${cell.row.original.id}`)
-                      }
-                      className="cursor-pointer"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
