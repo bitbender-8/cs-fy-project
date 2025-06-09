@@ -17,9 +17,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight, SearchIcon } from "lucide-react";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData extends { id: string }, TValue> {
@@ -27,7 +27,7 @@ interface DataTableProps<TData extends { id: string }, TValue> {
   data: TData[];
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
+export function DataTableDonationList<TData extends { id: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -38,6 +38,8 @@ export function DataTable<TData extends { id: string }, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
+
+  console.log("Table Data:", table.getAllFlatColumns());
 
   const router = useRouter();
 
@@ -54,10 +56,10 @@ export function DataTable<TData extends { id: string }, TValue>({
           startIcon={SearchIcon}
           className="rounded-full mt-5 mb-2"
           type="text"
-          placeholder="Search campaigns by using title..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          placeholder="Search donations by using campaign title..."
+          value={(table.getColumn("Campaign_title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
+            table.getColumn("Campaign_title")?.setFilterValue(event.target.value)
           }
         />
       </div>

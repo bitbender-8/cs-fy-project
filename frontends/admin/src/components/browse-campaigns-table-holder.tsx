@@ -4,8 +4,8 @@ import { useState } from "react";
 import {
   campaignTableColumns,
   CampaignTableType,
-} from "./campaigns-table/columns";
-import { DataTable } from "./data-table";
+} from "./table-columns/campaign-table-columns";
+import { DataTableCampaignList } from "./data-tables/data-table-campaign-list";
 
 type BroswseCampaignsTableHolderProps = {
   campaigns: CampaignTableType[];
@@ -100,7 +100,7 @@ export default function BroswseCampaignsTableHolder({
       </div>
 
       <div>
-        <DataTable columns={campaignTableColumns} data={campaignsToShow} />
+        <DataTableCampaignList columns={campaignTableColumns} data={campaignsToShow} />
       </div>
     </>
   );
