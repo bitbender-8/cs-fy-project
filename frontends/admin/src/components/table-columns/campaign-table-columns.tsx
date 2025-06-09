@@ -65,5 +65,9 @@ export const campaignTableColumns: ColumnDef<CampaignTableType>[] = [
   {
     accessorKey: "endDate",
     header: () => <TableHeaderFormatter headerName="End Date" />,
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("endDate"));
+      return <div>{date.toLocaleDateString()}</div>;
+    },
   },
 ];
