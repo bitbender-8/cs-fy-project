@@ -20,6 +20,9 @@ export default async function BroswseCampaignsHomePage() {
         },
       },
     },
+    orderBy: {
+      endDate: "desc",
+    },
   });
 
   const campaigns: CampaignTableType[] = rawCampaigns.map(
