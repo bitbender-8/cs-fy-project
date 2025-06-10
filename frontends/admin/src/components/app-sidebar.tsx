@@ -46,7 +46,7 @@ const itemsTop = [
 const itemsBottom = [
   {
     title: "Settings",
-    url: "/settings",
+    url: "/profile",
     icon: Settings,
   },
   {
