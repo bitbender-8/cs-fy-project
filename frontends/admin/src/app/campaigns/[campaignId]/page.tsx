@@ -4,12 +4,9 @@ import CampaignUpdateForm from "@/components/campaign-update-form";
 import ChangeCampaignVisibilityDropdownMenu from "@/components/change-campaign-visibility-dropdown-menu";
 import { DataTableDonationList } from "@/components/data-tables/data-table-donation-list";
 import { donationTableSpecificCampaignColumns } from "@/components/table-columns/donation-table-columns";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
 import { Prisma } from "@/generated/prisma";
-import { submitCampaignUpdate } from "@/lib/actions";
 import prisma from "@/lib/prisma";
 import { ArrowBigRight, FilesIcon } from "lucide-react";
 
