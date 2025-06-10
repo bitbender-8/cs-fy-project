@@ -1,15 +1,17 @@
 import CampaignDocumentsListTemp from "@/components/campaign-documents-list-temp";
 import CampaignRequestAccepterAndDenier from "@/components/campaign-request-acceptor-and-denier";
+import CampaignUpdateForm from "@/components/campaign-update-form";
 import ChangeCampaignVisibilityDropdownMenu from "@/components/change-campaign-visibility-dropdown-menu";
 import { DataTableDonationList } from "@/components/data-tables/data-table-donation-list";
 import { donationTableSpecificCampaignColumns } from "@/components/table-columns/donation-table-columns";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Prisma } from "@/generated/prisma";
 import { submitCampaignUpdate } from "@/lib/actions";
 import prisma from "@/lib/prisma";
-import { ArrowBigRight } from "lucide-react";
+import { ArrowBigRight, FilesIcon } from "lucide-react";
 
 type CampaignPageProps = {
   params: Promise<{
@@ -245,10 +247,17 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       <hr />
 
       <div>
-        <h2 className="text-primary">Campaign Documents</h2>
+        <h2 className="text-primary mb-3">Campaign Documents</h2>
 
         {/* <CampaignDocumentsList /> */}
-        <CampaignDocumentsListTemp campaignDocuments={CampaignDocuments} />
+        {CampaignDocuments && CampaignDocuments.length > 0 ? (
+          <CampaignDocumentsListTemp campaignDocuments={CampaignDocuments} />
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <FilesIcon className="mx-auto h-10 w-10 mb-2" />
+            <p>No documents have been uploaded for this campaign yet.</p>
+          </div>
+        )}
       </div>
 
       <hr />
@@ -377,21 +386,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </div>
       <hr />
 
-      <form action={submitCampaignUpdate} className="flex flex-col gap-3">
-        <h2 className="text-primary">Update campaign</h2>
-
-        <input type="hidden" name="campaignId" value={campaignId} />
-
-        <Textarea
-          name="updateContent"
-          placeholder="Enter new updates about the campaign..."
-          className="h-32"
-        />
-
-        <Button type="submit" className="cursor-pointer w-fit ml-auto">
-          Submit
-        </Button>
-      </form>
+      <CampaignUpdateForm campaignId={campaignId} />
 
       {/* Campaign donations table */}
       <div>
