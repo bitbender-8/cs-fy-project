@@ -44,7 +44,7 @@ export async function submitCampaignUpdate(formData: FormData) {
         },
       },
     });
-    // revalidatePath(`/campaigns/${campaignId}`);
+    revalidatePath(`/campaigns/${campaignId}`);
     return { success: true, message: "Campaign update posted successfully." };
   } catch (error) {
     console.error(error);
