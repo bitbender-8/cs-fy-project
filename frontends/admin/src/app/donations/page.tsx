@@ -3,7 +3,7 @@ import { donationTableColumns } from "@/components/table-columns/donation-table-
 import prisma from "@/lib/prisma";
 
 export default async function DonationsPage() {
-  const donations = await prisma.campaignDonation.findMany({
+  const donationsData = await prisma.campaignDonation.findMany({
     select: {
       id: true,
       grossAmount: true,
@@ -14,6 +14,12 @@ export default async function DonationsPage() {
       Campaign: {
         select: {
           title: true,
+          Recipient: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          }
         },
       },
     },
@@ -21,6 +27,11 @@ export default async function DonationsPage() {
       createdAt: "desc",
     },
   });
+
+  const donations = donationsData.map(donation => ({
+    ...donation,
+    recipientFullName: `${donation.Campaign.Recipient.firstName} ${donation.Campaign.Recipient.lastName}`,
+  }));
 
   return (
     <div>

@@ -14,17 +14,19 @@ export type DonationTableType = {
   transactionRef: string;
   campaignId: string;
   campaignTitle?: string;
+  campaignRecipientFirstName?: string;
+  campaignRecipientLastName?: string;
 };
 
 export const donationTableColumns: ColumnDef<DonationTableType>[] = [
   {
-    accessorKey: "transactionRef",
-    header: () => <TableHeaderFormatter headerName="Transaction Ref" />,
+    accessorKey: "Campaign.title",
+    header: () => <TableHeaderFormatter headerName="Campaign Title" />,
     filterFn: "includesString",
   },
   {
-    accessorKey: "Campaign.title",
-    header: () => <TableHeaderFormatter headerName="Campaign Title" />,
+    accessorKey: "recipientFullName",
+    header: () => <TableHeaderFormatter headerName="Recipient Name" />,
     filterFn: "includesString",
   },
   {
@@ -68,11 +70,6 @@ export const donationTableColumns: ColumnDef<DonationTableType>[] = [
       const date = new Date(row.getValue("createdAt"));
       return <div>{date.toLocaleDateString()}</div>; // Or any other date formatting you prefer
     },
-  },
-  {
-    accessorKey: "campaignId", // Or "campaignTitle" if you add it to the type and data
-    header: () => <TableHeaderFormatter headerName="Campaign ID" />, // Or "Campaign"
-    filterFn: "includesString",
   },
 ];
 
