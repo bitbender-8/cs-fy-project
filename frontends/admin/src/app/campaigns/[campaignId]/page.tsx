@@ -1,6 +1,8 @@
 import CampaignDocumentsListTemp from "@/components/campaign-documents-list-temp";
 import CampaignRequestAccepterAndDenier from "@/components/campaign-request-acceptor-and-denier";
 import ChangeCampaignVisibilityDropdownMenu from "@/components/change-campaign-visibility-dropdown-menu";
+import { DataTableDonationList } from "@/components/data-tables/data-table-donation-list";
+import { donationTableSpecificCampaignColumns } from "@/components/table-columns/donation-table-columns";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,6 +74,16 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     console.error("Error fetching campaign:", error);
     return <p>Error fetching campaign data</p>;
   }
+
+  // try {
+  //   // fetch campaign donations
+  //   const donations = await prisma.campaignDonation.findMany({
+  //     where: { campaignId },
+  //   });
+  // } catch (error) {
+  //   console.error("Error fetching campaign donations:", error);
+  //   return <p>Error fetching campaign donations</p>;
+  // }
 
   if (!campaign) {
     return <p>Campaign not found</p>;
@@ -187,6 +199,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         <ChangeCampaignVisibilityDropdownMenu
           status={status}
           campaignId={campaignId}
+          title={title}
         />
       </div>
 
@@ -298,11 +311,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
       <hr />
 
-      <form
-        action={submitCampaignUpdate}
-        method="POST"
-        className="flex flex-col gap-3"
-      >
+      <form action={submitCampaignUpdate} className="flex flex-col gap-3">
         <h2 className="text-primary">Update campaign</h2>
 
         <input type="hidden" name="campaignId" value={campaignId} />
@@ -318,6 +327,15 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         </Button>
       </form>
 
+      {/* Campaign donations table */}
+      <div>
+        <h2 className="text-primary mb-3">Campaign Donations</h2>
+        <DataTableDonationList
+          columns={donationTableSpecificCampaignColumns}
+          data={campaign.CampaignDonation}
+          source="specific-campaign"
+        />
+      </div>
       <hr />
     </div>
   );

@@ -17,19 +17,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight, SearchIcon } from "lucide-react";
-import { Input } from "./ui/input";
-import { useRouter } from "next/navigation";
+import { Input } from "../ui/input";
 
 interface DataTableProps<TData extends { id: string }, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  source?: "specific-campaign";
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
+export function DataTableDonationList<TData extends { id: string }, TValue>({
   columns,
   data,
+  source,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -39,8 +40,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  const router = useRouter();
-
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
   const currentPageRows = table.getRowModel().rows.length;
@@ -49,18 +48,26 @@ export function DataTable<TData extends { id: string }, TValue>({
 
   return (
     <div>
-      <div className="w-1/3">
-        <Input
-          startIcon={SearchIcon}
-          className="rounded-full mt-5 mb-2"
-          type="text"
-          placeholder="Search campaigns by using title..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-        />
-      </div>
+      {!source && (
+        <div className="w-1/3">
+          <Input
+            startIcon={SearchIcon}
+            className="rounded-full mt-5 mb-2"
+            type="text"
+            placeholder="Search donations by using campaign title..."
+            value={
+              (table.getColumn("Campaign_title")?.getFilterValue() as string) ??
+              ""
+            }
+            onChange={(event) =>
+              table
+                .getColumn("Campaign_title")
+                ?.setFilterValue(event.target.value)
+            }
+          />
+        </div>
+      )}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -89,13 +96,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={() =>
-                        router.push(`campaigns/${cell.row.original.id}`)
-                      }
-                      className="cursor-pointer"
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

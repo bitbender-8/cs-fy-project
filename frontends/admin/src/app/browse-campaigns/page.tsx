@@ -1,5 +1,5 @@
 import BroswseCampaignsTableHolder from "@/components/browse-campaigns-table-holder";
-import { CampaignTableType } from "@/components/campaigns-table/columns";
+import { CampaignTableType } from "@/components/table-columns/campaign-table-columns";
 import prisma from "@/lib/prisma";
 
 export default async function BroswseCampaignsHomePage() {
@@ -19,6 +19,9 @@ export default async function BroswseCampaignsHomePage() {
           lastName: true,
         },
       },
+    },
+    orderBy: {
+      endDate: "desc",
     },
   });
 

@@ -24,7 +24,10 @@ export async function POST(req: NextRequest, { params }: CampaignProps) {
       case "endDateExtension": {
         const requestInfo = await prisma.endDateExtensionRequest.update({
           where: { id: requestId },
-          data: { resolutionType: requestTypeFormatted },
+          data: {
+            resolutionType: requestTypeFormatted,
+            resolutionDate: new Date(),
+          },
         });
 
         if (action === "accept") {
@@ -39,7 +42,10 @@ export async function POST(req: NextRequest, { params }: CampaignProps) {
       case "goalAdjustment": {
         const requestInfo = await prisma.goalAdjustmentRequest.update({
           where: { id: requestId },
-          data: { resolutionType: requestTypeFormatted },
+          data: {
+            resolutionType: requestTypeFormatted,
+            resolutionDate: new Date(),
+          },
         });
 
         if (action === "accept") {
@@ -54,7 +60,10 @@ export async function POST(req: NextRequest, { params }: CampaignProps) {
       case "goalAdjustment": {
         const requestInfo = await prisma.goalAdjustmentRequest.update({
           where: { id: requestId },
-          data: { resolutionType: requestTypeFormatted },
+          data: {
+            resolutionType: requestTypeFormatted,
+            resolutionDate: new Date(),
+          },
         });
 
         if (action === "accept") {
@@ -69,7 +78,10 @@ export async function POST(req: NextRequest, { params }: CampaignProps) {
       case "postUpdate": {
         const requestInfo = await prisma.postUpdateRequest.update({
           where: { id: requestId },
-          data: { resolutionType: requestTypeFormatted },
+          data: {
+            resolutionType: requestTypeFormatted,
+            resolutionDate: new Date(),
+          },
         });
 
         if (action === "accept") {
@@ -88,7 +100,10 @@ export async function POST(req: NextRequest, { params }: CampaignProps) {
       case "statusChange": {
         const requestInfo = await prisma.statusChangeRequest.update({
           where: { id: requestId },
-          data: { resolutionType: requestTypeFormatted },
+          data: {
+            resolutionType: requestTypeFormatted,
+            resolutionDate: new Date(),
+          },
         });
 
         if (action === "accept") {

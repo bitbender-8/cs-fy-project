@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
+import { DialogDecline } from "./dialog-decline";
 
 type CampaignRequestAccepterAndDenierProps = {
   requestType:
@@ -38,8 +39,6 @@ export default function CampaignRequestAccepterAndDenier({
         throw new Error(`Failed to ${action} request`);
       }
 
-      const data = await res.json();
-      console.log(`${action}d successfully:`, data);
       router.refresh();
     } catch (error) {
       console.error(`Error trying to ${action}:`, error);
@@ -52,12 +51,7 @@ export default function CampaignRequestAccepterAndDenier({
         Approve
       </Button>
 
-      <Button
-        variant="destructive"
-        onClick={() => handleRequestAction("reject")}
-      >
-        Decline
-      </Button>
+      <DialogDecline onDecline={() => handleRequestAction("reject")} />
     </>
   );
 }
