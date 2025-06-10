@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/server/filters.dart';
+import 'package:mobile/utils/utils.dart';
 
 class CampaignFilterDialog extends StatefulWidget {
   final CampaignFilter currentFilters;
@@ -339,13 +341,6 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
     );
   }
 
-  String _formatDate(DateTime? date) {
-    if (date == null) {
-      return 'Not set';
-    }
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year.toString()}';
-  }
-
   Widget _buildDropdown<T>({
     required String label,
     required T? value,
@@ -424,7 +419,7 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
               const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         ),
         child: Text(
-          _formatDate(selectedDate),
+          formatDate(selectedDate),
           style: TextStyle(
               color: selectedDate == null
                   ? colorScheme.onSurface.withValues(alpha: .6)

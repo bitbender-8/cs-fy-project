@@ -1,26 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/custom_appbar.dart';
-import 'package:mobile/pages/add_campaign_page.dart';
 import 'package:mobile/pages/login_required_page.dart';
 import 'package:mobile/pages/profile_page.dart';
-import 'package:mobile/pages/campaign_list_page.dart';
+import 'package:mobile/pages/campaigns_page.dart';
 import 'package:mobile/pages/campaign_requests_page.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:provider/provider.dart';
-
-class NavPage {
-  const NavPage({
-    required this.title,
-    required this.icon,
-    required this.pageWidget,
-    this.floatingActionButton,
-  });
-
-  final String title;
-  final Widget pageWidget;
-  final IconData icon;
-  final FloatingActionButton? floatingActionButton;
-}
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -35,54 +20,46 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    final bool isLoggedIn = userProvider.credentials != null;
 
-    List<NavPage> navPages = [
-      const NavPage(
+    List<NavBarPage> navBarPages = [
+      const NavBarPage(
         title: '    Public\nCampaigns',
-        pageWidget: CampaignListPage(),
+        pageWidget: CampaignsPage(),
         icon: Icons.public,
       ),
-      NavPage(
+      NavBarPage(
         title: '       My\nCampaigns',
-        pageWidget: isLoggedIn
-            ? const CampaignListPage(isPublicList: false)
+        pageWidget: userProvider.isLoggedIn
+            ? const CampaignsPage(isPublicList: false)
             : const LoginRequiredPage(),
         icon: Icons.folder,
-        floatingActionButton: isLoggedIn
-            ? FloatingActionButton(
-                onPressed: () => _addNewCampaign(),
-                child: const Icon(Icons.add),
-              )
-            : null,
       ),
-      NavPage(
+      NavBarPage(
         title: 'Campaign\n requests',
-        pageWidget: isLoggedIn
+        pageWidget: userProvider.isLoggedIn
             ? const CampaignRequestsPage()
             : const LoginRequiredPage(),
         icon: Icons.list_alt,
       ),
-      NavPage(
+      NavBarPage(
         title: 'Profile\n',
-        pageWidget: isLoggedIn
+        pageWidget: userProvider.isLoggedIn
             ? (userProvider.user != null
                 ? ProfilePage(initialRecipient: userProvider.user!)
                 : const Center(child: CircularProgressIndicator()))
             : const LoginRequiredPage(),
         icon: Icons.account_circle_rounded,
-        floatingActionButton: null,
       ),
     ];
 
     return Scaffold(
-      appBar: CustomAppBar(pageTitle: navPages[_selectedIndex].title),
+      appBar: CustomAppBar(pageTitle: navBarPages[_selectedIndex].title),
       body: IndexedStack(
         index: _selectedIndex,
-        children: navPages.map((navPage) => navPage.pageWidget).toList(),
+        children: navBarPages.map((navPage) => navPage.pageWidget).toList(),
       ),
       bottomNavigationBar: NavigationBar(
-        destinations: navPages
+        destinations: navBarPages
             .map(
               (navPage) => NavigationDestination(
                 icon: Icon(navPage.icon),
@@ -93,7 +70,6 @@ class _HomeState extends State<Home> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onDestinationTapped,
       ),
-      floatingActionButton: navPages[_selectedIndex].floatingActionButton,
     );
   }
 
@@ -103,12 +79,16 @@ class _HomeState extends State<Home> {
       _selectedIndex = index;
     });
   }
+}
 
-  void _addNewCampaign() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddCampaignPage(),
-      ),
-    );
-  }
+class NavBarPage {
+  const NavBarPage({
+    required this.title,
+    required this.icon,
+    required this.pageWidget,
+  });
+
+  final String title;
+  final Widget pageWidget;
+  final IconData icon;
 }

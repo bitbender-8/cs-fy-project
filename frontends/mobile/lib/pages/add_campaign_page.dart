@@ -100,20 +100,6 @@ class _AddCampaignPageState extends State<AddCampaignPage>
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () async => await _submitCampaign(context),
-                        style: TextButton.styleFrom(
-                          foregroundColor: colorScheme.onPrimary,
-                          backgroundColor: colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text("Submit"),
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    Expanded(
-                      child: TextButton(
                         onPressed: () => Navigator.pop(context),
                         style: TextButton.styleFrom(
                           foregroundColor: colorScheme.onError,
@@ -123,6 +109,20 @@ class _AddCampaignPageState extends State<AddCampaignPage>
                           ),
                         ),
                         child: const Text("Cancel"),
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () async => await _submitCampaign(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.onPrimary,
+                          backgroundColor: colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text("Submit"),
                       ),
                     ),
                   ],
@@ -206,7 +206,7 @@ class _AddCampaignPageState extends State<AddCampaignPage>
           clearServerError('fundraisingGoal');
         },
         validator: (value) {
-          final valResult = validMoneyAmount(value, maxMoneyAmount);
+          final valResult = validMoneyAmount(value, AppConfig.maxMoneyAmount);
           if (valResult != null) return valResult;
 
           final goal = double.tryParse(value ?? '0') ?? 0;
@@ -330,8 +330,8 @@ class _AddCampaignPageState extends State<AddCampaignPage>
     String? documentsServerError = getServerError('documents');
     return <Widget>[
       Text(
-        'You may attach up to $maxFileNo files under the size of $maxFileSizeMb MB each. '
-        'Supported file types: ${allowedFileExtensions.map(
+        'You may attach up to ${AppConfig.maxFileNo} files under the size of ${AppConfig.maxFileSizeMb} MB each. '
+        'Supported file types: ${AppConfig.allowedFileExtensions.map(
               (val) => val.toUpperCase(),
             ).join(
               ', ',
@@ -409,55 +409,6 @@ class _AddCampaignPageState extends State<AddCampaignPage>
   }
 
   //****** Helper methods
-  void _showSuccessDialog(BuildContext context) {
-    if (!context.mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 30),
-              SizedBox(width: 10),
-              Text(
-                'Success',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Your campaign application has been submitted successfully!',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -477,7 +428,7 @@ class _AddCampaignPageState extends State<AddCampaignPage>
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.custom,
-      allowedExtensions: allowedFileExtensions,
+      allowedExtensions: AppConfig.allowedFileExtensions,
       withData: true,
     );
 
@@ -486,23 +437,23 @@ class _AddCampaignPageState extends State<AddCampaignPage>
     if (result != null) {
       List<PlatformFile> newlySelectedValidFiles = [];
       for (PlatformFile file in result.files) {
-        if (file.size <= maxFileSizeMb * 1024 * 1024) {
+        if (file.size <= AppConfig.maxFileSizeMb * 1024 * 1024) {
           newlySelectedValidFiles.add(file);
         } else {
           showErrorSnackBar(
             context,
-            'File ${file.name} exceeds the ${maxFileSizeMb}MB limit.',
+            'File ${file.name} exceeds the ${AppConfig.maxFileSizeMb}MB limit.',
           );
         }
       }
 
       if ((_supportingDocuments.length + newlySelectedValidFiles.length) >
-          maxFileNo) {
-        final numCanAdd = maxFileNo - _supportingDocuments.length;
+          AppConfig.maxFileNo) {
+        final numCanAdd = AppConfig.maxFileNo - _supportingDocuments.length;
         if (numCanAdd <= 0) {
           showErrorSnackBar(
             context,
-            'You can upload a maximum of $maxFileNo documents.',
+            'You can upload a maximum of ${AppConfig.maxFileNo} documents.',
           );
           return;
         }
@@ -510,7 +461,7 @@ class _AddCampaignPageState extends State<AddCampaignPage>
             newlySelectedValidFiles.take(numCanAdd).toList();
         showInfoSnackBar(
           context,
-          'You can upload a maximum of $maxFileNo documents. Some files were not added.',
+          'You can upload a maximum of ${AppConfig.maxFileNo} documents. Some files were not added.',
         );
       }
 
@@ -543,7 +494,9 @@ class _AddCampaignPageState extends State<AddCampaignPage>
 
     if (_supportingDocuments.isEmpty) {
       showErrorSnackBar(
-          context, 'Supporting documents are required for campaign creation.');
+        context,
+        'Supporting documents are required for campaign creation.',
+      );
       setState(() => _isLoading = false);
       return;
     }
@@ -581,16 +534,20 @@ class _AddCampaignPageState extends State<AddCampaignPage>
     handleServiceResponse(
       context,
       response,
-      onSuccess: () {
-        if (mounted) {
-          _showSuccessDialog(context);
-        }
+      onSuccess: () async {
+        clearAllServerErrors();
+
+        if (!mounted) return;
+        await showSuccessDialog(
+          context,
+          'Your campaign application has been submitted successfully!',
+        );
+
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
       },
-      onValidationErrors: (errors) {
-        setState(() {
-          setServerErrors(errors);
-        });
-        // After setting errors, validate the form again to show them immediately. This causes the TextFormFields to re-evaluate their errorText.
+      onValidationErrors: (fieldErrors) {
+        setState(() => setServerErrors(fieldErrors));
         _formKey.currentState?.validate();
       },
     );

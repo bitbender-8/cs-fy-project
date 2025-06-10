@@ -1,5 +1,5 @@
 export const config = {
-  // Server Config
+  // Server config
   ENV: process.env.ENV ?? "Development",
   PORT: process.env.PORT ?? 4000,
   PUBLIC_UPLOAD_DIR: `${process.env.UPLOAD_DIR ?? "uploads"}/public`,
@@ -14,7 +14,10 @@ export const config = {
     process.env.FILE_MIME_TYPES ??
     "application/pdf;application/msword;application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   PAGE_SIZE: parseInt(process.env.PAGE_SIZE ?? "10"),
+
+  // Business rule config
   MAX_MONEY_AMOUNT: parseInt(process.env.MAX_MONEY_AMOUNT ?? "100_000"),
+  SERVICE_RATE: parseFloat(process.env.SERVICE_RATE ?? "0.01"),
 
   // Database config
   DB_USER: process.env.DB_USER ?? "admin",

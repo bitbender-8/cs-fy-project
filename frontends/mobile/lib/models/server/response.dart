@@ -6,20 +6,6 @@ part 'response.g.dart';
 
 typedef ServiceResult<T> = ({T? data, ApiServiceError? error});
 
-void debugPrintApiResponse(ServiceResult result) {
-  if (result.error is ProblemDetails) {
-    final problemDetailsError = result.error as ProblemDetails;
-    debugPrint(
-      "[API_RESPONSE]: \n\tData: ${result.data}); \n\tError (ProblemDetails): ${problemDetailsError.toJson()}", // Access ProblemDetails specific properties
-    );
-  } else if (result.error is SimpleError) {
-    final simpleError = result.error as SimpleError;
-    debugPrint(
-      "[API_RESPONSE]: \n\tData: ${result.data}); \n\tError: ${simpleError.message}",
-    );
-  }
-}
-
 @immutable
 @JsonSerializable(genericArgumentFactories: true)
 class PaginatedList<T> {

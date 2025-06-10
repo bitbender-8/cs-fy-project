@@ -4,6 +4,7 @@ import { config } from "../config.js";
 import {
   Campaign,
   CampaignDocument,
+  CampaignDonation,
   CreateableCampaignFields,
   PaymentInfo,
 } from "../models/campaign.model.js";
@@ -125,7 +126,7 @@ export async function getCampaigns(
   queryString += whereClause;
   queryString += `
         ORDER BY
-            "title" ASC
+            "launchDate" DESC
         LIMIT
             $${paramIndex}
         OFFSET
@@ -499,4 +500,61 @@ export async function getCampaignDonationTotal(
   }
 
   return fromIntToMoneyStr(BigInt(result.rows[0].netDonations)) ?? "0";
+}
+
+export async function insertCampaignDonation(
+  donation: Omit<CampaignDonation, "id">
+): Promise<CampaignDonation> {
+  try {
+    const result = await query(
+      `INSERT INTO "CampaignDonation" (
+        "id,
+        "grossAmount",
+        "serviceFee",
+        "createdAt"
+        "transactionRef"
+        "campaignId"
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6
+      ) RETURNING *`,
+      [
+        randomUUID(),
+        donation.grossAmount,
+        donation.serviceFee,
+        donation.createdAt ?? new Date(),
+        donation.transactionRef,
+        donation.campaignId,
+      ]
+    );
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError("Internal Server Error", 500, "Something went wrong", {
+        internalDetails: `Failed to insert campaign donation of the campaign with id ${donation.campaignId}`,
+      });
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    if (!(error instanceof pg.DatabaseError)) {
+      throw error;
+    }
+
+    switch (error.code) {
+      case "23503":
+        if (error.constraint === "CampaignDonation_campaignId_fkey") {
+          throw new AppError(
+            "Internal Server Error",
+            500,
+            "Something went wrong",
+            {
+              internalDetails: `The campaign ID specified for the campaign donation does not exist.`,
+              cause: error,
+            }
+          );
+        }
+        throw error;
+      default:
+        throw error;
+    }
+  }
 }

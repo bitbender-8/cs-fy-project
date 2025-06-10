@@ -10,7 +10,7 @@ import 'package:mobile/models/server/filters.dart';
 import 'package:mobile/models/server/response.dart';
 
 class NotificationService {
-  static const baseUrl = "$apiUrl/notifications";
+  static const baseUrl = "${AppConfig.apiUrl}/notifications";
 
   Future<ServiceResult<PaginatedList<AppNotification>>> getNotifications(
     NotificationFilter filters,
@@ -50,7 +50,7 @@ class NotificationService {
 
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -85,7 +85,7 @@ class NotificationService {
 
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -120,7 +120,7 @@ class NotificationService {
 
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }

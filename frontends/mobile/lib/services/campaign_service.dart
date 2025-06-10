@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:file_picker/file_picker.dart';
@@ -15,7 +15,7 @@ import 'package:mobile/models/server/filters.dart';
 import 'package:mobile/models/server/response.dart';
 
 class CampaignService {
-  static const String baseUrl = '$apiUrl/campaigns';
+  static const String baseUrl = '${AppConfig.apiUrl}/campaigns';
 
   Future<ServiceResult<Campaign>> createCampaign(
     Campaign campaignData,
@@ -158,7 +158,42 @@ class CampaignService {
 
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
+      );
+    }
+  }
+
+  Future<ServiceResult<Campaign>> getCampaignById(
+    String id,
+    String? accessToken,
+  ) async {
+    Uri uri = Uri.parse("$baseUrl/$id");
+
+    try {
+      final response = await http.get(uri, headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      });
+
+      debugPrint(
+        "[RESPONSE]: ${response.statusCode} - ${response.body}",
+      );
+
+      if (response.statusCode == 200) {
+        return (
+          data: Campaign.fromJson(jsonDecode(response.body)),
+          error: null
+        );
+      } else {
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(response.body))
+        );
+      }
+    } catch (e) {
+      return (
+        data: null,
+        error: ApiServiceError.handleException(e),
       );
     }
   }

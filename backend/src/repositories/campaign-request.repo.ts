@@ -28,7 +28,7 @@ import { buildUpdateQueryString } from "./repo-utils.js";
 
 export async function insertCampaignRequest(
   campaignId: UUID,
-  campaignRequest: Omit<CampaignRequest, LockedCampaignRequestFields>,
+  campaignRequest: Omit<CampaignRequest, LockedCampaignRequestFields>
 ): Promise<CampaignRequest> {
   try {
     let tableName: string;
@@ -54,8 +54,8 @@ export async function insertCampaignRequest(
                 GoalAdjustmentRequest,
                 LockedCampaignRequestFields
               >
-            ).newGoal,
-          ),
+            ).newGoal
+          )
         );
         break;
       case "End Date Extension":
@@ -67,7 +67,7 @@ export async function insertCampaignRequest(
               EndDateExtensionRequest,
               LockedCampaignRequestFields
             >
-          ).newEndDate,
+          ).newEndDate
         );
         break;
       case "Status Change":
@@ -79,7 +79,7 @@ export async function insertCampaignRequest(
               StatusChangeRequest,
               LockedCampaignRequestFields
             >
-          ).newStatus,
+          ).newStatus
         );
         break;
       case "Post Update":
@@ -94,28 +94,38 @@ export async function insertCampaignRequest(
                   PostUpdateRequest,
                   LockedCampaignRequestFields
                 >
-              ).newPost,
+              ).newPost
             )
-          ).id,
+          ).id
         );
         break;
       default:
         throw new AppError(
           "Validation Failure",
           400,
-          `Invalid campaign request type '${campaignRequest.requestType}'`,
+          `Invalid campaign request type '${campaignRequest.requestType}'`
         );
     }
 
     const queryString = `
-      INSERT INTO ${tableName} (
-        ${columns}
+      WITH inserted AS (
+        INSERT INTO ${tableName} (
+          ${columns}
+        )
+        VALUES (
+          ${values.map((_, index) => `$${index + 1}`).join(", ")}
+        )
+        RETURNING *
       )
-      VALUES (
-        ${values.map((_, index) => `$${index + 1}`).join(", ")}
-      ) RETURNING *;
+      SELECT 
+        inserted.*, 
+        '${campaignRequest.requestType}' AS "requestType",
+        c."ownerRecipientId"
+      FROM inserted
+      JOIN "Campaign" c ON inserted."campaignId" = c."id";
     `;
 
+    console.log(queryString);
     const result = await query(queryString, values);
 
     if (!result || result.rows.length === 0) {
@@ -146,7 +156,7 @@ export async function insertCampaignRequest(
               internalDetails:
                 "The campaign ID specified for the campaign request does not exist",
               cause: error,
-            },
+            }
           );
         }
         if (error.constraint === "PostUpdateRequest_newPostId_fkey") {
@@ -158,7 +168,7 @@ export async function insertCampaignRequest(
               internalDetails:
                 "The campaign post with specified ID does not exist",
               cause: error,
-            },
+            }
           );
         }
         throw error;
@@ -169,7 +179,7 @@ export async function insertCampaignRequest(
 }
 
 export async function getCampaignRequests(
-  filterParams: CampaignRequestFilter & { id?: UUID },
+  filterParams: CampaignRequestFilter & { id?: UUID }
 ): Promise<PaginatedList<CampaignRequest>> {
   const limit = filterParams.limit ?? config.PAGE_SIZE;
   const pageNo = filterParams.page || 1;
@@ -205,7 +215,7 @@ export async function getCampaignRequests(
 
   if (filterParams.isResolved !== undefined) {
     whereClauses.push(
-      `req."resolutionDate" ${filterParams.isResolved ? "IS NOT NULL" : "IS NULL"}`,
+      `req."resolutionDate" ${filterParams.isResolved ? "IS NOT NULL" : "IS NULL"}`
     );
   }
 
@@ -250,7 +260,7 @@ export async function getCampaignRequests(
     'req."justification"',
     'req."requestDate"',
     'req."resolutionDate"',
-    'req."requestType"',
+    'req."resolutionType"',
     'c."ownerRecipientId"',
   ];
   const joinClause: string = `JOIN "Campaign" c ON req."campaignId" = c."id"`;
@@ -281,11 +291,11 @@ export async function getCampaignRequests(
     default: {
       const subQueryCols = columns
         .filter(
-          (val) =>
-            val !== 'c."ownerRecipientId"' && val !== 'req."requestType"',
+          (val) => val !== 'c."ownerRecipientId"' && val !== 'req."requestType"'
         )
         .join(", ");
 
+      columns.push('"requestType"');
       columns.push('req."newStatus"');
       columns.push('req."newPostId"');
       columns.push('req."newGoal"');
@@ -347,6 +357,7 @@ export async function getCampaignRequests(
       ${tableName}
     ${joinClause}
     ${whereClause}
+    ORDER BY req."requestDate" DESC
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
   const offset = (pageNo - 1) * limit;
@@ -362,11 +373,11 @@ export async function getCampaignRequests(
   `;
   const countResult = await query(
     countQueryString,
-    values.slice(0, values.length - 2),
+    values.slice(0, values.length - 2)
   );
 
   const items = (result.rows as CombinedRequestType[]).map(
-    transformCampaignRequest,
+    transformCampaignRequest
   );
 
   const resolvedItems = await Promise.all(items);
@@ -381,7 +392,7 @@ export async function getCampaignRequests(
 }
 
 export async function getCampaignPosts(
-  filterParams: CampaignPostFilter & { id?: UUID },
+  filterParams: CampaignPostFilter & { id?: UUID }
 ): Promise<PaginatedList<CampaignPost>> {
   const limit = filterParams.limit ?? config.PAGE_SIZE;
   const pageNo = filterParams.page || 1;
@@ -403,7 +414,7 @@ export async function getCampaignPosts(
 
   if (filterParams.isPublic !== undefined) {
     whereClauses.push(
-      `"publicPostDate" ${filterParams.isPublic ? "IS NOT NULL" : "IS NULL"}`,
+      `"publicPostDate" ${filterParams.isPublic ? "IS NOT NULL" : "IS NULL"}`
     );
   }
 
@@ -445,7 +456,7 @@ export async function getCampaignPosts(
   const result = await query(queryString, values);
   const countResult = await query(
     countQueryString,
-    values.slice(0, values.length - 2),
+    values.slice(0, values.length - 2)
   );
 
   const items = result.rows as CampaignPost[];
@@ -461,7 +472,7 @@ export async function getCampaignPosts(
 
 export async function insertCampaignPost(
   campaignId: UUID,
-  campaignPost: CampaignPost,
+  campaignPost: CampaignPost
 ): Promise<CampaignPost> {
   try {
     const result = await query(
@@ -481,7 +492,7 @@ export async function insertCampaignPost(
         campaignPost.content,
         campaignPost.publicPostDate,
         campaignId,
-      ],
+      ]
     );
 
     if (!result || result.rows.length === 0) {
@@ -506,7 +517,7 @@ export async function insertCampaignPost(
             {
               internalDetails: `The campaign ID specified for the campaign post does not exist`,
               cause: error,
-            },
+            }
           );
         }
         throw error;
@@ -517,7 +528,7 @@ export async function insertCampaignPost(
 }
 
 export async function resolveCampaignRequest(
-  campaignRequestId: UUID,
+  campaignRequestId: UUID
 ): Promise<CampaignRequest> {
   const campaignRequest = (await getCampaignRequests({ id: campaignRequestId }))
     .items[0];
@@ -558,7 +569,7 @@ export async function resolveCampaignRequest(
         "id" = $2
        RETURNING *
       `,
-    [new Date(), campaignRequestId],
+    [new Date(), campaignRequestId]
   );
 
   if (result.rows.length === 0) {
@@ -572,17 +583,17 @@ export async function resolveCampaignRequest(
 
 export async function updateCampaignPost(
   postId: UUID,
-  postData: Partial<CampaignPost>,
+  postData: Partial<CampaignPost>
 ): Promise<CampaignPost> {
   const { fragments, values } = buildUpdateQueryString(
-    excludeProperties(postData, ["id", "campaignId"]),
+    excludeProperties(postData, ["id", "campaignId"])
   );
 
   if (fragments.length === 0) {
     // If no fields to update, just return the existing post.
     const getResult = await query(
       `SELECT * FROM "CampaignPost" WHERE "id" = $1`,
-      [postId],
+      [postId]
     );
     if (getResult.rows.length === 0) {
       throw new AppError("Not Found", 404, "Campaign post not found.", {
@@ -611,26 +622,26 @@ export async function updateCampaignPost(
 }
 
 export async function deleteCampaignRequest(
-  campaignRequestId: UUID,
+  campaignRequestId: UUID
 ): Promise<boolean> {
   const deleteEndDateExtensionResult = await query(
     'DELETE FROM "EndDateExtensionRequest" WHERE "id" = $1',
-    [campaignRequestId],
+    [campaignRequestId]
   );
 
   const deletePostUpdateResult = await query(
     'DELETE FROM "PostUpdateRequest" WHERE "id" = $1',
-    [campaignRequestId],
+    [campaignRequestId]
   );
 
   const deleteStatusChangeResult = await query(
     'DELETE FROM "StatusChangeRequest" WHERE "id" = $1',
-    [campaignRequestId],
+    [campaignRequestId]
   );
 
   const deleteGoalAdjustmentResult = await query(
     'DELETE FROM "GoalAdjustmentRequest" WHERE "id" = $1',
-    [campaignRequestId],
+    [campaignRequestId]
   );
 
   return (

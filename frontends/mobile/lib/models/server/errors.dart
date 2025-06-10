@@ -51,9 +51,10 @@ final class SimpleError extends ApiServiceError {
 
 @JsonSerializable(explicitToJson: true)
 final class ProblemDetails extends ApiServiceError {
-  final ServerErrorType title;
+  final ResponseErrorType title;
   final int status;
   final String detail;
+  final ServerErrorCode? code;
 
   final List<FieldValidationFailure>? fieldFailures;
 
@@ -61,6 +62,7 @@ final class ProblemDetails extends ApiServiceError {
     required this.title,
     required this.status,
     required this.detail,
+    this.code,
     this.fieldFailures,
   });
 
@@ -86,24 +88,35 @@ class FieldValidationFailure {
   Map<String, dynamic> toJson() => _$FieldValidationFailureToJson(this);
 }
 
-enum ServerErrorType {
+enum ResponseErrorType {
   @JsonValue("Internal Server Error")
-  internalServerError,
+  internalServerError("Internal Server Error"),
 
   @JsonValue("Validation Failure")
-  validationFailure,
+  validationFailure("Validation Failure"),
 
   @JsonValue("Not Found")
-  notFound,
+  notFound("Not Found"),
 
   @JsonValue("Permission Denied")
-  permissionDenied,
+  permissionDenied("Permission Denied"),
 
   @JsonValue("Service Unavailable")
-  serviceUnavailable,
+  serviceUnavailable("Service Unavailable"),
 
   @JsonValue("Authentication Required")
-  authenticationRequired,
+  authenticationRequired("Authentication Required");
+
+  final String value;
+  const ResponseErrorType(this.value);
+}
+
+enum ServerErrorCode {
+  @JsonValue("DUPLICATE_EMAIL")
+  duplicateEmail,
+
+  @JsonValue("DUPLICATE_AUTH0_USER")
+  duplicateAuth0User
 }
 
 /// This mixin is designed to be used with State classes.

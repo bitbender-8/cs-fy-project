@@ -1,17 +1,20 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:mobile/config.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/campaign_request.dart';
+
+part 'filters.g.dart';
 
 abstract class ListFilter {
   int page;
   int limit;
 
-  ListFilter({this.page = 1, this.limit = pageSize});
+  ListFilter({this.page = 1, this.limit = AppConfig.pageSize});
 
   Map<String, String>? toMap();
-  ListFilter copyWith({int? page, int? limit});
 }
 
+@CopyWith()
 class RecipientFilter extends ListFilter {
   String? auth0UserId;
   String? name;
@@ -48,31 +51,9 @@ class RecipientFilter extends ListFilter {
     map.removeWhere((key, value) => value == null);
     return map.isEmpty ? null : Map<String, String>.from(map);
   }
-
-  @override
-  RecipientFilter copyWith({
-    String? auth0UserId,
-    String? name,
-    String? email,
-    DateTime? minBirthDate,
-    DateTime? maxBirthDate,
-    String? phoneNo,
-    int? page,
-    int? limit,
-  }) {
-    return RecipientFilter(
-      auth0UserId: auth0UserId ?? this.auth0UserId,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      minBirthDate: minBirthDate ?? this.minBirthDate,
-      maxBirthDate: maxBirthDate ?? this.maxBirthDate,
-      phoneNo: phoneNo ?? this.phoneNo,
-      page: page ?? this.page,
-      limit: limit ?? this.limit,
-    );
-  }
 }
 
+@CopyWith()
 class CampaignFilter extends ListFilter {
   String? title;
   CampaignStatus? status;
@@ -114,7 +95,7 @@ class CampaignFilter extends ListFilter {
   Map<String, String>? toMap() {
     final map = <String, String?>{
       'title': title,
-      'status': status?.toString().split('.').last,
+      'status': status?.value,
       'category': category,
       'minLaunchDate': minLaunchDate?.toIso8601String(),
       'maxLaunchDate': maxLaunchDate?.toIso8601String(),
@@ -135,49 +116,9 @@ class CampaignFilter extends ListFilter {
     map.removeWhere((key, value) => value == null);
     return map.isEmpty ? null : Map<String, String>.from(map);
   }
-
-  @override
-  CampaignFilter copyWith({
-    String? title,
-    CampaignStatus? status,
-    String? category,
-    DateTime? minLaunchDate,
-    DateTime? maxLaunchDate,
-    DateTime? minEndDate,
-    DateTime? maxEndDate,
-    DateTime? minSubmissionDate,
-    DateTime? maxSubmissionDate,
-    DateTime? minVerificationDate,
-    DateTime? maxVerificationDate,
-    DateTime? minDenialDate,
-    DateTime? maxDenialDate,
-    String? ownerRecipientId,
-    bool? isPublic,
-    int? page,
-    int? limit,
-  }) {
-    return CampaignFilter(
-      title: title ?? this.title,
-      status: status ?? this.status,
-      category: category ?? this.category,
-      minLaunchDate: minLaunchDate ?? this.minLaunchDate,
-      maxLaunchDate: maxLaunchDate ?? this.maxLaunchDate,
-      minEndDate: minEndDate ?? this.minEndDate,
-      maxEndDate: maxEndDate ?? this.maxEndDate,
-      minSubmissionDate: minSubmissionDate ?? this.minSubmissionDate,
-      maxSubmissionDate: maxSubmissionDate ?? this.maxSubmissionDate,
-      minVerificationDate: minVerificationDate ?? this.minVerificationDate,
-      maxVerificationDate: maxVerificationDate ?? this.maxVerificationDate,
-      minDenialDate: minDenialDate ?? this.minDenialDate,
-      maxDenialDate: maxDenialDate ?? this.maxDenialDate,
-      ownerRecipientId: ownerRecipientId ?? this.ownerRecipientId,
-      isPublic: isPublic ?? this.isPublic,
-      page: page ?? this.page,
-      limit: limit ?? this.limit,
-    );
-  }
 }
 
+@CopyWith()
 class NotificationFilter extends ListFilter {
   bool? isRead;
   DateTime? minCreatedAt;
@@ -204,36 +145,20 @@ class NotificationFilter extends ListFilter {
     map.removeWhere((key, value) => value == null);
     return map.isEmpty ? null : Map<String, String>.from(map);
   }
-
-  @override
-  NotificationFilter copyWith({
-    bool? isRead,
-    DateTime? minCreatedAt,
-    DateTime? maxCreatedAt,
-    int? page,
-    int? limit,
-  }) {
-    return NotificationFilter(
-      isRead: isRead ?? this.isRead,
-      minCreatedAt: minCreatedAt ?? this.minCreatedAt,
-      maxCreatedAt: maxCreatedAt ?? this.maxCreatedAt,
-      page: page ?? this.page,
-      limit: limit ?? this.limit,
-    );
-  }
 }
 
+@CopyWith()
 class CampaignRequestFilter extends ListFilter {
   String? ownerRecipientId;
   String? campaignId;
+  String? title;
   CampaignRequestType? campaignRequestType;
-  bool? isResolved;
-  ResolutionType? resolutionType;
   DateTime? minRequestDate;
   DateTime? maxRequestDate;
   DateTime? minResolutionDate;
   DateTime? maxResolutionDate;
-  String? title;
+  ResolutionType? resolutionType;
+  bool? isResolved;
 
   CampaignRequestFilter({
     this.ownerRecipientId,
@@ -255,9 +180,9 @@ class CampaignRequestFilter extends ListFilter {
     final map = <String, String?>{
       'ownerRecipientId': ownerRecipientId,
       'campaignId': campaignId,
-      'requestType': campaignRequestType?.toString().split('.').last,
+      'requestType': campaignRequestType?.value,
       'isResolved': isResolved?.toString(),
-      'resolutionType': resolutionType?.toString().split('.').last,
+      'resolutionType': resolutionType?.value,
       'minRequestDate': minRequestDate?.toIso8601String(),
       'maxRequestDate': maxRequestDate?.toIso8601String(),
       'minResolutionDate': minResolutionDate?.toIso8601String(),
@@ -270,35 +195,35 @@ class CampaignRequestFilter extends ListFilter {
     map.removeWhere((key, value) => value == null);
     return map.isEmpty ? null : Map<String, String>.from(map);
   }
+}
+
+@CopyWith()
+class CampaignPostFilter extends ListFilter {
+  String? title;
+  String? campaignId;
+  bool? isPublic;
+  DateTime? minPublicPostDate;
+  DateTime? maxPublicPostDate;
+
+  CampaignPostFilter({
+    this.title,
+    this.campaignId,
+    this.isPublic,
+    this.minPublicPostDate,
+    this.maxPublicPostDate,
+  });
 
   @override
-  CampaignRequestFilter copyWith({
-    String? ownerRecipientId,
-    String? campaignId,
-    CampaignRequestType? campaignRequestType,
-    bool? isResolved,
-    ResolutionType? resolutionType,
-    DateTime? minRequestDate,
-    DateTime? maxRequestDate,
-    DateTime? minResolutionDate,
-    DateTime? maxResolutionDate,
-    String? title,
-    int? page,
-    int? limit,
-  }) {
-    return CampaignRequestFilter(
-      ownerRecipientId: ownerRecipientId ?? this.ownerRecipientId,
-      campaignId: campaignId ?? this.campaignId,
-      campaignRequestType: campaignRequestType ?? this.campaignRequestType,
-      isResolved: isResolved ?? this.isResolved,
-      resolutionType: resolutionType ?? this.resolutionType,
-      minRequestDate: minRequestDate ?? this.minRequestDate,
-      maxRequestDate: maxRequestDate ?? this.maxRequestDate,
-      minResolutionDate: minResolutionDate ?? this.minResolutionDate,
-      maxResolutionDate: maxResolutionDate ?? this.maxResolutionDate,
-      title: title ?? this.title,
-      page: page ?? this.page,
-      limit: limit ?? this.limit,
-    );
+  Map<String, String>? toMap() {
+    final map = <String, String?>{
+      'title': title,
+      'campaignId': campaignId,
+      'isPublic': isPublic?.toString(),
+      'minPublicPostDate': minPublicPostDate?.toIso8601String(),
+      'maxPublicPostDate': maxPublicPostDate?.toIso8601String(),
+    };
+
+    map.removeWhere((key, value) => value == null);
+    return map.isEmpty ? null : Map<String, String>.from(map);
   }
 }

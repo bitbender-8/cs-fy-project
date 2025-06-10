@@ -11,7 +11,7 @@ import 'package:mobile/models/server/response.dart';
 import 'package:path_provider/path_provider.dart';
 
 class FileService {
-  static const String baseUrl = "$apiUrl/files";
+  static const String baseUrl = "${AppConfig.apiUrl}/files";
 
   /// Downloads a file from [fileUrl] with optional [accessToken],
   /// saves it locally, and attempts to open it.
@@ -64,9 +64,7 @@ class FileService {
 
       return (
         data: null,
-        error: SimpleError(
-          'An unexpected error occurred while opening the file.',
-        ),
+        error: ApiServiceError.handleException(e),
       );
     }
   }

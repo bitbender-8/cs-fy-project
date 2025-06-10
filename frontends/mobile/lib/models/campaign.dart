@@ -1,9 +1,11 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:mobile/models/payment_info.dart';
 import 'package:mobile/models/recipient.dart';
 
 part 'campaign.g.dart';
 
+@CopyWith()
 @JsonSerializable(explicitToJson: true)
 class Campaign {
   String? id;
@@ -12,7 +14,6 @@ class Campaign {
   String description;
   String fundraisingGoal;
 
-  @CampaignStatusConverter()
   CampaignStatus? status;
 
   String category;
@@ -108,34 +109,60 @@ class Campaign {
   }
 }
 
-@JsonEnum(valueField: 'value')
 enum CampaignStatus {
+  @JsonValue("Pending Review")
   pendingReview("Pending Review"),
+
+  @JsonValue("Verified")
   verified("Verified"),
+
+  @JsonValue("Denied")
   denied("Denied"),
+
+  @JsonValue("Live")
   live("Live"),
+
+  @JsonValue("Paused")
   paused("Paused"),
+
+  @JsonValue("Completed")
   completed("Completed");
 
   final String value;
   const CampaignStatus(this.value);
-}
 
-class CampaignStatusConverter implements JsonConverter<CampaignStatus, String> {
-  const CampaignStatusConverter();
-
-  @override
-  CampaignStatus fromJson(String json) {
-    return CampaignStatus.values.firstWhere(
-      (e) => e.value == json,
-      orElse: () => throw ArgumentError('Unknown CampaignStatus: $json'),
-    );
+  /// Returns a list of CampaignStatus values that are valid transitions from the given 'status'.
+  static List<CampaignStatus> getValidStatusTransitions(
+    CampaignStatus? status,
+  ) {
+    switch (status) {
+      case CampaignStatus.pendingReview:
+        return [
+          CampaignStatus.verified,
+          CampaignStatus.denied,
+        ];
+      case CampaignStatus.verified:
+        return [
+          CampaignStatus.live,
+          CampaignStatus.denied,
+        ];
+      case CampaignStatus.live:
+        return [
+          CampaignStatus.paused,
+          CampaignStatus.completed,
+        ];
+      case CampaignStatus.paused:
+        return [
+          CampaignStatus.live,
+          CampaignStatus.completed,
+        ];
+      default:
+        return [];
+    }
   }
-
-  @override
-  String toJson(CampaignStatus object) => object.value;
 }
 
+@CopyWith()
 @JsonSerializable(explicitToJson: true)
 class CampaignDocument {
   String campaignId;
@@ -154,6 +181,7 @@ class CampaignDocument {
   Map<String, dynamic> toJson() => _$CampaignDocumentToJson(this);
 }
 
+@CopyWith()
 @JsonSerializable(explicitToJson: true)
 class CampaignDonation {
   String id;
@@ -176,6 +204,7 @@ class CampaignDonation {
   Map<String, dynamic> toJson() => _$CampaignDonationToJson(this);
 }
 
+@CopyWith()
 @JsonSerializable(explicitToJson: true)
 class CampaignPost {
   String? id;
@@ -186,10 +215,10 @@ class CampaignPost {
 
   CampaignPost({
     this.id,
+    required this.campaignId,
     required this.title,
     required this.content,
     this.publicPostDate,
-    required this.campaignId,
   });
 
   factory CampaignPost.fromJson(Map<String, dynamic> json) =>

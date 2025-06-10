@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:mobile/models/server/errors.dart';
-import 'package:mobile/models/server/response.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mobile/models/server/filters.dart';
@@ -24,7 +21,6 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
@@ -34,8 +30,7 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
             ? const CircularProgressIndicator()
             : Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                    borderRadius: BorderRadius.circular(16)),
                 margin:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
                 child: Padding(
@@ -60,20 +55,14 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
                         children: [
                           Expanded(
                             child: StyledElevatedButton(
-                              onPressed: () async => await _handleLogin(
-                                context,
-                                userProvider,
-                              ),
+                              onPressed: () async => await _handleLogin(),
                               label: 'Log In',
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: StyledElevatedButton(
-                              onPressed: () async => await _handleSignUp(
-                                context,
-                                userProvider,
-                              ),
+                              onPressed: () async => await _navigateToSignUp(),
                               label: 'Sign Up',
                             ),
                           ),
@@ -88,197 +77,75 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
   }
 
   //****** Helper functions
-  Future<void> _handleLogin(
-    BuildContext context,
-    UserProvider userProvider,
-  ) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _handleLogin() async {
+    setState(() => _isLoading = true);
 
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.login();
-    if (!context.mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
+    if (!mounted) return;
 
     final credentials = userProvider.credentials;
-    if (credentials == null) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed. Please try again.')),
+    if (!userProvider.isLoggedIn) {
+      if (mounted) {
+        showErrorSnackBar(
+          context,
+          userProvider.errorMsg ?? 'Login failed. Please try again.',
         );
       }
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       return;
     }
 
+    if (!mounted) return;
     final recipientService = Provider.of<RecipientService>(
       context,
       listen: false,
     );
     final result = await recipientService.getRecipients(
-      RecipientFilter(auth0UserId: credentials.user.sub),
+      RecipientFilter(auth0UserId: credentials!.user.sub),
       credentials.accessToken,
     );
 
-    debugPrintApiResponse(result);
-
-    // Show Login Status
-    if (result.data != null && result.data!.items.isNotEmpty) {
-      userProvider.setRecipient(Recipient.fromJson(result.data!.items.first));
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful!')),
-        );
-      }
-    } else {
-      userProvider.setCredentials(null);
-      userProvider.setRecipient(null);
-
-      if (context.mounted) {
-        String? message;
-
-        if (result.error is ProblemDetails) {
-          message = (result.error as ProblemDetails).detail;
-        } else if (result.error is SimpleError) {
-          message = (result.error as SimpleError).message;
+    if (!mounted) return;
+    await handleServiceResponse(
+      context,
+      result,
+      onSuccess: () {
+        if (result.data != null && result.data!.items.isNotEmpty) {
+          userProvider.setRecipient(Recipient.fromJson(
+            result.data!.items.first,
+          ));
+          showInfoSnackBar(context, 'Login successful!');
+        } else {
+          // This case means Auth0 login was successful, but no recipient found.
+          // This might indicate a user who has only logged in via Auth0 but not signed up as a recipient.
+          showErrorSnackBar(
+            context,
+            'No recipient profile found. Please sign up.',
+          );
+          // Clear credentials as recipient isn't linked
+          userProvider.setCredentials(null);
+          userProvider.setRecipient(null);
         }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text((message ?? '')),
-          ),
-        );
-      }
-    }
+      },
+    );
 
     UserProvider.debugPrintUserProviderState(userProvider);
-
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
-  Future<void> _handleSignUp(
-    BuildContext context,
-    UserProvider userProvider,
-  ) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _navigateToSignUp() async {
+    setState(() => _isLoading = true);
 
-    final recipientData = await Navigator.of(context).push(
+    await Navigator.of(context).push(
+      // The SignupPage now gets UserProvider from context internally
       MaterialPageRoute(builder: (context) => const SignupPage()),
-    ) as Map<String, dynamic>?;
-
-    // Handle Signup Cancellation
-    if (recipientData == null) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    await userProvider.signup();
-    if (!context.mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    final credentials = userProvider.credentials;
-    if (credentials == null) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signup failed. Please try again.')),
-        );
-      }
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    final auth0UserId = credentials.user.sub;
-    final accessToken = credentials.accessToken;
-    final recipientService = Provider.of<RecipientService>(
-      context,
-      listen: false,
     );
 
-    // Create Recipient Object
-    final handles = recipientData['socialMediaHandles'];
-    debugPrint("Handles: ${jsonEncode(handles)}");
-
-    final recipient = Recipient(
-      firstName: recipientData['firstName'],
-      middleName: recipientData['middleName'],
-      lastName: recipientData['lastName'],
-      dateOfBirth: recipientData['dateOfBirth'],
-      phoneNo: recipientData['phoneNo'],
-      bio: recipientData['bio'],
-      socialMediaHandles: (recipientData['socialMediaHandles'])
-          .map<SocialMediaHandle>((value) => SocialMediaHandle(
-                socialMediaHandle: value,
-              ))
-          .toList(),
-    );
-    final profilePicture = recipientData['profilePicture'];
-
-    // Attempt to Create Recipient
-    final result = await recipientService.createRecipient(
-      recipient,
-      profilePicture,
-      accessToken,
-    );
-
-    debugPrintApiResponse(result);
-
-    // Clean up Orphan Auth0 User on Failure
-    if (result.data == null && auth0UserId.isNotEmpty && context.mounted) {
-      await recipientService.deleteAuth0User(auth0UserId, accessToken);
-    }
-
-    // Show Signup Status
-    if (result.data != null) {
-      userProvider.setRecipient(result.data!);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sign up successful!')),
-        );
-      }
-    } else {
-      userProvider.setCredentials(null);
-      userProvider.setRecipient(null);
-
-      if (context.mounted) {
-        String? message;
-
-        if (result.error is ProblemDetails) {
-          message = (result.error as ProblemDetails).detail;
-        } else if (result.error is SimpleError) {
-          message = (result.error as SimpleError).message;
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text((message ?? '')),
-          ),
-        );
-      }
-    }
-
+    if (!mounted) return;
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     UserProvider.debugPrintUserProviderState(userProvider);
-    setState(() {
-      _isLoading = false;
-    });
+
+    setState(() => _isLoading = false);
   }
 }

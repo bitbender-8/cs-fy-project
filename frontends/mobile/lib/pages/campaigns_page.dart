@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/campaign_card.dart';
 import 'package:mobile/components/campaign_filter_dialog.dart';
+import 'package:mobile/components/page_with_floating_button.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/server/errors.dart';
 import 'package:mobile/models/server/filters.dart';
+import 'package:mobile/pages/add_campaign_page.dart';
 import 'package:mobile/services/campaign_service.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:mobile/services/recipient_service.dart';
 import 'package:provider/provider.dart';
 
-class CampaignListPage extends StatefulWidget {
+class CampaignsPage extends StatefulWidget {
   final bool isPublicList;
-  const CampaignListPage({super.key, this.isPublicList = true});
+  const CampaignsPage({super.key, this.isPublicList = true});
 
   @override
-  State<CampaignListPage> createState() => _CampaignListPageState();
+  State<CampaignsPage> createState() => _CampaignsPageState();
 }
 
-class _CampaignListPageState extends State<CampaignListPage> {
+class _CampaignsPageState extends State<CampaignsPage> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final List<Campaign> _campaigns = [];
   bool _isLoading = false, _hasMore = true, _initialLoadAttempted = false;
   int _currentPage = 1;
 
-  final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
   CampaignFilter _filters = CampaignFilter();
 
   @override
@@ -54,9 +56,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
               icon: const Icon(Icons.clear_rounded),
               onPressed: () {
                 _searchController.clear();
-                setState(() {
-                  _filters = _filters.copyWith(title: null);
-                });
+                setState(() => _filters = _filters.copyWith(title: null));
               },
             ),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -65,67 +65,77 @@ class _CampaignListPageState extends State<CampaignListPage> {
       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
     );
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: searchBarDecoration,
-                  onSubmitted: (value) {
-                    setState(() {
-                      _filters.title = value.isEmpty ? null : value;
-                      _campaigns.clear();
-                      _currentPage = 1;
-                      _hasMore = true;
-                      _initialLoadAttempted = false;
-                    });
-                    _fetchCampaigns();
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () async {
-                  final newFilters = await showDialog<CampaignFilter>(
-                    context: context,
-                    builder: (context) => CampaignFilterDialog(
-                      currentFilters: _filters,
-                      showSensitiveFields: !widget.isPublicList,
-                    ),
-                  );
+    return PageWithFloatingButton(
+      showFab: !widget.isPublicList,
+      onFabPressed: () {
+        if (!(Provider.of<UserProvider>(context, listen: false).isLoggedIn)) return;
 
-                  if (newFilters != null && mounted) {
-                    setState(() {
-                      _filters = newFilters.copyWith(title: _filters.title);
-                      _campaigns.clear();
-                      _currentPage = 1;
-                      _hasMore = true;
-                      _initialLoadAttempted = false;
-                    });
-                    _fetchCampaigns();
-                  }
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    Icons.tune_rounded,
-                    color: colorScheme.onSurfaceVariant,
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AddCampaignPage()),
+        );
+      },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: searchBarDecoration,
+                    onSubmitted: (value) {
+                      setState(() {
+                        _filters.title = value.isEmpty ? null : value;
+                        _campaigns.clear();
+                        _currentPage = 1;
+                        _hasMore = true;
+                        _initialLoadAttempted = false;
+                      });
+                      _fetchCampaigns();
+                    },
                   ),
                 ),
-              )
-            ],
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () async {
+                    final newFilters = await showDialog<CampaignFilter>(
+                      context: context,
+                      builder: (context) => CampaignFilterDialog(
+                        currentFilters: _filters,
+                        showSensitiveFields: !widget.isPublicList,
+                      ),
+                    );
+
+                    if (newFilters != null && mounted) {
+                      setState(() {
+                        _filters = newFilters.copyWith(title: _filters.title);
+                        _campaigns.clear();
+                        _currentPage = 1;
+                        _hasMore = true;
+                        _initialLoadAttempted = false;
+                      });
+                      _fetchCampaigns();
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.tune_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
-        ),
-        Expanded(child: _buildContent(colorScheme))
-      ],
+          Expanded(child: _buildContent(colorScheme))
+        ],
+      ),
     );
   }
 
@@ -167,7 +177,8 @@ class _CampaignListPageState extends State<CampaignListPage> {
                 )
               : CampaignCard(
                   campaignData: _campaigns[index],
-                  isPublic: widget.isPublicList),
+                  isPublic: widget.isPublicList,
+                ),
         ),
       );
     }

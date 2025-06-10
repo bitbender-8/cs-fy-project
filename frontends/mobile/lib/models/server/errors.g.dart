@@ -8,9 +8,10 @@ part of 'errors.dart';
 
 ProblemDetails _$ProblemDetailsFromJson(Map<String, dynamic> json) =>
     ProblemDetails(
-      title: $enumDecode(_$ServerErrorTypeEnumMap, json['title']),
+      title: $enumDecode(_$ResponseErrorTypeEnumMap, json['title']),
       status: (json['status'] as num).toInt(),
       detail: json['detail'] as String,
+      code: $enumDecodeNullable(_$ServerErrorCodeEnumMap, json['code']),
       fieldFailures: (json['fieldFailures'] as List<dynamic>?)
           ?.map(
               (e) => FieldValidationFailure.fromJson(e as Map<String, dynamic>))
@@ -19,19 +20,25 @@ ProblemDetails _$ProblemDetailsFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$ProblemDetailsToJson(ProblemDetails instance) =>
     <String, dynamic>{
-      'title': _$ServerErrorTypeEnumMap[instance.title]!,
+      'title': _$ResponseErrorTypeEnumMap[instance.title]!,
       'status': instance.status,
       'detail': instance.detail,
+      'code': _$ServerErrorCodeEnumMap[instance.code],
       'fieldFailures': instance.fieldFailures?.map((e) => e.toJson()).toList(),
     };
 
-const _$ServerErrorTypeEnumMap = {
-  ServerErrorType.internalServerError: 'Internal Server Error',
-  ServerErrorType.validationFailure: 'Validation Failure',
-  ServerErrorType.notFound: 'Not Found',
-  ServerErrorType.permissionDenied: 'Permission Denied',
-  ServerErrorType.serviceUnavailable: 'Service Unavailable',
-  ServerErrorType.authenticationRequired: 'Authentication Required',
+const _$ResponseErrorTypeEnumMap = {
+  ResponseErrorType.internalServerError: 'Internal Server Error',
+  ResponseErrorType.validationFailure: 'Validation Failure',
+  ResponseErrorType.notFound: 'Not Found',
+  ResponseErrorType.permissionDenied: 'Permission Denied',
+  ResponseErrorType.serviceUnavailable: 'Service Unavailable',
+  ResponseErrorType.authenticationRequired: 'Authentication Required',
+};
+
+const _$ServerErrorCodeEnumMap = {
+  ServerErrorCode.duplicateEmail: 'DUPLICATE_EMAIL',
+  ServerErrorCode.duplicateAuth0User: 'DUPLICATE_AUTH0_USER',
 };
 
 FieldValidationFailure _$FieldValidationFailureFromJson(

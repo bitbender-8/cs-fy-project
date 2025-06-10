@@ -1,11 +1,9 @@
 import { z } from "zod";
 import {
-  MIN_STRING_LENGTH,
   validBoolean,
   validCampaignRequestDecision,
   validCampaignRequestType,
   validDate,
-  validNonEmptyString,
   validUuid,
 } from "../../utils/zod-helpers.js";
 
@@ -21,7 +19,7 @@ export const campaignRequestFilterSchema = z
     maxRequestDate: validDate(true),
     minResolutionDate: validDate(true),
     maxResolutionDate: validDate(true),
-    title: validNonEmptyString(MIN_STRING_LENGTH, 100),
+    title: z.string(),
     page: z.coerce.number().int().positive(),
     limit: z.coerce.number().int().positive(),
   })

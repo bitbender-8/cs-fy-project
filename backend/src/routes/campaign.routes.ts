@@ -39,6 +39,7 @@ import { UUID } from "crypto";
 import { deleteFiles } from "../services/fie.service.js";
 import { config } from "../config.js";
 import path from "path";
+// import { verifyChapaPayment } from "../services/chapa.service.js";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
@@ -278,6 +279,7 @@ campaignRouter.post(
   validateRequestBody(createCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
     // TODO(bitbender-8): Add a check for whether the campaign has a status of "Pending Review"
+    console.log(req.auth)
     if (getUserRole(req.auth) !== "Recipient") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
@@ -453,7 +455,7 @@ campaignRouter.get(
         ).items[0];
 
         campaign =
-          tempCampaign || Object.keys(tempCampaign).length !== 0
+          tempCampaign || Object.keys(tempCampaign ?? {}).length !== 0
             ? tempCampaign
             : await getPublicCampaign();
         break;
@@ -477,3 +479,53 @@ campaignRouter.get(
     return;
   }
 );
+
+// campaignRouter.post(
+//   "/:id/verify-donation/:txnRef",
+//   async (req: Request, res: Response): Promise<void> => {
+//     //     - Verify the donation transaction.
+//     //     - If verification fails, respond with a payment failure error.
+//     // - Initiate transfer to campaign's account.
+//     // - Verify transfer to campaign's account.
+//     // - Save donation to db.
+//     // Check to make sure that the campaign in the id exists.
+//   }
+// );
+
+// campaignRouter.post(
+//   "/:id/verify-donation/:txnRef",
+//   async (req: Request, res: Response): Promise<void> => {
+//     const campaignId = validateUuidParam(req.params.id);
+//     const txnRef = req.params.txnRef;
+
+//     // Check to make sure that the campaign in the id exists.
+//     const campaign = (await getCampaigns({ id: campaignId })).items[0];
+//     if (!campaign) {
+//       const problemDetails: ProblemDetails = {
+//         title: "Not Found",
+//         status: 404,
+//         detail: `Campaign with ID ${campaignId} not found.`,
+//       };
+//       res.status(problemDetails.status).json(problemDetails);
+//       return;
+//     }
+
+//     // Verify the donation transaction with Chapa.
+//     const chapaPymntVerifyResult = await verifyChapaPayment(txnRef);
+
+//     if (
+//       chapaPymntVerifyResult.status !== "success" ||
+//       !chapaPymntVerifyResult.data
+//     ) {
+//       const problemDetails: ProblemDetails = {
+//         title: "Payment Verification Failure",
+//         status: 400,
+//         detail: "The payment cound not be verified successfully",
+//       };
+//       res.status(problemDetails.status).json(problemDetails);
+//       return;
+//     }
+
+
+//   }
+// );

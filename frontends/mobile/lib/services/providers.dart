@@ -14,7 +14,7 @@ class UserProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMsg;
 
-  final Auth0 _auth0 = Auth0(auth0Domain, auth0ClientId);
+  final Auth0 _auth0 = Auth0(AppConfig.auth0Domain, AppConfig.auth0ClientId);
 
   Recipient? get user => _recipient;
   Credentials? get credentials => _credentials;
@@ -36,11 +36,12 @@ class UserProvider extends ChangeNotifier {
     _isLoading = true;
 
     try {
-      final credentials =
-          await _auth0.webAuthentication(scheme: auth0RedirectScheme).login(
+      final credentials = await _auth0
+          .webAuthentication(scheme: AppConfig.auth0RedirectScheme)
+          .login(
         useHTTPS: true,
-        audience: auth0Audience,
-        parameters: const {},
+        audience: AppConfig.auth0Audience,
+        parameters: const {'prompt': 'login'},
       );
       final role = _getUserRole(credentials.accessToken);
 
@@ -50,7 +51,7 @@ class UserProvider extends ChangeNotifier {
         _credentials = credentials;
       }
     } on WebAuthenticationException catch (e) {
-      _errorMsg = "${e.details}";
+      _errorMsg = e.details.isNotEmpty ? "${e.details}" : null;
       debugPrint("[AUTH0_ERROR]: $e");
     } catch (e) {
       debugPrint("[UNEXPECTED_AUTH0_ERROR]: $e");
@@ -63,15 +64,16 @@ class UserProvider extends ChangeNotifier {
     _isLoading = true;
 
     try {
-      _credentials =
-          await _auth0.webAuthentication(scheme: auth0RedirectScheme).login(
+      _credentials = await _auth0
+          .webAuthentication(scheme: AppConfig.auth0RedirectScheme)
+          .login(
         useHTTPS: true,
-        audience: auth0Audience,
+        audience: AppConfig.auth0Audience,
         useEphemeralSession: true,
-        parameters: {'screen_hint': 'signup'},
+        parameters: const {'screen_hint': 'signup', 'prompt': 'login'},
       );
     } on WebAuthenticationException catch (e) {
-      _errorMsg = "${e.details}";
+      _errorMsg = e.details.isNotEmpty ? "${e.details}" : null;
       debugPrint("[AUTH0_ERROR]: $e");
     } catch (e) {
       debugPrint("[UNEXPECTED_AUTH0_ERROR]: $e");
@@ -102,7 +104,7 @@ class UserProvider extends ChangeNotifier {
   // Private methods
   UserType? _getUserRole(String accessToken) {
     Map<String, dynamic> payload = Jwt.parseJwt(accessToken);
-    final roles = payload['$auth0Namespace/roles'];
+    final roles = payload['${AppConfig.auth0Namespace}/roles'];
 
     return (roles is List) ? UserType.fromString(roles.firstOrNull) : null;
   }

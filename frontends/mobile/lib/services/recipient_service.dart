@@ -12,7 +12,7 @@ import 'package:mobile/models/server/errors.dart';
 import 'package:mobile/models/server/response.dart';
 
 class RecipientService {
-  static const String baseUrl = "$apiUrl/recipients";
+  static const String baseUrl = "${AppConfig.apiUrl}/recipients";
 
   Future<ServiceResult<Recipient>> createRecipient(
     Recipient recipientData,
@@ -85,13 +85,9 @@ class RecipientService {
         error: null,
       );
     } catch (e) {
-      debugPrint("[REQUEST_ERROR]: $e");
-
       return (
         data: null,
-        error: SimpleError(
-          'Failed to send a request to the server. Check your Internet.',
-        )
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -122,7 +118,7 @@ class RecipientService {
     } catch (e) {
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -161,7 +157,7 @@ class RecipientService {
     } catch (e) {
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -186,12 +182,9 @@ class RecipientService {
         );
       }
     } catch (e) {
-      debugPrint('[REQUEST_ERROR]: Error sending delete request. $e');
       return (
         data: null,
-        error: SimpleError(
-          'Failed to send delete request. Check your Internet.',
-        ),
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -267,13 +260,9 @@ class RecipientService {
         error: null,
       );
     } catch (e) {
-      debugPrint("[REQUEST_ERROR]: $e");
-
       return (
         data: null,
-        error: SimpleError(
-          'Failed to send a request to the server. Check your Internet.',
-        )
+        error: ApiServiceError.handleException(e),
       );
     }
   }
