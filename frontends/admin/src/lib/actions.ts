@@ -146,7 +146,7 @@ export async function updateSupervisorProfile(formData: FormData) {
       data: dataToUpdate,
     });
     // Revalidate the profile path to ensure fresh data is shown
-    revalidatePath("/profile"); // Next.js 13+ App Router feature
+    // revalidatePath("/profile"); // Next.js 13+ App Router feature
     return { success: true, supervisor: updatedSupervisor };
   } catch (error) {
     console.error("Failed to update profile:", error);
