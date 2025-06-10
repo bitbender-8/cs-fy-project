@@ -1,7 +1,6 @@
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { SidebarTrigger } from "./ui/sidebar";
 import ProfileDropdownMenu from "./profile-dropdown-menu";
-import NotificationsDropdownMenu from "./notifications-dropdown-menu";
 import prisma from "@/lib/prisma";
 import { auth0 } from "@/lib/auth0";
 
@@ -19,7 +18,7 @@ export default async function Navbar() {
     <div className="flex items-center justify-between py-2">
       <SidebarTrigger className="cursor-pointer" />
       <nav className="flex space-x-3 items-center px-4">
-        <NotificationsDropdownMenu />
+        {/* <NotificationsDropdownMenu /> */}
         <Avatar className="w-10 h-10">
           <AvatarFallback className="bg-primary text-white">
             {supervisor?.firstName[0] + " " + supervisor?.lastName[0]}
