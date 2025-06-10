@@ -426,14 +426,16 @@ export async function insertRecipient(
             "Validation Failure",
             409,
             "Auth0 user ID is already in use by another recipient",
-            { cause: error }
+            { cause: error },
+            "DUPLICATE_AUTH0_USER"
           );
         } else if (error.constraint === "Recipient_email_key") {
           throw new AppError(
             "Validation Failure",
             409,
             "Email is already in use by another recipient",
-            { cause: error }
+            { cause: error },
+            "DUPLICATE_EMAIL"
           );
         }
         throw error;

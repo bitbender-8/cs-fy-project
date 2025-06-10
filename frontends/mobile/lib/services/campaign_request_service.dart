@@ -8,7 +8,7 @@ import 'package:mobile/models/server/filters.dart';
 import 'package:mobile/models/server/response.dart';
 
 class CampaignRequestService {
-  static const String baseUrl = "$apiUrl/campaign-requests";
+  static const String baseUrl = "${AppConfig.apiUrl}/campaign-requests";
 
   /// Fetches a paginated list of campaign requests based on provided filters.
   Future<ServiceResult<PaginatedList<CampaignRequest>>> getCampaignRequests(
@@ -28,24 +28,28 @@ class CampaignRequestService {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       });
-
-      print("Fetching campaign requests from API: ${getUrl.toString()}");
+      debugPrint(
+        "[RESPONSE]: ${response.statusCode} - ${response.body}",
+      );
 
       if (response.statusCode == 200) {
-        final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
-        final paginatedResult = PaginatedList<CampaignRequest>.fromJson(
-          decodedBody,
-          (data) => CampaignRequest.fromJson(data as Map<String, dynamic>),
+        return (
+          data: PaginatedList<CampaignRequest>.fromJson(
+            jsonDecode(response.body),
+            (data) => CampaignRequest.fromJson(data as Map<String, dynamic>),
+          ),
+          error: null
         );
-        return (data: paginatedResult, error: null);
       } else {
-        final problem = ProblemDetails.fromJson(jsonDecode(response.body));
-        return (data: null, error: problem);
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(response.body))
+        );
       }
     } catch (e) {
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -63,18 +67,25 @@ class CampaignRequestService {
         'Content-Type': 'application/json',
       });
 
+      debugPrint(
+        "[RESPONSE]: ${response.statusCode} - ${response.body}",
+      );
+
       if (response.statusCode == 200) {
-        final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
-        final campaignRequest = CampaignRequest.fromJson(decodedBody);
-        return (data: campaignRequest, error: null);
+        return (
+          data: CampaignRequest.fromJson(jsonDecode(response.body)),
+          error: null
+        );
       } else {
-        final problem = ProblemDetails.fromJson(jsonDecode(response.body));
-        return (data: null, error: problem);
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(response.body))
+        );
       }
     } catch (e) {
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -98,18 +109,25 @@ class CampaignRequestService {
         body: body,
       );
 
+      debugPrint(
+        "[RESPONSE]: ${response.statusCode} - ${response.body}",
+      );
+
       if (response.statusCode == 201) {
-        final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
-        final createdRequest = CampaignRequest.fromJson(decodedBody);
-        return (data: createdRequest, error: null);
+        return (
+          data: CampaignRequest.fromJson(jsonDecode(response.body)),
+          error: null
+        );
       } else {
-        final problem = ProblemDetails.fromJson(jsonDecode(response.body));
-        return (data: null, error: problem);
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(response.body))
+        );
       }
     } catch (e) {
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred during creation: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }
@@ -125,17 +143,23 @@ class CampaignRequestService {
         'Authorization': 'Bearer $accessToken',
       });
 
+      debugPrint(
+        "[RESPONSE]: ${response.statusCode} - ${response.body}",
+      );
+
       if (response.statusCode == 204) {
         return (data: true, error: null);
       } else {
         // Any other status code indicates an error
-        final problem = ProblemDetails.fromJson(jsonDecode(response.body));
-        return (data: null, error: problem);
+        return (
+          data: null,
+          error: ProblemDetails.fromJson(jsonDecode(response.body))
+        );
       }
     } catch (e) {
       return (
         data: null,
-        error: SimpleError('An unexpected error occurred during deletion: $e')
+        error: ApiServiceError.handleException(e),
       );
     }
   }

@@ -1,7 +1,10 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:mobile/config.dart';
 
 part 'recipient.g.dart';
 
+@CopyWith()
 @JsonSerializable(explicitToJson: true)
 class Recipient {
   String? id;
@@ -13,7 +16,8 @@ class Recipient {
   DateTime? dateOfBirth;
   String? phoneNo;
   String bio;
-  String? profilePictureUrl;
+  @JsonKey(name: 'profilePictureUrl')
+  String? _profilePictureUrl;
   List<SocialMediaHandle>? socialMediaHandles;
 
   Recipient({
@@ -26,45 +30,30 @@ class Recipient {
     required this.dateOfBirth,
     required this.phoneNo,
     required this.bio,
-    this.profilePictureUrl,
+    String? profilePictureUrl,
     this.socialMediaHandles,
-  });
+  }) : _profilePictureUrl = profilePictureUrl;
 
   String get fullName => "$firstName $middleName $lastName";
+  String? get profilePictureUrl {
+    if (_profilePictureUrl == null) return null;
+
+    // Use your base API URL if the stored URL is relative.
+    if (_profilePictureUrl!.startsWith('http')) {
+      return _profilePictureUrl!;
+    } else {
+      return "${AppConfig.apiUrl}/files/public/$_profilePictureUrl";
+    }
+  }
+
+  set profilePictureUrl(String? value) => _profilePictureUrl = value;
 
   factory Recipient.fromJson(Map<String, dynamic> json) =>
       _$RecipientFromJson(json);
   Map<String, dynamic> toJson() => _$RecipientToJson(this);
-
-  Recipient copyWith({
-    String? id,
-    String? auth0UserId,
-    String? email,
-    String? firstName,
-    String? middleName,
-    String? lastName,
-    DateTime? dateOfBirth,
-    String? phoneNo,
-    String? bio,
-    String? profilePictureUrl,
-    List<SocialMediaHandle>? socialMediaHandles,
-  }) {
-    return Recipient(
-      id: id ?? this.id,
-      auth0UserId: auth0UserId ?? this.auth0UserId,
-      email: email ?? this.email,
-      firstName: firstName ?? this.firstName,
-      middleName: middleName ?? this.middleName,
-      lastName: lastName ?? this.lastName,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
-      phoneNo: phoneNo ?? this.phoneNo,
-      bio: bio ?? this.bio,
-      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-      socialMediaHandles: socialMediaHandles ?? this.socialMediaHandles,
-    );
-  }
 }
 
+@CopyWith()
 @JsonSerializable(explicitToJson: true)
 class SocialMediaHandle {
   String? id;
@@ -80,16 +69,4 @@ class SocialMediaHandle {
   factory SocialMediaHandle.fromJson(Map<String, dynamic> json) =>
       _$SocialMediaHandleFromJson(json);
   Map<String, dynamic> toJson() => _$SocialMediaHandleToJson(this);
-
-  SocialMediaHandle copyWith({
-    String? id,
-    String? recipientId,
-    String? socialMediaHandle,
-  }) {
-    return SocialMediaHandle(
-      id: id ?? this.id,
-      recipientId: recipientId ?? this.recipientId,
-      socialMediaHandle: socialMediaHandle ?? this.socialMediaHandle,
-    );
-  }
 }

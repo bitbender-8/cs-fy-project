@@ -1,11 +1,12 @@
-String? validNonEmptyString(String? value, {int min = 3, required int max}) {
+/// Max being null means there is no upper bound on the length of the string.
+String? validNonEmptyString(String? value, {int min = 3, int? max}) {
   if (value == null || value.trim().isEmpty) {
     return 'Cannot be empty or contain only whitespace';
   }
   if (value.length < min) {
     return 'Must be at least $min characters long';
   }
-  if (value.length > max) {
+  if (max != null && value.length > max) {
     return 'Must be no more than $max characters long';
   }
   return null;

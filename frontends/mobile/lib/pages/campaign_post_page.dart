@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/models/campaign.dart';
+import 'package:mobile/utils/utils.dart';
 
-class CampaignPostInfoPage extends StatelessWidget {
+class CampaignPostPage extends StatelessWidget {
   final CampaignPost campaignPost;
 
-  const CampaignPostInfoPage({super.key, required this.campaignPost});
+  const CampaignPostPage({super.key, required this.campaignPost});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class CampaignPostInfoPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              campaignPost.title,
+              toTitleCase(campaignPost.title),
               style: textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
@@ -35,9 +36,9 @@ class CampaignPostInfoPage extends StatelessWidget {
                     size: 18, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  DateFormat('MMM d, yyyy').format(
-                    campaignPost.publicPostDate ?? DateTime.now(),
-                  ),
+                  "Public Post Date: ${formatDate(
+                    campaignPost.publicPostDate,
+                  )}",
                   style: textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

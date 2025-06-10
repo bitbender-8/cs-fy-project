@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/models/recipient.dart';
-import 'package:mobile/pages/campaign_info_page.dart';
+import 'package:mobile/pages/campaign_detail_page.dart';
 
 class CampaignCard extends StatefulWidget {
   final Campaign campaignData;
@@ -38,9 +38,8 @@ class _CampaignCardState extends State<CampaignCard> {
       onTap: owner == null
           ? null
           : () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => CampaignInfoPage(
-                  campaign: widget.campaignData,
-                  campaignOwner: owner,
+                builder: (context) => CampaignDetailPage(
+                  campaignId: widget.campaignData.id!,
                   isPublic: widget.isPublic,
                 ),
               )),

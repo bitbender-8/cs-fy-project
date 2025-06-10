@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile/models/campaign_request.dart';
 import 'package:mobile/models/server/filters.dart';
 import 'package:mobile/services/providers.dart';
+import 'package:mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class CampaignRequestFilterDialog extends StatefulWidget {
@@ -79,7 +81,7 @@ class _CampaignRequestFilterDialogState
                           children: [
                             Text('Type and Resolution',
                                 style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             GridView.count(
                               shrinkWrap: true,
                               crossAxisCount: 2,
@@ -97,27 +99,27 @@ class _CampaignRequestFilterDialogState
                                       () => _campaignRequestType = val),
                                   colorScheme: colorScheme,
                                 ),
-                                _buildDropdown<ResolutionType>(
-                                  label: 'Resolution Type',
-                                  value: _resolutionType,
-                                  items: ResolutionType.values,
-                                  getItemLabel: (e) => e.value,
+                                _buildDropdown<bool>(
+                                  label: 'Resolved',
+                                  value: _isResolved,
+                                  items: [true, false],
+                                  getItemLabel: (e) => e ? 'Yes' : 'No',
                                   onChanged: (val) =>
-                                      setState(() => _resolutionType = val),
+                                      setState(() => _isResolved = val),
                                   colorScheme: colorScheme,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            _buildDropdown<bool>(
-                              label: 'Resolved',
-                              value: _isResolved,
-                              items: [true, false],
-                              getItemLabel: (e) => e ? 'Yes' : 'No',
+                            _buildDropdown<ResolutionType>(
+                              label: 'Resolution Type',
+                              value: _resolutionType,
+                              items: ResolutionType.values,
+                              getItemLabel: (e) => e.value,
                               onChanged: (val) =>
-                                  setState(() => _isResolved = val),
+                                  setState(() => _resolutionType = val),
                               colorScheme: colorScheme,
                             ),
+                            const SizedBox(height: 8),
                           ],
                         ),
                       ),
@@ -129,7 +131,7 @@ class _CampaignRequestFilterDialogState
                           children: [
                             Text('Request Dates',
                                 style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 16),
                             GridView.count(
                               shrinkWrap: true,
                               crossAxisCount: 2,
@@ -152,10 +154,9 @@ class _CampaignRequestFilterDialogState
                                     colorScheme),
                               ],
                             ),
-                            const SizedBox(height: 16),
                             Text('Resolution Dates',
                                 style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 16),
                             GridView.count(
                               shrinkWrap: true,
                               crossAxisCount: 2,
@@ -181,6 +182,7 @@ class _CampaignRequestFilterDialogState
                           ],
                         ),
                       ),
+                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -237,7 +239,7 @@ class _CampaignRequestFilterDialogState
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          final updatedFilters = widget.currentFilters.copyWith(
+                          final updatedFilters = CampaignRequestFilter(
                             ownerRecipientId: ownerRecipientId,
                             campaignRequestType: _campaignRequestType,
                             isResolved: _isResolved,
@@ -310,8 +312,6 @@ class _CampaignRequestFilterDialogState
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       ),
       isExpanded: true,
       items: items.map((e) {
@@ -356,7 +356,7 @@ class _CampaignRequestFilterDialogState
               const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         ),
         child: Text(
-          _formatDate(selectedDate),
+          formatDate(selectedDate),
           style: TextStyle(
             color: selectedDate == null
                 ? colorScheme.onSurface.withAlpha(140)
@@ -368,11 +368,6 @@ class _CampaignRequestFilterDialogState
   }
 
   //****** Helper functions
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'Not set';
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-  }
-
   Future<DateTime?> _selectDate(
       BuildContext context, DateTime? initialDate, ColorScheme colorScheme) {
     return showDatePicker(

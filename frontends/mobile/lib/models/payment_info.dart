@@ -1,3 +1,4 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'payment_info.g.dart';
@@ -42,6 +43,7 @@ enum ChapaBanks {
   }
 }
 
+@CopyWith()
 @JsonSerializable()
 class PaymentInfo {
   int chapaBankCode;
@@ -53,17 +55,6 @@ class PaymentInfo {
     required this.chapaBankName,
     required this.bankAccountNo,
   });
-  PaymentInfo copyWith({
-    int? chapaBankCode,
-    String? chapaBankName,
-    String? bankAccountNo,
-  }) {
-    return PaymentInfo(
-      chapaBankCode: chapaBankCode ?? this.chapaBankCode,
-      chapaBankName: chapaBankName ?? this.chapaBankName,
-      bankAccountNo: bankAccountNo ?? this.bankAccountNo,
-    );
-  }
 
   Map<String, dynamic> toJson() => _$PaymentInfoToJson(this);
 
