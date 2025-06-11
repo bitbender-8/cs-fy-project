@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type ChangeCampaignVisibilityDropdownMenuProps = {
   status: string;
@@ -49,15 +50,29 @@ export default function ChangeCampaignVisibilityDropdownMenu({
     setPosition(pendingStatus);
     setDialogOpen(false);
 
+    const resAccessToken = await fetch("/api/get-token");
+    const { accessToken } = await resAccessToken.json();
+
+    console.log("Access Token:", accessToken);
+
     try {
-      const res = await fetch(`/api/campaigns/${campaignId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`http://localhost:4000/campaigns/${campaignId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({ status: pendingStatus }),
       });
+
       if (!res.ok) throw new Error(await res.text());
+
+      toast("Status Updated", {
+        description: `Campaign status changed to "${pendingStatus.replace("_", " ")}".`,
+      });
       router.refresh();
-    } catch (err) {
+    } catch (err: unknown) {
+      toast("Failed to update status");
       console.error("Failed to update status:", err);
     }
   };

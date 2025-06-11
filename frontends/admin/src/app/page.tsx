@@ -78,37 +78,21 @@ export default async function BroswseCampaignsHomePage() {
       title: "Total Campaigns",
       amount: totalCampaignsCount,
       icon: "/icons/people-dashboard-icon.svg",
-      trend:
-        // if there are no last week campaigns, set the trend to 0
-        lastWeekCampaignsCount.length === 0
-          ? 0
-          : ((newCampaignsCount - lastWeekCampaignsCount.length) /
-              lastWeekCampaignsCount.length) *
-            100,
+      trend: newCampaignsCount - lastWeekCampaignsCount.length,
     },
     {
       id: "donations",
       title: "Total Donations",
       amount: totalDonationsSum._sum.grossAmount || 0,
       icon: "/icons/graph-dashboard-icon.svg",
-      trend:
-        lastWeekDonationsCount.length === 0
-          ? 0
-          : ((newDonationsCount - lastWeekDonationsCount.length) /
-              lastWeekDonationsCount.length) *
-            100,
+      trend: newDonationsCount - lastWeekDonationsCount.length,
     },
     {
       id: "live-campaigns",
       title: "Total Live Campaigns",
       amount: totalLiveCampaignsCount,
       icon: "/icons/live-dashboard-icon.svg",
-      trend:
-        lastWeekLiveCampaignsCount.length === 0
-          ? 0
-          : ((newLiveCampaignsCount - lastWeekLiveCampaignsCount.length) /
-              lastWeekLiveCampaignsCount.length) *
-            100,
+      trend: newLiveCampaignsCount - lastWeekLiveCampaignsCount.length,
     },
   ];
 

@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useRouter } from "next/navigation"; // For page refresh or revalidation
+import { toast } from "sonner";
 
 interface Supervisor {
   id: string;
@@ -53,7 +54,9 @@ export default function ProfileForm({
       if (result.success) {
         setIsEditing(false);
         // Optionally, show a success message (e.g., using a toast library)
-        alert("Profile updated successfully!");
+        toast('Profile updated successfully!', {
+          position: 'top-right',
+        });
         router.refresh(); // Refresh server components
       } else {
         // Optionally, show an error message

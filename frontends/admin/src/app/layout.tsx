@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import Navbar from "@/components/navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 const nunitoSans = Nunito_Sans({
   variable: "--font-nunito-sans",
@@ -32,7 +33,9 @@ export default function RootLayout({
             <hr className="border-t-1 border-[#E5E5E5] w-full" />
             <div className="pl-1 pr-4 py-7">{children}</div>
           </main>
+         
         </SidebarProvider>
+         <Toaster position="top-right"/>
       </body>
     </html>
   );
