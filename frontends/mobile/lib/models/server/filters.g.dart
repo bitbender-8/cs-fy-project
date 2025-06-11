@@ -649,3 +649,100 @@ extension $CampaignRequestFilterCopyWith on CampaignRequestFilter {
   _$CampaignRequestFilterCWProxy get copyWith =>
       _$CampaignRequestFilterCWProxyImpl(this);
 }
+
+abstract class _$CampaignPostFilterCWProxy {
+  CampaignPostFilter title(String? title);
+
+  CampaignPostFilter campaignId(String? campaignId);
+
+  CampaignPostFilter isPublic(bool? isPublic);
+
+  CampaignPostFilter minPublicPostDate(DateTime? minPublicPostDate);
+
+  CampaignPostFilter maxPublicPostDate(DateTime? maxPublicPostDate);
+
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CampaignPostFilter(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  ///
+  /// Usage
+  /// ```dart
+  /// CampaignPostFilter(...).copyWith(id: 12, name: "My name")
+  /// ````
+  CampaignPostFilter call({
+    String? title,
+    String? campaignId,
+    bool? isPublic,
+    DateTime? minPublicPostDate,
+    DateTime? maxPublicPostDate,
+  });
+}
+
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfCampaignPostFilter.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfCampaignPostFilter.copyWith.fieldName(...)`
+class _$CampaignPostFilterCWProxyImpl implements _$CampaignPostFilterCWProxy {
+  const _$CampaignPostFilterCWProxyImpl(this._value);
+
+  final CampaignPostFilter _value;
+
+  @override
+  CampaignPostFilter title(String? title) => this(title: title);
+
+  @override
+  CampaignPostFilter campaignId(String? campaignId) =>
+      this(campaignId: campaignId);
+
+  @override
+  CampaignPostFilter isPublic(bool? isPublic) => this(isPublic: isPublic);
+
+  @override
+  CampaignPostFilter minPublicPostDate(DateTime? minPublicPostDate) =>
+      this(minPublicPostDate: minPublicPostDate);
+
+  @override
+  CampaignPostFilter maxPublicPostDate(DateTime? maxPublicPostDate) =>
+      this(maxPublicPostDate: maxPublicPostDate);
+
+  @override
+
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CampaignPostFilter(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  ///
+  /// Usage
+  /// ```dart
+  /// CampaignPostFilter(...).copyWith(id: 12, name: "My name")
+  /// ````
+  CampaignPostFilter call({
+    Object? title = const $CopyWithPlaceholder(),
+    Object? campaignId = const $CopyWithPlaceholder(),
+    Object? isPublic = const $CopyWithPlaceholder(),
+    Object? minPublicPostDate = const $CopyWithPlaceholder(),
+    Object? maxPublicPostDate = const $CopyWithPlaceholder(),
+  }) {
+    return CampaignPostFilter(
+      title: title == const $CopyWithPlaceholder()
+          ? _value.title
+          // ignore: cast_nullable_to_non_nullable
+          : title as String?,
+      campaignId: campaignId == const $CopyWithPlaceholder()
+          ? _value.campaignId
+          // ignore: cast_nullable_to_non_nullable
+          : campaignId as String?,
+      isPublic: isPublic == const $CopyWithPlaceholder()
+          ? _value.isPublic
+          // ignore: cast_nullable_to_non_nullable
+          : isPublic as bool?,
+      minPublicPostDate: minPublicPostDate == const $CopyWithPlaceholder()
+          ? _value.minPublicPostDate
+          // ignore: cast_nullable_to_non_nullable
+          : minPublicPostDate as DateTime?,
+      maxPublicPostDate: maxPublicPostDate == const $CopyWithPlaceholder()
+          ? _value.maxPublicPostDate
+          // ignore: cast_nullable_to_non_nullable
+          : maxPublicPostDate as DateTime?,
+    );
+  }
+}
+
+extension $CampaignPostFilterCopyWith on CampaignPostFilter {
+  /// Returns a callable class that can be used as follows: `instanceOfCampaignPostFilter.copyWith(...)` or like so:`instanceOfCampaignPostFilter.copyWith.fieldName(...)`.
+  // ignore: library_private_types_in_public_api
+  _$CampaignPostFilterCWProxy get copyWith =>
+      _$CampaignPostFilterCWProxyImpl(this);
+}

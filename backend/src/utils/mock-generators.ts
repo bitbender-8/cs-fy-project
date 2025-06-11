@@ -292,6 +292,7 @@ export function generateCampaignDonations(
         serviceFee: serviceFee,
         createdAt: faker.date.recent(),
         transactionRef: faker.string.alphanumeric(16),
+        isTransferred: faker.datatype.boolean(),
         campaignId: campaign.id,
       };
 

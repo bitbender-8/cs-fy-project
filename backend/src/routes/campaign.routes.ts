@@ -8,6 +8,8 @@ import {
 import {
   PaginatedList,
   excludeProperties,
+  fromIntToMoneyStr,
+  fromMoneyStrToBigInt,
   validateUuidParam,
 } from "../utils/utils.js";
 import {
@@ -20,6 +22,7 @@ import {
   CREATEABLE_CAMPAIGN_FIELDS,
   CreateableCampaignFields,
   CampaignDocument,
+  CampaignDonation,
 } from "../models/campaign.model.js";
 import { getUserRole } from "../services/user.service.js";
 import { ProblemDetails } from "../errors/error.types.js";
@@ -28,18 +31,25 @@ import {
   getCampaignDocuments,
   insertCampaign,
   updateCampaign,
+  insertCampaignDonation,
 } from "../repositories/campaign.repo.js";
 import { getUuidFromAuth0Id } from "../repositories/user.repo.js";
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
-import { validateStatusTransitions } from "../services/campaign.service.js";
+import {
+  transferCampaignDonations,
+  validateStatusTransitions,
+} from "../services/campaign.service.js";
 import { validUrl } from "../utils/zod-helpers.js";
 import { UUID } from "crypto";
 import { deleteFiles } from "../services/fie.service.js";
 import { config } from "../config.js";
 import path from "path";
-// import { verifyChapaPayment } from "../services/chapa.service.js";
+import {
+  ChapaPaymentVerifyData,
+  verifyChapaPayment,
+} from "../services/chapa.service.js";
 
 type RedactedCampaign = Omit<Campaign, SensitiveCampaignFields> & {
   redactedDocumentUrls?: string[];
@@ -243,6 +253,11 @@ campaignRouter.put(
           };
           break;
       }
+
+      // If the new status is "Completed", complete the donation transfer
+      if (newStatus === "Completed") {
+        await transferCampaignDonations(campaignId);
+      }
     }
 
     await updateCampaign(
@@ -279,7 +294,6 @@ campaignRouter.post(
   validateRequestBody(createCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
     // TODO(bitbender-8): Add a check for whether the campaign has a status of "Pending Review"
-    console.log(req.auth)
     if (getUserRole(req.auth) !== "Recipient") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
@@ -480,52 +494,63 @@ campaignRouter.get(
   }
 );
 
-// campaignRouter.post(
-//   "/:id/verify-donation/:txnRef",
-//   async (req: Request, res: Response): Promise<void> => {
-//     //     - Verify the donation transaction.
-//     //     - If verification fails, respond with a payment failure error.
-//     // - Initiate transfer to campaign's account.
-//     // - Verify transfer to campaign's account.
-//     // - Save donation to db.
-//     // Check to make sure that the campaign in the id exists.
-//   }
-// );
+campaignRouter.post(
+  "/:id/verify-donation/:txnRef",
+  async (req: Request, res: Response): Promise<void> => {
+    const campaignId = validateUuidParam(req.params.id);
+    const txnRef = req.params.txnRef;
 
-// campaignRouter.post(
-//   "/:id/verify-donation/:txnRef",
-//   async (req: Request, res: Response): Promise<void> => {
-//     const campaignId = validateUuidParam(req.params.id);
-//     const txnRef = req.params.txnRef;
+    console.log(`TxnRef: ${txnRef}, CampId: ${campaignId}`);
 
-//     // Check to make sure that the campaign in the id exists.
-//     const campaign = (await getCampaigns({ id: campaignId })).items[0];
-//     if (!campaign) {
-//       const problemDetails: ProblemDetails = {
-//         title: "Not Found",
-//         status: 404,
-//         detail: `Campaign with ID ${campaignId} not found.`,
-//       };
-//       res.status(problemDetails.status).json(problemDetails);
-//       return;
-//     }
+    // Check to make sure that the campaign in the id exists.
+    const campaign = (await getCampaigns({ id: campaignId })).items[0];
+    if (!campaign) {
+      const problemDetails: ProblemDetails = {
+        title: "Not Found",
+        status: 404,
+        detail: `Campaign with ID ${campaignId} not found.`,
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
 
-//     // Verify the donation transaction with Chapa.
-//     const chapaPymntVerifyResult = await verifyChapaPayment(txnRef);
+    // Verify the donation transaction with Chapa.
+    const chapaPymntVerifyResult = await verifyChapaPayment(txnRef);
 
-//     if (
-//       chapaPymntVerifyResult.status !== "success" ||
-//       !chapaPymntVerifyResult.data
-//     ) {
-//       const problemDetails: ProblemDetails = {
-//         title: "Payment Verification Failure",
-//         status: 400,
-//         detail: "The payment cound not be verified successfully",
-//       };
-//       res.status(problemDetails.status).json(problemDetails);
-//       return;
-//     }
+    if (
+      chapaPymntVerifyResult.status !== "success" ||
+      !chapaPymntVerifyResult.data
+    ) {
+      const problemDetails: ProblemDetails = {
+        title: "Payment Failure",
+        status: 400,
+        detail: "The payment cound not be verified",
+      };
+      res.status(problemDetails.status).json(problemDetails);
+      return;
+    }
 
+    // Save donation to db
+    const verifiedPaymentData =
+      chapaPymntVerifyResult.data as ChapaPaymentVerifyData;
+    const serviceFee =
+      (fromMoneyStrToBigInt(verifiedPaymentData.amount.toFixed(2)) ?? 1n) *
+      (fromMoneyStrToBigInt(config.SERVICE_RATE.toFixed(2)) ?? 1n);
 
-//   }
-// );
+    const donation: Omit<CampaignDonation, "id"> = {
+      campaignId,
+      grossAmount: verifiedPaymentData.amount.toFixed(2),
+      serviceFee: fromIntToMoneyStr(serviceFee) as string,
+      createdAt: new Date(verifiedPaymentData.created_at),
+      isTransferred: false,
+      transactionRef: verifiedPaymentData.tx_ref,
+    };
+
+    const { isTransferred, ...insertedDonation } =
+      await insertCampaignDonation(donation);
+    void isTransferred;
+
+    res.status(201).json(insertedDonation);
+    return;
+  }
+);

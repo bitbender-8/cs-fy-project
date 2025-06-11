@@ -169,6 +169,9 @@ CREATE TABLE
         "createdAt" TIMESTAMPTZ NOT NULL,
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
+        /* DOC-UPDATE: This is a new property. */
+        -- Has the donation amount specified here been transferred to the campaign's account
+        "isTransferred" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Campaign table.
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE RESTRICT
     );

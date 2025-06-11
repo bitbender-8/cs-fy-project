@@ -88,13 +88,13 @@ export function fromIntToMoneyStr(moneyAmount: bigint): string | null {
 export function validateUuidParam(
   id: string,
   paramType: "path" | "query" = "path",
-  paramName?: string,
+  paramName?: string
 ): UUID {
   if (!id) {
     throw new AppError(
       "Validation Failure",
       400,
-      `The ${paramType} parameter ${paramName} is required`,
+      `The ${paramType} parameter ${paramName} is required`
     );
   }
 
@@ -104,7 +104,7 @@ export function validateUuidParam(
     throw new AppError(
       "Validation Failure",
       400,
-      `Value provided for ${paramType} parameter ${paramName ? paramName : "ID"} is not a valid UUID`,
+      `Value provided for ${paramType} parameter ${paramName ? paramName : "ID"} is not a valid UUID`
     );
   }
 
@@ -113,7 +113,7 @@ export function validateUuidParam(
 
 export function excludeProperties<T, K extends keyof T>(
   object: T,
-  sensitiveFields: readonly K[],
+  sensitiveFields: readonly K[]
 ): Omit<T, K> {
   const newObject: T = { ...object };
 
@@ -123,3 +123,5 @@ export function excludeProperties<T, K extends keyof T>(
 
   return newObject;
 }
+
+export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));

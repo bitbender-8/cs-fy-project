@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/models/campaign.dart';
 import 'package:mobile/utils/utils.dart';

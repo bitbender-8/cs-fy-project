@@ -32,7 +32,7 @@ class CampaignRequestService {
         "[RESPONSE]: ${response.statusCode} - ${response.body}",
       );
 
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: PaginatedList<CampaignRequest>.fromJson(
             jsonDecode(response.body),
@@ -71,7 +71,7 @@ class CampaignRequestService {
         "[RESPONSE]: ${response.statusCode} - ${response.body}",
       );
 
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: CampaignRequest.fromJson(jsonDecode(response.body)),
           error: null
@@ -113,7 +113,7 @@ class CampaignRequestService {
         "[RESPONSE]: ${response.statusCode} - ${response.body}",
       );
 
-      if (response.statusCode == 201) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: CampaignRequest.fromJson(jsonDecode(response.body)),
           error: null
@@ -147,7 +147,7 @@ class CampaignRequestService {
         "[RESPONSE]: ${response.statusCode} - ${response.body}",
       );
 
-      if (response.statusCode == 204) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (data: true, error: null);
       } else {
         // Any other status code indicates an error

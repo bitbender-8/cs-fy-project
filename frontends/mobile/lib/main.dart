@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/home.dart';
+import 'package:mobile/models/campaign.dart';
 import 'package:mobile/services/campaign_post_service.dart';
 import 'package:mobile/services/campaign_request_service.dart';
 import 'package:mobile/services/campaign_service.dart';
 import 'package:mobile/services/file_service.dart';
 import 'package:mobile/services/notification_service.dart';
+import 'package:mobile/services/payment_service.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:mobile/services/recipient_service.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +20,7 @@ void main() => runApp(
           Provider<FileService>(create: (_) => FileService()),
           Provider<NotificationService>(create: (_) => NotificationService()),
           Provider<CampaignPostService>(create: (_) => CampaignPostService()),
+          Provider<PaymentService>(create: (_) => PaymentService()),
           Provider<CampaignRequestService>(
             create: (_) => CampaignRequestService(),
           ),

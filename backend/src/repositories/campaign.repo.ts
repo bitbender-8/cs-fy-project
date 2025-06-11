@@ -508,21 +508,23 @@ export async function insertCampaignDonation(
   try {
     const result = await query(
       `INSERT INTO "CampaignDonation" (
-        "id,
+        "id",
         "grossAmount",
         "serviceFee",
-        "createdAt"
-        "transactionRef"
+        "createdAt",
+        "transactionRef",
+        "isTransferred",
         "campaignId"
       ) VALUES (
-        $1, $2, $3, $4, $5, $6
+        $1, $2, $3, $4, $5, $6, $7
       ) RETURNING *`,
       [
         randomUUID(),
-        donation.grossAmount,
-        donation.serviceFee,
+        fromMoneyStrToBigInt(donation.grossAmount),
+        fromMoneyStrToBigInt(donation.serviceFee),
         donation.createdAt ?? new Date(),
         donation.transactionRef,
+        donation.isTransferred,
         donation.campaignId,
       ]
     );
@@ -533,6 +535,7 @@ export async function insertCampaignDonation(
       });
     }
 
+    console.log(result.rows[0]);
     return result.rows[0];
   } catch (error) {
     if (!(error instanceof pg.DatabaseError)) {
@@ -550,6 +553,16 @@ export async function insertCampaignDonation(
               internalDetails: `The campaign ID specified for the campaign donation does not exist.`,
               cause: error,
             }
+          );
+        }
+        throw error;
+      case "23505":
+        if (error.constraint === "CampaignDonation_transactionRef_key") {
+          throw new AppError(
+            "Payment Failure",
+            409,
+            "Payment has already been verified and recorded.",
+            { cause: error }
           );
         }
         throw error;
