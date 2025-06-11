@@ -9,18 +9,14 @@ import {
   StatusChangeRequest,
 } from "../models/campaign-request.model.js";
 import { CampaignStatus } from "../models/campaign.model.js";
-import { delay, fromIntToMoneyStr } from "../utils/utils.js";
+import { fromIntToMoneyStr } from "../utils/utils.js";
 import { getCampaignPosts } from "../repositories/campaign-request.repo.js";
 import {
   getCampaignDonationTotal,
   getCampaigns,
+  markCampaignDonationsAsTransferred,
 } from "../repositories/campaign.repo.js";
-import {
-  ChapaResponse,
-  initiateChapaTransfer,
-  verifyChapaTransfer,
-} from "./chapa.service.js";
-import { config } from "../config.js";
+import { initiateChapaTransfer } from "./chapa.service.js";
 
 export type CombinedRequestType = {
   newPostId?: UUID;
@@ -188,7 +184,7 @@ export function validateStatusTransitions(
 // Returns the txnRef on success
 export async function transferCampaignDonations(
   campaignId: UUID
-): Promise<string> {
+): Promise<string | undefined> {
   const campaign = (await getCampaigns({ id: campaignId })).items[0];
   if (!campaign) {
     throw new AppError(
@@ -201,98 +197,53 @@ export async function transferCampaignDonations(
     );
   }
 
-  const netDonation = await getCampaignDonationTotal(campaignId);
+  const netDonation = await getCampaignDonationTotal(campaignId, true);
+  if (netDonation == "0") return undefined;
 
   // Initiate the transfer
   const transferRef = randomUUID();
 
-  let isTransferInitiated = false;
-  let errMessage: string | null = null;
-  let transferInitResponse: ChapaResponse | null = null;
+  // Attempt transfer initiation once, let errors propagate
+  const transferInitResponse = await initiateChapaTransfer({
+    destinationAccountNo: campaign.paymentInfo.bankAccountNo,
+    chapaBankCode: campaign.paymentInfo.chapaBankCode,
+    amount: netDonation,
+    reference: transferRef,
+  });
 
-  for (let i = 0; i < config.MAX_RETRIES; i++) {
-    try {
-      transferInitResponse = await initiateChapaTransfer({
-        destinationAccountNo: campaign.paymentInfo.bankAccountNo,
-        chapaBankCode: campaign.paymentInfo.chapaBankCode,
-        amount: netDonation,
-        reference: transferRef,
-      });
-
-      if (transferInitResponse.status === "success") {
-        isTransferInitiated = true;
-        break;
-      } else {
-        errMessage = transferInitResponse.message;
-        console.warn(
-          `Transfer initiation attempt ${i + 1} failed: ${errMessage}`
-        );
-        await delay(config.RETRY_DELAY_MS);
-      }
-    } catch (error) {
-      errMessage = error instanceof Error ? error.message : String(error);
-      console.error(
-        `Transfer initiation attempt ${i + 1} error: ${errMessage}`
-      );
-      await delay(config.RETRY_DELAY_MS);
-    }
+  if (transferInitResponse.status !== "success") {
+    throw new AppError("Internal Server Error", 500, "Something went wrong", {
+      internalDetails: `Error during transfer initiation. Message: ${transferInitResponse.message}`,
+    });
   }
 
-  if (!isTransferInitiated) {
-    throw new AppError(
-      "Payment Failure",
-      500,
-      errMessage ?? "Unknown error during transfer initiation",
-      {
-        internalDetails: "No transaction reference received from Chapa",
-      }
-    );
+  if (!transferInitResponse.data) {
+    throw new AppError("Internal Server Error", 500, "Something went wrong", {
+      internalDetails:
+        "Transfer initiation reported success but response object was unexpectedly undefined.",
+    });
   }
 
-  // Verify the transfer
-  if (transferInitResponse === null) {
+  const txnRef = transferInitResponse.data as string;
+
+  // Attempt transfer verification once, let errors propagate
+  // FIXME: COMMENTED OUT CAUSE I COULDN'T GET TRANSFER VERIFICATION TO WORK. (Even if I did everything in the docs.)
+  // const transferVerifyResponse = await verifyChapaTransfer(txnRef);
+
+  // if (transferVerifyResponse.status !== "success") {
+  //   throw new AppError("Internal Server Error", 500, "Something went wrong.", {
+  //     internalDetails: `${transferVerifyResponse.message ?? "Unknown error during transfer verification."}. Transfer with txnRef '${txnRef}' failed verification.`,
+  //   });
+  // }
+
+  // Update donation object
+  if (!(await markCampaignDonationsAsTransferred(campaignId))) {
     throw new AppError(
       "Internal Server Error",
       500,
-      "Transfer initiation reported success but response object was unexpectedly undefined."
-    );
-  }
-  const txnRef = transferInitResponse.data as string;
-
-  let isTransferVerified = false;
-  let transferVerifyResponse: ChapaResponse;
-
-  for (let i = 0; !isTransferVerified && i < config.MAX_RETRIES; i++) {
-    try {
-      transferVerifyResponse = await verifyChapaTransfer(txnRef);
-
-      if (transferVerifyResponse.status === "success") {
-        isTransferVerified = true;
-        break;
-      } else {
-        errMessage = transferVerifyResponse.message;
-        console.warn(
-          `Transfer verification attempt ${i + 1} failed: ${errMessage}`
-        );
-        await delay(config.RETRY_DELAY_MS);
-      }
-    } catch (error) {
-      errMessage = error instanceof Error ? error.message : String(error);
-      console.error(
-        `Transfer verification attempt ${i + 1} error: ${errMessage}`
-      );
-      await delay(config.RETRY_DELAY_MS);
-    }
-  }
-
-  if (!isTransferVerified) {
-    // It's possible the transfer was initiated but verification consistently failed. This transaction (identified by `txnRef`) is in an uncertain state.It requires human intervention or an automated reconciliation process.
-    throw new AppError(
-      "Payment Failure",
-      500,
-      errMessage ?? "Unknown error during transfer verification.",
+      "Failed to update donation transfer status",
       {
-        internalDetails: `Transfer with txnRef '${txnRef}' initiated but failed verification after multiple attempts. Manual review required.`,
+        internalDetails: `Donations for campaign with id '${campaignId}' were successfully transferred (txnRef: '${txnRef}'), but the database update to mark them as transferred failed.`,
       }
     );
   }

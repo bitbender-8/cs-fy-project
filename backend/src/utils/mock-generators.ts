@@ -19,6 +19,23 @@ import {
   StatusChangeRequest,
 } from "../models/campaign-request.model.js";
 
+const BankNamesAndCodes: { name: string; code: number }[] = [
+  { name: "Abay Bank", code: 130 },
+  { name: "Addis International Bank", code: 772 },
+  { name: "Ahadu Bank", code: 207 },
+  { name: "Awash Bank", code: 656 },
+  { name: "Bank of Abyssinia", code: 347 },
+  { name: "Berhan Bank", code: 571 },
+  { name: "Commercial Bank of Ethiopia (CBE)", code: 946 },
+  { name: "Dashen Bank", code: 880 },
+  { name: "Enat Bank", code: 1 },
+  { name: "Global Bank Ethiopia", code: 301 },
+  { name: "Hibret Bank", code: 534 },
+  { name: "Lion International Bank", code: 315 },
+  { name: "Nib International Bank", code: 979 },
+  { name: "Wegagen Bank", code: 472 },
+];
+
 export function generateRecipients(auth0RecipientIds: string[]): Recipient[] {
   const recipients: Recipient[] = [];
 
@@ -162,7 +179,6 @@ export function generateCampaigns(
     "Community",
     "Youth",
   ];
-  const bankNames = ["Commercial Bank of Ethiopia", "Awash Bank"];
 
   for (let i = 0; i < noOfCategories; i++) {
     const category = faker.lorem.words({ min: 1, max: 3 });
@@ -202,6 +218,11 @@ export function generateCampaigns(
       documents.push({ campaignId, documentUrl, redactedDocumentUrl });
     }
 
+    const selectedBank =
+      BankNamesAndCodes[
+        faker.number.int({ min: 0, max: BankNamesAndCodes.length - 1 })
+      ];
+
     const campaign: Campaign = {
       id: campaignId,
       ownerRecipientId: faker.helpers.arrayElement(recipients).id as UUID,
@@ -211,8 +232,8 @@ export function generateCampaigns(
       status: faker.helpers.arrayElement(CAMPAIGN_STATUSES),
       category: faker.helpers.arrayElement(categories),
       paymentInfo: {
-        chapaBankCode: faker.number.int({ min: 1, max: 400 }),
-        chapaBankName: faker.helpers.arrayElement(bankNames),
+        chapaBankCode: selectedBank.code,
+        chapaBankName: selectedBank.name,
         bankAccountNo: faker.finance.accountNumber(16),
       },
       // this is a synthesized field, so it is ignored by the seed function

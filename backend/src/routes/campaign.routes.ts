@@ -266,6 +266,7 @@ campaignRouter.put(
         "id",
         "ownerRecipientId",
         "paymentInfo",
+        "totalDonated",
       ])
     );
 
@@ -530,20 +531,22 @@ campaignRouter.post(
       return;
     }
 
-    // Save donation to db
-    const verifiedPaymentData =
-      chapaPymntVerifyResult.data as ChapaPaymentVerifyData;
-    const serviceFee =
-      (fromMoneyStrToBigInt(verifiedPaymentData.amount.toFixed(2)) ?? 1n) *
-      (fromMoneyStrToBigInt(config.SERVICE_RATE.toFixed(2)) ?? 1n);
+    // Save donation to db - the following is structured as such to avoid floating point calculations as they lose precision
+    const paymentData = chapaPymntVerifyResult.data as ChapaPaymentVerifyData;
+    const amountInCentsBigInt =
+      fromMoneyStrToBigInt(paymentData.amount.toFixed(2)) ?? 1n;
+    const serviceRateNumerator =
+      fromMoneyStrToBigInt(config.SERVICE_RATE.toFixed(2)) ?? 1n;
+    const feeInCentsBigInt =
+      (amountInCentsBigInt * serviceRateNumerator) / BigInt(100);
 
     const donation: Omit<CampaignDonation, "id"> = {
       campaignId,
-      grossAmount: verifiedPaymentData.amount.toFixed(2),
-      serviceFee: fromIntToMoneyStr(serviceFee) as string,
-      createdAt: new Date(verifiedPaymentData.created_at),
+      grossAmount: paymentData.amount.toFixed(2),
+      serviceFee: fromIntToMoneyStr(feeInCentsBigInt) as string,
+      createdAt: new Date(paymentData.created_at),
       isTransferred: false,
-      transactionRef: verifiedPaymentData.tx_ref,
+      transactionRef: paymentData.tx_ref,
     };
 
     const { isTransferred, ...insertedDonation } =

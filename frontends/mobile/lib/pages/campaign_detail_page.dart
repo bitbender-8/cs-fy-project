@@ -51,6 +51,9 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final campaignAcceptsDonations = _campaign?.status == CampaignStatus.live;
+
     return Scaffold(
       appBar: const CustomAppBar(pageTitle: "Campaign Information"),
       body: _isLoadingPage
@@ -88,7 +91,15 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
       floatingActionButton:
           widget.isPublic && !_isLoadingPage && _campaign != null
               ? FloatingActionButton.extended(
-                  onPressed: _onDonatePressed,
+                  backgroundColor: campaignAcceptsDonations
+                      ? colorScheme.inversePrimary
+                      : Colors.grey.shade400,
+                  onPressed: campaignAcceptsDonations
+                      ? _onDonatePressed
+                      : () => showInfoSnackBar(
+                            context,
+                            "Campaigns with status '${_campaign!.status!.value}' cannot accept donations",
+                          ),
                   icon: const Icon(Icons.volunteer_activism_rounded),
                   label: const Text("Donate"),
                 )

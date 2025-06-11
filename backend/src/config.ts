@@ -19,7 +19,7 @@ export const config = {
 
   // Business rule config
   MAX_MONEY_AMOUNT: parseInt(process.env.MAX_MONEY_AMOUNT ?? "100_000"),
-  SERVICE_RATE: parseFloat(process.env.SERVICE_RATE ?? "0.01"),
+  SERVICE_RATE: parseFloat(process.env.SERVICE_RATE ?? "0.005"),
 
   // Database config
   DB_USER: process.env.DB_USER ?? "admin",
