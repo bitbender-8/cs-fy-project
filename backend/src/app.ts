@@ -11,21 +11,14 @@ import { notificationRouter } from "./routes/notification.routes.js";
 import { campaignPostRouter } from "./routes/campaign-post.routes.js";
 import { ProblemDetails } from "./errors/error.types.js";
 import { fileRouter } from "./routes/file.routes.js";
+import cors from "cors";
 
 const app: Application = express();
 
 app.use(helmet()); // Sets headers for better security
 
 if (config.ENV === "Development") {
-  app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept"
-    );
-    next();
-    return;
-  });
+  app.use(cors());
 }
 
 app.use(express.json());
