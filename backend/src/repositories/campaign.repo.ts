@@ -266,7 +266,10 @@ export async function insertCampaign(
 
 export async function updateCampaign(
   campaignId: UUID,
-  campaignData: Omit<Campaign, "paymentInfo" | "ownerRecipientId" | "id">
+  campaignData: Omit<
+    Campaign,
+    "paymentInfo" | "ownerRecipientId" | "id" | "totalDonated"
+  >
 ): Promise<Campaign> {
   // No need for special try-catch wrapper because there are no columns with special constraints..
   const { fragments, values: updateValues } = buildUpdateQueryString(
@@ -486,16 +489,29 @@ export async function updateCampaignDocument(
 }
 
 export async function getCampaignDonationTotal(
-  campaignId: UUID
+  campaignId: UUID,
+  omitTransferredDonations?: boolean
 ): Promise<string> {
-  const result = await query(
-    `SELECT SUM("grossAmount" - "serviceFee") AS "netDonations" 
-     FROM "CampaignDonation"
-     WHERE "campaignId" = $1`,
-    [campaignId]
-  );
+  let queryString = `
+    SELECT SUM("grossAmount" - "serviceFee") AS "netDonations" 
+    FROM "CampaignDonation"
+    WHERE "campaignId" = $1
+  `;
+  const queryParams = [campaignId];
 
-  if (!result || result.rows.length === 0 || !result.rows[0].netDonations) {
+  // Conditionally add the clause to omit transferred donations
+  if (omitTransferredDonations === true) {
+    queryString += ` AND "isTransferred" = FALSE`;
+  }
+
+  const result = await query(queryString, queryParams);
+
+  // SUM on an empty set returns NULL in PostgreSQL, which becomes null in JavaScript.
+  if (
+    !result ||
+    result.rows.length === 0 ||
+    result.rows[0].netDonations === null
+  ) {
     return "0";
   }
 
@@ -508,21 +524,23 @@ export async function insertCampaignDonation(
   try {
     const result = await query(
       `INSERT INTO "CampaignDonation" (
-        "id,
+        "id",
         "grossAmount",
         "serviceFee",
-        "createdAt"
-        "transactionRef"
+        "createdAt",
+        "transactionRef",
+        "isTransferred",
         "campaignId"
       ) VALUES (
-        $1, $2, $3, $4, $5, $6
+        $1, $2, $3, $4, $5, $6, $7
       ) RETURNING *`,
       [
         randomUUID(),
-        donation.grossAmount,
-        donation.serviceFee,
+        fromMoneyStrToBigInt(donation.grossAmount),
+        fromMoneyStrToBigInt(donation.serviceFee),
         donation.createdAt ?? new Date(),
         donation.transactionRef,
+        donation.isTransferred,
         donation.campaignId,
       ]
     );
@@ -553,8 +571,43 @@ export async function insertCampaignDonation(
           );
         }
         throw error;
+      case "23505":
+        if (error.constraint === "CampaignDonation_transactionRef_key") {
+          throw new AppError(
+            "Payment Failure",
+            409,
+            "Payment has already been verified and recorded.",
+            { cause: error }
+          );
+        }
+        throw error;
       default:
         throw error;
     }
   }
+}
+
+export async function markCampaignDonationsAsTransferred(
+  campaignId: string
+): Promise<boolean> {
+  const result = await query(
+    `UPDATE "CampaignDonation"
+       SET "isTransferred" = TRUE
+       WHERE "campaignId" = $1
+       RETURNING "id"`,
+    [campaignId]
+  );
+
+  if (!result || result.rowCount === 0) {
+    throw new AppError(
+      "Not Found",
+      404,
+      `Donation with campaign id '${campaignId}' not found.`,
+      {
+        internalDetails: `Attempted to mark non-existent donation with campaign id: ${campaignId} as transferred.`,
+      }
+    );
+  }
+
+  return true;
 }

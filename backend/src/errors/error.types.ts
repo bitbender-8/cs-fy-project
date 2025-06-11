@@ -39,7 +39,7 @@ export class AppError extends Error {
 export type ResponseErrorType =
   | "Internal Server Error"
   | "Validation Failure"
-  | "Payment Verification Failure"
+  | "Payment Failure"
   | "Not Found"
   | "Permission Denied"
   | "Service Unavailable"

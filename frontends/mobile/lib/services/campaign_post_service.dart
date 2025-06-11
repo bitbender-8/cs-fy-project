@@ -31,7 +31,7 @@ class CampaignPostService {
       debugPrint("[RESPONSE]: ${response.body}");
 
       final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: PaginatedList<CampaignPost>.fromJson(
             decodedBody,

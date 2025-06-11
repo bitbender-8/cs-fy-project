@@ -34,6 +34,7 @@ const _$ResponseErrorTypeEnumMap = {
   ResponseErrorType.permissionDenied: 'Permission Denied',
   ResponseErrorType.serviceUnavailable: 'Service Unavailable',
   ResponseErrorType.authenticationRequired: 'Authentication Required',
+  ResponseErrorType.paymentFailure: 'Payment Failure',
 };
 
 const _$ServerErrorCodeEnumMap = {

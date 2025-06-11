@@ -46,24 +46,40 @@ export const validPhoneNo = () =>
       "Phone number must be in E.164 format (e.g., +1234567890, 8 to 15 digits)",
   });
 
-export const validDate = (isPast: boolean) => {
+export const validDate = (isPast?: boolean) => {
   const comparisonDate = new Date();
-  const message = isPast
-    ? `Must be in the past`
-    : `Must be now or in the future`;
-  const comparison = isPast
-    ? (date: Date) => date < comparisonDate
-    : (date: Date) => date >= comparisonDate;
 
-  return z
+  // Define the comparison function and message only if isPast is true or false
+  const comparison =
+    isPast === undefined
+      ? undefined
+      : isPast
+        ? (date: Date) => date < comparisonDate
+        : (date: Date) => date >= comparisonDate;
+
+  const message =
+    isPast === undefined
+      ? undefined
+      : isPast
+        ? `Must be in the past`
+        : `Must be now or in the future`;
+
+  let schema: z.ZodTypeAny = z
     .string()
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "Invalid date format",
-    })
-    .transform((val) => new Date(val))
-    .refine((val) => comparison(new Date(val)), {
-      message,
     });
+
+  // Only add the comparison refine if isPast is true or false
+  if (comparison && message) {
+    schema = schema
+      .transform((val) => new Date(val))
+      .refine((val) => comparison(val), {
+        message,
+      });
+  }
+
+  return schema;
 };
 
 export const validCampaignRequestDecision = () =>
@@ -125,7 +141,7 @@ export const validMoneyAmount = () =>
         const num = Number(val);
         return !isNaN(num) && num >= 0 && Number.isFinite(num);
       },
-      { message: "Must be a valid non-negative number." },
+      { message: "Must be a valid non-negative number." }
     )
     .refine(
       (val) => {
@@ -133,7 +149,7 @@ export const validMoneyAmount = () =>
         void integer;
         return !decimal || decimal.length <= 2;
       },
-      { message: "Must have up to two decimal places." },
+      { message: "Must have up to two decimal places." }
     )
     .refine((val) => Number(val) <= config.MAX_MONEY_AMOUNT, {
       message: `Amount must be less than or equal to ${config.MAX_MONEY_AMOUNT}.`,
@@ -142,7 +158,7 @@ export const validMoneyAmount = () =>
 export const validCurrency = () =>
   z.enum(CURRENCY_CODES, {
     message: `Invalid currency code. Must be one of: ${CURRENCY_CODES.filter(
-      (val) => val !== "XXX",
+      (val) => val !== "XXX"
     ).join(", ")}.`,
   });
 

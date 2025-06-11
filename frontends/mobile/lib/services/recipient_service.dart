@@ -104,7 +104,7 @@ class RecipientService {
           'Authorization': 'Bearer $accessToken',
       });
 
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: Recipient.fromJson(jsonDecode(response.body)),
           error: null,
@@ -138,7 +138,7 @@ class RecipientService {
         'Authorization': 'Bearer $accessToken',
       });
 
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
 
         return (
@@ -173,7 +173,7 @@ class RecipientService {
         'Authorization': 'Bearer $accessToken',
       });
 
-      if (response.statusCode == 204) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (data: true, error: null);
       } else {
         return (

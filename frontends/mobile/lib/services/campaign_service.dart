@@ -142,7 +142,7 @@ class CampaignService {
       debugPrint("[RESPONSE]: ${response.body}");
 
       final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: PaginatedList<Campaign>.fromJson(
             decodedBody,
@@ -169,6 +169,8 @@ class CampaignService {
   ) async {
     Uri uri = Uri.parse("$baseUrl/$id");
 
+    debugPrint("[REQUEST_URI]: $uri");
+
     try {
       final response = await http.get(uri, headers: {
         'Authorization': 'Bearer $accessToken',
@@ -179,7 +181,7 @@ class CampaignService {
         "[RESPONSE]: ${response.statusCode} - ${response.body}",
       );
 
-      if (response.statusCode == 200) {
+       if (200 <= response.statusCode && response.statusCode < 300) {
         return (
           data: Campaign.fromJson(jsonDecode(response.body)),
           error: null

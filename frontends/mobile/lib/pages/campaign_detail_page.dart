@@ -5,6 +5,7 @@ import 'package:mobile/pages/donate_page.dart';
 import 'package:mobile/services/campaign_post_service.dart';
 import 'package:mobile/services/campaign_request_service.dart';
 import 'package:mobile/services/campaign_service.dart';
+import 'package:mobile/services/recipient_service.dart';
 import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
@@ -50,39 +51,72 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final endDate = _campaign?.endDate ?? DateTime.now();
+    final campaignAcceptsDonations = _campaign?.status == CampaignStatus.live &&
+        DateTime.now().isBefore(endDate);
+
     return Scaffold(
       appBar: const CustomAppBar(pageTitle: "Campaign Information"),
       body: _isLoadingPage
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildCampaignHeaderSection(context),
-                  const SizedBox(height: 8),
-                  _buildDescriptionSection(context),
-                  const SizedBox(height: 8),
-                  if (!widget.isPublic) ...[
-                    _buildPaymentInfoSection(context, _campaign?.paymentInfo),
-                    const SizedBox(height: 8),
-                  ],
-                  _buildCampaignPostsSection(context),
-                  const SizedBox(height: 8),
-                  if (!widget.isPublic) ...[
-                    _buildCampaignRequestsSection(context, _campaignRequests),
-                    const SizedBox(height: 8),
-                  ],
-                ],
-              ),
-            ),
-      floatingActionButton: widget.isPublic && !_isLoadingPage
-          ? FloatingActionButton.extended(
-              onPressed: _onDonatePressed,
-              icon: const Icon(Icons.volunteer_activism_rounded),
-              label: const Text("Donate"),
-            )
-          : null,
+          : _campaign == null
+              ? const Center(
+                  child: Text(
+                    "Could not fetch campaign details.\nCheck your internet connection.",
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      _campaign = null;
+                      _campaignRequests.clear();
+                      _campaignPosts.clear();
+                    });
+
+                    await _fetchData();
+                  },
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildCampaignHeaderSection(context),
+                        const SizedBox(height: 8),
+                        _buildDescriptionSection(context),
+                        const SizedBox(height: 8),
+                        if (!widget.isPublic) ...[
+                          _buildPaymentInfoSection(
+                              context, _campaign?.paymentInfo),
+                          const SizedBox(height: 8),
+                        ],
+                        _buildCampaignPostsSection(context),
+                        const SizedBox(height: 8),
+                        if (!widget.isPublic) ...[
+                          _buildCampaignRequestsSection(
+                              context, _campaignRequests),
+                          const SizedBox(height: 8),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+      floatingActionButton:
+          widget.isPublic && !_isLoadingPage && _campaign != null
+              ? FloatingActionButton.extended(
+                  backgroundColor: campaignAcceptsDonations
+                      ? colorScheme.inversePrimary
+                      : Colors.grey.shade400,
+                  onPressed: campaignAcceptsDonations
+                      ? _onDonatePressed
+                      : () => showInfoSnackBar(
+                            context,
+                            "'${_campaign!.status!.value}' campaigns cannot accept donations",
+                          ),
+                  icon: const Icon(Icons.volunteer_activism_rounded),
+                  label: const Text("Donate"),
+                )
+              : null,
     );
   }
 
@@ -109,18 +143,18 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
       const SizedBox(height: 8),
       _buildInfoRow(
         context: context,
+        label: 'Recipient:',
+        value: "\n${_campaign?.campaignOwner?.fullName ?? 'N/A'}",
+        icon: Icons.person_outline,
+      ),
+      _buildInfoRow(
+        context: context,
         label: 'Status:',
         value: "\n${_campaign?.status?.value ?? "Unknown"}",
         icon: Icons.info_outline,
         secondLabel: 'Category:',
         secondValue: _campaign?.category ?? "Unknown",
         secondIcon: Icons.category_outlined,
-      ),
-      _buildInfoRow(
-        context: context,
-        label: 'Recipient:',
-        value: "\n${_campaign?.campaignOwner?.fullName ?? 'N/A'}",
-        icon: Icons.person_outline,
       ),
       _buildInfoRow(
         context: context,
@@ -676,22 +710,20 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
   }
 
   Future<void> _fetchData() async {
-    // This needs to finish before the others
-    await _fetchCampaign();
+    // This campaign fetching needs to happen before owner fetching
+    if (await _fetchCampaign()) await _fetchCampaignOwner();
     _fetchCampaignPosts();
     if (!widget.isPublic) _fetchCampaignRequests();
   }
 
-  Future<void> _fetchCampaign() async {
-    setState(() {
-      _isLoadingPage = true;
-    });
+  Future<bool> _fetchCampaign() async {
+    setState(() => _isLoadingPage = true);
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final accessToken = userProvider.credentials?.accessToken;
 
-    if (!mounted) return;
-    final campaignResult = await Provider.of<CampaignService>(
+    if (!mounted) return false;
+    final result = await Provider.of<CampaignService>(
       context,
       listen: false,
     ).getCampaignById(
@@ -699,10 +731,35 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
       accessToken,
     );
 
+    if (!mounted) return false;
+    await handleServiceResponse(context, result, onSuccess: () {
+      if (result.data == null) return;
+      setState(() => _campaign = result.data);
+    });
+
+    setState(() => _isLoadingPage = false);
+    return true;
+  }
+
+  Future<void> _fetchCampaignOwner() async {
+    setState(() => _isLoadingPage = true);
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final accessToken = userProvider.credentials?.accessToken;
+
     if (!mounted) return;
-    await handleServiceResponse(context, campaignResult, onSuccess: () {
-      if (campaignResult.data == null) return;
-      setState(() => _campaign = campaignResult.data);
+    final result = await Provider.of<RecipientService>(
+      context,
+      listen: false,
+    ).getRecipientById(
+      _campaign!.ownerRecipientId,
+      accessToken,
+    );
+
+    if (!mounted) return;
+    await handleServiceResponse(context, result, onSuccess: () {
+      if (result.data == null) return;
+      setState(() => _campaign!.campaignOwner = result.data);
     });
 
     setState(() => _isLoadingPage = false);

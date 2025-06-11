@@ -14,10 +14,12 @@ export const config = {
     process.env.FILE_MIME_TYPES ??
     "application/pdf;application/msword;application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   PAGE_SIZE: parseInt(process.env.PAGE_SIZE ?? "10"),
+  MAX_RETRIES: parseInt(process.env.MAX_RETRIES ?? "3"),
+  RETRY_DELAY_MS: parseInt(process.env.RETRY_DELAY_MS ?? "1000"),
 
   // Business rule config
   MAX_MONEY_AMOUNT: parseInt(process.env.MAX_MONEY_AMOUNT ?? "100_000"),
-  SERVICE_RATE: parseFloat(process.env.SERVICE_RATE ?? "0.01"),
+  SERVICE_RATE: parseFloat(process.env.SERVICE_RATE ?? "0.005"),
 
   // Database config
   DB_USER: process.env.DB_USER ?? "admin",

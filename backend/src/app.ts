@@ -1,5 +1,6 @@
 import express, { Application } from "express";
 import helmet from "helmet";
+import cors from "cors";
 
 import { errorHandler } from "./errors/error-handlers.js";
 import { campaignRouter } from "./routes/campaign.routes.js";
@@ -17,15 +18,7 @@ const app: Application = express();
 app.use(helmet()); // Sets headers for better security
 
 if (config.ENV === "Development") {
-  app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept"
-    );
-    next();
-    return;
-  });
+  app.use(cors());
 }
 
 app.use(express.json());

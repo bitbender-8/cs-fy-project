@@ -105,7 +105,10 @@ enum ResponseErrorType {
   serviceUnavailable("Service Unavailable"),
 
   @JsonValue("Authentication Required")
-  authenticationRequired("Authentication Required");
+  authenticationRequired("Authentication Required"),
+
+  @JsonValue("Payment Failure")
+  paymentFailure("Payment Failure");
 
   final String value;
   const ResponseErrorType(this.value);

@@ -19,7 +19,7 @@ final class AppConfig {
   static const String auth0Audience = 'tesfafund-api';
   static const String auth0RedirectScheme = 'com.example.mobile';
   static const String auth0Namespace = 'https://tesfafund-api.example.com';
-  static const String apiUrl = 'http://192.168.108.120:4000';
+  static const String apiUrl = 'http://192.168.100.243:4000';
   static const String chapaPublicKey =
       'CHAPUBK_TEST-HjDea8nO0dEKVZxDMojOEOjp4OrfWfRC';
   static const String currency = "ETB";

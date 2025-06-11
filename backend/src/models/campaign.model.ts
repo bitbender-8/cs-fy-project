@@ -10,6 +10,7 @@ import {
   validMoneyAmount,
   CAMPAIGN_STATUSES,
   validBankCode,
+  validBoolean,
 } from "../utils/zod-helpers.js";
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
@@ -18,8 +19,8 @@ export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 export type PaymentInfo = z.infer<typeof PaymentInfoSchema>;
 export const PaymentInfoSchema = z.object({
   chapaBankCode: validBankCode(),
-  chapaBankName: validNonEmptyString(MIN_STRING_LENGTH, 50).optional(),
-  bankAccountNo: validBankAccountNo().optional(),
+  chapaBankName: validNonEmptyString(MIN_STRING_LENGTH, 50),
+  bankAccountNo: validBankAccountNo(),
 });
 
 export type CampaignDocument = z.infer<typeof CampaignDocumentSchema>;
@@ -60,6 +61,8 @@ export const CampaignDonationSchema = z.object({
   serviceFee: validMoneyAmount(),
   createdAt: validDate(true),
   transactionRef: validNonEmptyString(MIN_STRING_LENGTH, 255),
+  // DOC-UPDATE: Added isTransferred parameter
+  isTransferred: validBoolean(),
   campaignId: validUuid(),
 });
 
