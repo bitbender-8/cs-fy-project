@@ -45,7 +45,7 @@ class _HomeState extends State<Home> {
         title: 'Profile\n',
         pageWidget: userProvider.isLoggedIn
             ? (userProvider.user != null
-                ? const ProfilePage()
+                ? ProfilePage(initialRecipient: userProvider.user!)
                 : const Center(child: CircularProgressIndicator()))
             : const LoginRequiredPage(),
         icon: Icons.account_circle_rounded,

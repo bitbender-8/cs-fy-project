@@ -164,7 +164,7 @@ recipientRouter.put(
 
     await updateRecipient(recipientId, recipientUpdateData);
 
-    if (oldProfilePictureUrl) {
+    if (oldProfilePictureUrl && !oldProfilePictureUrl.startsWith("http")) {
       await deleteFiles([
         path.join(config.PUBLIC_UPLOAD_DIR, oldProfilePictureUrl),
       ]);
