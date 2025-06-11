@@ -167,8 +167,7 @@ export function generateNotifications(
 
 export function generateCampaigns(
   recipients: Recipient[],
-  noOfCampaigns: number,
-  noOfCategories: number = 5
+  noOfCampaigns: number
 ): Campaign[] {
   const campiagns: Campaign[] = [];
   const categories: string[] = [
@@ -179,11 +178,6 @@ export function generateCampaigns(
     "Community",
     "Youth",
   ];
-
-  for (let i = 0; i < noOfCategories; i++) {
-    const category = faker.lorem.words({ min: 1, max: 3 });
-    categories.push(category);
-  }
 
   for (let i = 0; i < noOfCampaigns; i++) {
     const campaignId = randomUUID();

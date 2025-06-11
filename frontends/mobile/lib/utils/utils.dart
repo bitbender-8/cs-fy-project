@@ -201,6 +201,6 @@ Future<void> showSuccessDialog(BuildContext context, String message) async {
 String formatDate(DateTime? date, {bool isShort = true}) {
   if (date == null) return 'N/A';
   return isShort
-      ? DateFormat("dd/mm/yy").format(date)
+      ? DateFormat("dd/MM/yy").format(date)
       : DateFormat('MMM dd, yyyy').format(date);
 }

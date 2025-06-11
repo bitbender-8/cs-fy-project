@@ -20,6 +20,8 @@ class CampaignFilterDialog extends StatefulWidget {
 class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
   late String? _selectedCategory;
   late CampaignStatus? _selectedStatus;
+  late DateTime? _minEndDate;
+  late DateTime? _maxEndDate;
   late DateTime? _minLaunchDate;
   late DateTime? _maxLaunchDate;
   late DateTime? _minSubmissionDate;
@@ -43,6 +45,8 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
     _maxVerificationDate = widget.currentFilters.maxVerificationDate;
     _minDenialDate = widget.currentFilters.minDenialDate;
     _maxDenialDate = widget.currentFilters.maxDenialDate;
+    _minEndDate = widget.currentFilters.minEndDate;
+    _maxEndDate = widget.currentFilters.maxEndDate;
     _isPublic = widget.currentFilters.isPublic ?? false;
   }
 
@@ -117,7 +121,13 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                                 _buildDropdown<CampaignStatus>(
                                   label: 'Status',
                                   value: _selectedStatus,
-                                  items: CampaignStatus.values,
+                                  items: !widget.showSensitiveFields
+                                      ? [
+                                          CampaignStatus.completed,
+                                          CampaignStatus.live,
+                                          CampaignStatus.paused
+                                        ]
+                                      : CampaignStatus.values,
                                   getItemLabel: (e) => e.value,
                                   onChanged: (val) =>
                                       setState(() => _selectedStatus = val),
@@ -134,8 +144,10 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Launch Dates',
-                                style: Theme.of(context).textTheme.titleMedium),
+                            Text(
+                              'Launch Dates',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                             const SizedBox(height: 8),
                             GridView.count(
                               shrinkWrap: true,
@@ -146,24 +158,58 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                               physics: const NeverScrollableScrollPhysics(),
                               children: [
                                 _buildDatePicker(
-                                    'Min',
-                                    _minLaunchDate,
-                                    (date) =>
-                                        setState(() => _minLaunchDate = date),
-                                    colorScheme),
+                                  'Min',
+                                  (date) => setState(
+                                    () => _minLaunchDate = date,
+                                  ),
+                                  selectedDate: _minLaunchDate,
+                                  lastDate: DateTime.now(),
+                                ),
                                 _buildDatePicker(
-                                    'Max',
-                                    _maxLaunchDate,
-                                    (date) =>
-                                        setState(() => _maxLaunchDate = date),
-                                    colorScheme),
+                                  'Max',
+                                  (date) => setState(
+                                    () => _maxLaunchDate = date,
+                                  ),
+                                  selectedDate: _maxLaunchDate,
+                                  lastDate: DateTime.now(),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              'End Dates',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            GridView.count(
+                              shrinkWrap: true,
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 2.2,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: [
+                                _buildDatePicker(
+                                  'Min',
+                                  (date) => setState(
+                                    () => _minEndDate = date,
+                                  ),
+                                  selectedDate: _minEndDate,
+                                ),
+                                _buildDatePicker(
+                                  'Max',
+                                  (date) => setState(
+                                    () => _maxEndDate = date,
+                                  ),
+                                  selectedDate: _maxEndDate,
+                                ),
                               ],
                             ),
                             if (widget.showSensitiveFields) ...[
                               const SizedBox(height: 16),
-                              Text('Submission Dates',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium),
+                              Text(
+                                'Submission Dates',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
                               const SizedBox(height: 8),
                               GridView.count(
                                 shrinkWrap: true,
@@ -174,23 +220,28 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 children: [
                                   _buildDatePicker(
-                                      'Min',
-                                      _minSubmissionDate,
-                                      (date) => setState(
-                                          () => _minSubmissionDate = date),
-                                      colorScheme),
+                                    'Min',
+                                    (date) => setState(
+                                      () => _minSubmissionDate = date,
+                                    ),
+                                    selectedDate: _minSubmissionDate,
+                                    lastDate: DateTime.now(),
+                                  ),
                                   _buildDatePicker(
-                                      'Max',
-                                      _maxSubmissionDate,
-                                      (date) => setState(
-                                          () => _maxSubmissionDate = date),
-                                      colorScheme),
+                                    'Max',
+                                    (date) => setState(
+                                      () => _maxSubmissionDate = date,
+                                    ),
+                                    selectedDate: _maxSubmissionDate,
+                                    lastDate: DateTime.now(),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              Text('Verification Dates',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium),
+                              Text(
+                                'Verification Dates',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
                               const SizedBox(height: 8),
                               GridView.count(
                                 shrinkWrap: true,
@@ -202,22 +253,26 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                                 children: [
                                   _buildDatePicker(
                                       'Min',
-                                      _minVerificationDate,
                                       (date) => setState(
-                                          () => _minVerificationDate = date),
-                                      colorScheme),
+                                            () => _minVerificationDate = date,
+                                          ),
+                                      selectedDate: _minVerificationDate,
+                                      lastDate: DateTime.now()),
                                   _buildDatePicker(
-                                      'Max',
-                                      _maxVerificationDate,
-                                      (date) => setState(
-                                          () => _maxVerificationDate = date),
-                                      colorScheme),
+                                    'Max',
+                                    (date) => setState(
+                                      () => _maxVerificationDate = date,
+                                    ),
+                                    selectedDate: _maxVerificationDate,
+                                    lastDate: DateTime.now(),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              Text('Denial Dates',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium),
+                              Text(
+                                'Denial Dates',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
                               const SizedBox(height: 8),
                               GridView.count(
                                 shrinkWrap: true,
@@ -228,17 +283,21 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 children: [
                                   _buildDatePicker(
-                                      'Min',
-                                      _minDenialDate,
-                                      (date) =>
-                                          setState(() => _minDenialDate = date),
-                                      colorScheme),
+                                    'Min',
+                                    (date) => setState(
+                                      () => _minDenialDate = date,
+                                    ),
+                                    selectedDate: _minDenialDate,
+                                    lastDate: DateTime.now(),
+                                  ),
                                   _buildDatePicker(
-                                      'Max',
-                                      _maxDenialDate,
-                                      (date) =>
-                                          setState(() => _maxDenialDate = date),
-                                      colorScheme),
+                                    'Max',
+                                    (date) => setState(
+                                      () => _maxDenialDate = date,
+                                    ),
+                                    selectedDate: _maxDenialDate,
+                                    lastDate: DateTime.now(),
+                                  ),
                                 ],
                               ),
                             ],
@@ -262,10 +321,13 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           side: BorderSide(color: colorScheme.error),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        child: Text('Cancel',
-                            style: TextStyle(color: colorScheme.error)),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(color: colorScheme.error),
+                        ),
                       ),
                     ),
                   ),
@@ -273,28 +335,16 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _selectedCategory = null;
-                            _selectedStatus = null;
-                            _minLaunchDate = null;
-                            _maxLaunchDate = null;
-                            _minSubmissionDate = null;
-                            _maxSubmissionDate = null;
-                            _minVerificationDate = null;
-                            _maxVerificationDate = null;
-                            _minDenialDate = null;
-                            _maxDenialDate = null;
-                            _isPublic = false;
-                          });
-                        },
+                        onPressed: _resetFields,
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          foregroundColor:
-                              colorScheme.onSurface.withValues(alpha: 0.6),
+                          foregroundColor: colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                           side: BorderSide(color: colorScheme.scrim),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         child: const Text('Reset'),
                       ),
@@ -314,10 +364,13 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
                             maxSubmissionDate: _maxSubmissionDate,
                             minVerificationDate: _minVerificationDate,
                             maxVerificationDate: _maxVerificationDate,
+                            minEndDate: _minEndDate,
+                            maxEndDate: _maxEndDate,
                             minDenialDate: _minDenialDate,
                             maxDenialDate: _maxDenialDate,
                             isPublic: _isPublic,
                           );
+                          print(updatedFilters.toMap());
                           Navigator.of(context).pop(updatedFilters);
                         },
                         style: ElevatedButton.styleFrom(
@@ -340,6 +393,7 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
     );
   }
 
+  //****** Sub-components
   Widget _buildDropdown<T>({
     required String label,
     required T? value,
@@ -393,18 +447,31 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
     );
   }
 
-  Widget _buildDatePicker(String label, DateTime? selectedDate,
-      void Function(DateTime?) onPicked, ColorScheme colorScheme) {
+  Widget _buildDatePicker(
+    String label,
+    void Function(DateTime?) onPicked, {
+    DateTime? selectedDate,
+    DateTime? firstDate,
+    DateTime? lastDate,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: () async {
-        final picked = await _selectDate(context, selectedDate, colorScheme);
+        final picked = await _selectDate(
+          context,
+          initialDate: selectedDate,
+          firstDate: firstDate,
+          lastDate: lastDate,
+        );
         if (picked != null) onPicked(picked);
       },
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
-          labelStyle:
-              TextStyle(color: colorScheme.onSurface.withValues(alpha: .7)),
+          labelStyle: TextStyle(
+            color: colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: colorScheme.outline),
@@ -414,8 +481,10 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
             borderSide: BorderSide(color: colorScheme.primary, width: 2),
           ),
           suffixIcon: Icon(Icons.calendar_today, color: colorScheme.primary),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
+          ),
         ),
         child: Text(
           formatDate(selectedDate),
@@ -428,13 +497,19 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
     );
   }
 
-  Future<DateTime?> _selectDate(BuildContext context, DateTime? initialDate,
-      ColorScheme colorScheme) async {
+  Future<DateTime?> _selectDate(
+    BuildContext context, {
+    DateTime? initialDate,
+    DateTime? firstDate,
+    DateTime? lastDate,
+  }) async {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      firstDate: firstDate ?? DateTime(2000),
+      lastDate: lastDate ?? DateTime(2101),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -472,5 +547,24 @@ class _CampaignFilterDialogState extends State<CampaignFilterDialog> {
       ),
       child: child,
     );
+  }
+
+  //****** Helper functions
+  void _resetFields() {
+    setState(() {
+      _selectedCategory = null;
+      _selectedStatus = null;
+      _minLaunchDate = null;
+      _maxLaunchDate = null;
+      _minSubmissionDate = null;
+      _maxSubmissionDate = null;
+      _minVerificationDate = null;
+      _maxVerificationDate = null;
+      _minDenialDate = null;
+      _maxDenialDate = null;
+      _minEndDate = null;
+      _maxEndDate = null;
+      _isPublic = false;
+    });
   }
 }

@@ -12,6 +12,18 @@ String? validNonEmptyString(String? value, {int min = 3, int? max}) {
   return null;
 }
 
+String? checkIfAtLeastYearsOld(DateTime? date, {int requiredYears = 18}) {
+  if (date == null) return null;
+  final now = DateTime.now();
+  final cutoffDate = DateTime(now.year - requiredYears, now.month, now.day);
+
+  if (date.isBefore(cutoffDate) || date.isAtSameMomentAs(cutoffDate)) {
+    return null;
+  } else {
+    return "Must be at least $requiredYears years old.";
+  }
+}
+
 String? validPhoneNo(String? value) {
   final regex = RegExp(r'^\+[1-9]\d{7,14}$');
   if (value == null || value.isEmpty) {

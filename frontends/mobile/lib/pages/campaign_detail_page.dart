@@ -52,7 +52,9 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final campaignAcceptsDonations = _campaign?.status == CampaignStatus.live;
+    final endDate = _campaign?.endDate ?? DateTime.now();
+    final campaignAcceptsDonations = _campaign?.status == CampaignStatus.live &&
+        DateTime.now().isBefore(endDate);
 
     return Scaffold(
       appBar: const CustomAppBar(pageTitle: "Campaign Information"),
@@ -64,28 +66,39 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
                     "Could not fetch campaign details.\nCheck your internet connection.",
                   ),
                 )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildCampaignHeaderSection(context),
-                      const SizedBox(height: 8),
-                      _buildDescriptionSection(context),
-                      const SizedBox(height: 8),
-                      if (!widget.isPublic) ...[
-                        _buildPaymentInfoSection(
-                            context, _campaign?.paymentInfo),
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      _campaign = null;
+                      _campaignRequests.clear();
+                      _campaignPosts.clear();
+                    });
+
+                    await _fetchData();
+                  },
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildCampaignHeaderSection(context),
                         const SizedBox(height: 8),
-                      ],
-                      _buildCampaignPostsSection(context),
-                      const SizedBox(height: 8),
-                      if (!widget.isPublic) ...[
-                        _buildCampaignRequestsSection(
-                            context, _campaignRequests),
+                        _buildDescriptionSection(context),
                         const SizedBox(height: 8),
+                        if (!widget.isPublic) ...[
+                          _buildPaymentInfoSection(
+                              context, _campaign?.paymentInfo),
+                          const SizedBox(height: 8),
+                        ],
+                        _buildCampaignPostsSection(context),
+                        const SizedBox(height: 8),
+                        if (!widget.isPublic) ...[
+                          _buildCampaignRequestsSection(
+                              context, _campaignRequests),
+                          const SizedBox(height: 8),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
       floatingActionButton:
@@ -98,7 +111,7 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
                       ? _onDonatePressed
                       : () => showInfoSnackBar(
                             context,
-                            "Campaigns with status '${_campaign!.status!.value}' cannot accept donations",
+                            "'${_campaign!.status!.value}' campaigns cannot accept donations",
                           ),
                   icon: const Icon(Icons.volunteer_activism_rounded),
                   label: const Text("Donate"),
@@ -130,18 +143,18 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
       const SizedBox(height: 8),
       _buildInfoRow(
         context: context,
+        label: 'Recipient:',
+        value: "\n${_campaign?.campaignOwner?.fullName ?? 'N/A'}",
+        icon: Icons.person_outline,
+      ),
+      _buildInfoRow(
+        context: context,
         label: 'Status:',
         value: "\n${_campaign?.status?.value ?? "Unknown"}",
         icon: Icons.info_outline,
         secondLabel: 'Category:',
         secondValue: _campaign?.category ?? "Unknown",
         secondIcon: Icons.category_outlined,
-      ),
-      _buildInfoRow(
-        context: context,
-        label: 'Recipient:',
-        value: "\n${_campaign?.campaignOwner?.fullName ?? 'N/A'}",
-        icon: Icons.person_outline,
       ),
       _buildInfoRow(
         context: context,
