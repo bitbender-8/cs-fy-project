@@ -1,6 +1,14 @@
 import fs from "fs/promises";
 import { AppError } from "../errors/error.types.js";
 
+/**
+ * Deletes files from the filesystem at the specified paths.
+ * If a file path does not exist, it throws a "Not Found" AppError.
+ * For other deletion errors, it throws an "Internal Server Error" AppError.
+ *
+ * @param {string[]} filePaths - An array of absolute file paths to delete.
+ * @returns {Promise<void>} A promise that resolves when all specified files have been attempted to be deleted.
+ */
 export async function deleteFiles(filePaths: string[]): Promise<void> {
   if (!filePaths || filePaths.length === 0) {
     return;
@@ -38,6 +46,14 @@ export async function deleteFiles(filePaths: string[]): Promise<void> {
   await Promise.all(deletePromises);
 }
 
+/**
+ * Reads files from the filesystem at the specified URLs (paths) and returns their content as Buffers.
+ * If any file fails to read, it throws an "Internal Server Error" AppError.
+ *
+ * @param {string[]} fileUrls - An array of absolute file paths to read.
+ * @returns {Promise<Map<string, Buffer>>} A promise that resolves with a Map where keys are file paths
+ * and values are Buffers containing the file content. Returns an empty Map if `fileUrls` is empty or undefined.
+ */
 export async function getFiles(
   fileUrls: string[],
 ): Promise<Map<string, Buffer>> {

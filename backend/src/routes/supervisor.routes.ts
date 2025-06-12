@@ -20,11 +20,31 @@ import { validateRequestBody } from "../middleware/request-body.middleware.js";
 
 export const supervisorRouter: Router = Router();
 
-// A user can't update their email or phone number. This is because we have to update the auth0 entry as well. We will add it later if we have to. This Removes non-updateable fields from the recipient schema
+/**
+ * @const updateableSupervisorSchema
+ * @description Zod schema for validating supervisor update requests.
+ * It omits fields that are locked and cannot be updated directly by the user,
+ * such as `id`, `auth0UserId`, `email`, and `phoneNumber`.
+ * Email and phone number updates would require corresponding changes in Auth0,
+ * which are not handled by this schema directly.
+ */
 const updateableSupervisorSchema: AnyZodObject = SupervisorSchema.omit(
   LOCKED_USER_FIELDS.reduce((acc, field) => ({ ...acc, [field]: true }), {}), // Add {} as initial value
 );
 
+/**
+ * @route PUT /supervisors/:id
+ * @description Updates an existing supervisor profile.
+ * Only authenticated supervisors can update their own profiles.
+ *
+ * @param {string} req.params.id - The UUID of the supervisor to update.
+ * @param {Request} req - Express request object. Expects supervisor update data in `req.body` (conforming to `updateableSupervisorSchema`).
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the supervisor was successfully updated.
+ * @returns {Response} 401 - If the user is not authenticated.
+ * @returns {Response} 403 - If the user is not a supervisor or does not own the profile being updated.
+ * @returns {Response} 404 - If the supervisor with the given ID is not found.
+ */
 supervisorRouter.put(
   "/:id",
   requireAuth,
@@ -75,6 +95,17 @@ supervisorRouter.put(
   },
 );
 
+/**
+ * @route GET /supervisors/:id
+ * @description Retrieves a single supervisor by their ID.
+ * Only authenticated supervisors can access supervisor profiles.
+ *
+ * @param {string} req.params.id - The UUID of the supervisor to retrieve.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - The supervisor object.
+ * @returns {Response} 403 - If the user is not a supervisor.
+ */
 supervisorRouter.get(
   "/:id",
   requireAuth,

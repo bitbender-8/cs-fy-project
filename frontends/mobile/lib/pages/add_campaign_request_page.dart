@@ -583,7 +583,7 @@ class _AddCampaignRequestPageState extends State<AddCampaignRequestPage>
                 if (pickedDate != null) {
                   setState(() {
                     _newEndDateController.text =
-                        DateFormat('yyyy-MM-dd').format(pickedDate);
+                        formatDate(pickedDate);
                   });
                   clearServerError('newEndDate');
                 }

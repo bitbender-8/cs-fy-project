@@ -81,10 +81,19 @@ const updateCampaignSchema = CampaignSchema.pick(
 
 export const campaignRouter: Router = Router();
 
-// Used by supervisors when they respond to campaign requests or update a campaign.
-// Some fields need to be set based on how other fields have changed.
-// Need to do some comparisons with the original state of a campaign.
-// Based on the way the status changed certain date fields and other properties need to be updated. (verificationDate, isPublic, etc.).
+/**
+ * @route PUT /campaigns/:id
+ * @description Updates a campaign. This route is intended for supervisors.
+ * It handles changes to campaign data, including status transitions and document updates.
+ * When a campaign's status changes, relevant fields like `verificationDate`, `denialDate`,
+ * `launchDate`, `isPublic`, and `endDate` are updated accordingly.
+ * If the new status is "Completed", it also triggers the transfer of donations.
+ * Redacted documents can be updated or removed.
+ *
+ * @param {string} req.params.id - The UUID of the campaign to update.
+ * @param {Request} req - Express request object. Expects campaign data in `req.body` and optional `req.files` for redacted documents.
+ * @param {Response} res - Express response object.
+ */
 campaignRouter.put(
   "/:id",
   requireAuth,
@@ -288,6 +297,16 @@ campaignRouter.put(
   }
 );
 
+/**
+ * @route POST /campaigns
+ * @description Creates a new campaign. This route is intended for recipients.
+ * It requires supporting documents to be uploaded.
+ * The campaign status will be "Pending Review" by default.
+ *
+ * @param {Request} req - Express request object. Expects campaign data in `req.body` and `req.files` for documents.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 201 - The created campaign object.
+ */
 campaignRouter.post(
   "/",
   requireAuth,
@@ -345,6 +364,17 @@ campaignRouter.post(
   }
 );
 
+/**
+ * @route GET /campaigns
+ * @description Retrieves a paginated list of campaigns based on filter criteria.
+ * Access to sensitive campaign information is restricted based on user role.
+ * Supervisors can see all campaign data.
+ * Recipients can see all data for their own campaigns and public data for other campaigns.
+ * Unauthenticated users and other roles can only see public campaign data.
+ *
+ * @param {Request} req - Express request object, expects query parameters for filtering.
+ * @param {Response} res - Express response object.
+ */
 campaignRouter.get(
   "/",
   optionalAuth,
@@ -433,6 +463,17 @@ campaignRouter.get(
   }
 );
 
+/**
+ * @route GET /campaigns/:id
+ * @description Retrieves a single campaign by its ID.
+ * Access to sensitive campaign information is restricted based on user role.
+ * Supervisors can see all campaign data.
+ * Recipients can see all data for their own campaign or public data for other campaigns.
+ * Unauthenticated users and other roles can only see public campaign data.
+ *
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ */
 campaignRouter.get(
   "/:id",
   optionalAuth,
@@ -495,6 +536,17 @@ campaignRouter.get(
   }
 );
 
+/**
+ * @route POST /campaigns/:id/verify-donation/:txnRef
+ * @description Verifies a donation transaction with Chapa and records the donation.
+ * This endpoint is typically called by a webhook or callback from the payment gateway
+ * after a donation attempt.
+ *
+ * @param {string} req.params.id - The UUID of the campaign for which the donation was made.
+ * @param {string} req.params.txnRef - The transaction reference from Chapa.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ */
 campaignRouter.post(
   "/:id/verify-donation/:txnRef",
   async (req: Request, res: Response): Promise<void> => {

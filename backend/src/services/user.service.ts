@@ -11,6 +11,13 @@ const userTypeToRoleId: Record<UserType, string> = {
   Supervisor: config.SUPERVISOR_ROLE_ID,
 };
 
+/**
+ * Extracts the user's role from an OAuth2 JWT payload.
+ * The role is expected to be in a custom claim specified by `config.AUTH0_NAMESPACE`.
+ *
+ * @param {JWTPayload | undefined} authToken - The JWT payload from an authenticated request.
+ * @returns {UserType | undefined} The user's role (e.g., "Recipient", "Supervisor") or undefined if no role is found or the token is invalid.
+ */
 export function getUserRole(authToken?: {
   payload: JWTPayload;
 }): UserType | undefined {
@@ -34,6 +41,13 @@ export function getUserRole(authToken?: {
   return undefined; // First element is not a string, hence not a valid role.
 }
 
+/**
+ * @typedef {object} Auth0UserResponse
+ * @description Represents the structure of a user object as returned by the Auth0 Management API.
+ * Note: Property names in this type are in camelCase after transformation from the snake_case used by the Auth0 API.
+ * For detailed and up-to-date information on the user object structure,
+ * please refer to the official Auth0 Management API documentation regarding user objects.
+ */
 type Auth0UserResponse = {
   createdAt: string;
   email: string;
@@ -51,6 +65,14 @@ type Auth0UserResponse = {
   loginsCount: number;
 };
 
+/**
+ * Deletes a user from Auth0.
+ *
+ * @param {string} auth0UserId - The Auth0 ID of the user to delete.
+ * @returns {Promise<void>} A promise that resolves when the user has been successfully deleted from Auth0.
+ * @throws {AppError} If the Auth0 API request fails (e.g., user not found, authentication issues, service unavailable).
+ *                    The error will contain details about the failure.
+ */
 export async function deleteAuth0User(auth0UserId: string): Promise<void> {
   const options = {
     method: "DELETE",
@@ -146,6 +168,14 @@ export async function deleteAuth0User(auth0UserId: string): Promise<void> {
   }
 }
 
+/**
+ * Retrieves a user's profile from Auth0.
+ *
+ * @param {string} auth0UserId - The Auth0 ID of the user to retrieve.
+ * @returns {Promise<Auth0UserResponse>} A promise that resolves with the user's Auth0 profile information.
+ * @throws {AppError} If the Auth0 API request fails (e.g., user not found, authentication issues, service unavailable).
+ *                    The error will contain details about the failure.
+ */
 export async function getAuth0User(
   auth0UserId: string,
 ): Promise<Auth0UserResponse> {
@@ -242,6 +272,15 @@ export async function getAuth0User(
   }
 }
 
+/**
+ * Assigns a specific role to a user in Auth0.
+ *
+ * @param {string} auth0UserId - The Auth0 ID of the user to whom the role will be assigned.
+ * @param {UserType} role - The role to assign (e.g., "Recipient", "Supervisor").
+ * @returns {Promise<void>} A promise that resolves when the role has been successfully assigned in Auth0.
+ * @throws {AppError} If no Auth0 role ID is mapped for the given `UserType`, or if the Auth0 API request fails
+ *                    (e.g., user/role not found, authentication issues, service unavailable). The error will contain details about the failure.
+ */
 export async function assignRoleToAuth0User(
   auth0UserId: string,
   role: UserType,

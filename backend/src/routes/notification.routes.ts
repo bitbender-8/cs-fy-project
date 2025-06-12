@@ -17,6 +17,16 @@ import { ProblemDetails } from "../errors/error.types.js";
 
 export const notificationRouter: Router = Router();
 
+/**
+ * @route GET /notifications
+ * @description Retrieves a paginated list of notifications for the authenticated user.
+ * Users can only access their own notifications.
+ *
+ * @param {Request} req - Express request object, expects query parameters for filtering (see `NotificationFilterSchema`).
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - A paginated list of notifications.
+ * @returns {Response} 401 - If the user is not authenticated.
+ */
 notificationRouter.get(
   "/",
   requireAuth,
@@ -33,6 +43,19 @@ notificationRouter.get(
   },
 );
 
+/**
+ * @route PATCH /notifications/:id/read
+ * @description Marks a specific notification as read for the authenticated user.
+ * Users can only mark their own notifications as read.
+ *
+ * @param {string} req.params.id - The UUID of the notification to mark as read.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the notification was successfully marked as read.
+ * @returns {Response} 401 - If the user is not authenticated.
+ * @returns {Response} 403 - If the user does not own the notification.
+ * @returns {Response} 404 - If the notification is not found.
+ */
 notificationRouter.patch(
   "/:id/read",
   requireAuth,
@@ -72,6 +95,18 @@ notificationRouter.patch(
   },
 );
 
+/**
+ * @route DELETE /notifications/:id
+ * @description Deletes a specific notification.
+ * Users can only delete their own notifications.
+ *
+ * @param {string} req.params.id - The UUID of the notification to delete.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the notification was successfully deleted.
+ * @returns {Response} 401 - If the user is not authenticated.
+ * @returns {Response} 404 - If the notification is not found.
+ */
 notificationRouter.delete(
   "/:id",
   requireAuth,

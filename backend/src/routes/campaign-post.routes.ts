@@ -24,6 +24,18 @@ import { ProblemDetails } from "../errors/error.types.js";
 
 export const campaignPostRouter: Router = Router();
 
+/**
+ * @route GET /campaign-posts
+ * @description Retrieves a paginated list of campaign posts based on filter criteria.
+ * Access to campaign posts is restricted based on user role and post visibility.
+ * Supervisors can see all campaign posts.
+ * Recipients can see all posts for campaigns they own, and public posts for other campaigns.
+ * Unauthenticated users and other roles can only see public campaign posts.
+ *
+ * @param {Request} req - Express request object, expects query parameters for filtering (see `CampaignPostFilterSchema`).
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - A paginated list of campaign posts.
+ */
 campaignPostRouter.get(
   "/",
   optionalAuth,
@@ -71,6 +83,17 @@ campaignPostRouter.get(
   },
 );
 
+/**
+ * @route DELETE /campaign-posts/:id
+ * @description Deletes a campaign post. This route is intended for supervisors only.
+ *
+ * @param {string} req.params.id - The UUID of the campaign post to delete.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the campaign post was successfully deleted.
+ * @returns {Response} 403 - If the user is not a supervisor.
+ * @returns {Response} 404 - If the campaign post is not found.
+ */
 campaignPostRouter.delete(
   "/:id",
   requireAuth,

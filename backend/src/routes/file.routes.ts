@@ -22,7 +22,21 @@ const publicUploadDir = config.PUBLIC_UPLOAD_DIR;
 fs.mkdir(privateUploadDir, { recursive: true }).catch(console.error);
 fs.mkdir(publicUploadDir, { recursive: true }).catch(console.error);
 
-// TODO: Add these routes to openapi.yml
+/**
+ * @route GET /files/campaign-documents/:filename
+ * @description Serves a private campaign document file.
+ * Access is restricted:
+ * - Supervisors can access any campaign document.
+ * - Recipients can only access documents belonging to campaigns they own.
+ * The filename is expected to be the name of the file as stored on the server (e.g., a UUID with an extension).
+ *
+ * @param {string} req.params.filename - The name of the file to retrieve from the private upload directory.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - The requested file.
+ * @returns {Response} 403 - If the user does not have permission to access the file.
+ * @returns {Response} 404 - If the campaign associated with the document is not found, or the file itself is not found.
+ */
 fileRouter.get(
   "/campaign-documents/:filename",
   requireAuth,
@@ -81,6 +95,18 @@ fileRouter.get(
   }
 );
 
+/**
+ * @route GET /files/public/:filename
+ * @description Serves a public file (e.g., profile pictures, redacted campaign documents).
+ * This route does not require authentication.
+ * The filename is expected to be the name of the file as stored on the server.
+ *
+ * @param {string} req.params.filename - The name of the file to retrieve from the public upload directory.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - The requested file.
+ * @returns {Response} 404 - If the file is not found (implicitly, as `getFiles` would return an empty map entry).
+ */
 fileRouter.get("/public/:filename", async (req: Request, res: Response) => {
   const { filename } = req.params;
   const filePath = path.join(publicUploadDir, filename);

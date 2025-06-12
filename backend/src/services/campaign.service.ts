@@ -18,6 +18,13 @@ import {
 } from "../repositories/campaign.repo.js";
 import { initiateChapaTransfer } from "./chapa.service.js";
 
+/**
+ * @typedef {object} CombinedRequestType
+ * @description A type that combines all possible campaign request fields.
+ * Used as an intermediate type before transforming into a specific CampaignRequest model.
+ * @property {UUID} [newPostId] - The ID of a new post, if the request type is "Post Update".
+ * @property {CampaignRequestType} requestType - The specific type of the campaign request.
+ */
 export type CombinedRequestType = {
   newPostId?: UUID;
   requestType: CampaignRequestType;
@@ -25,7 +32,13 @@ export type CombinedRequestType = {
   Omit<StatusChangeRequest, "requestType"> &
   Omit<EndDateExtensionRequest, "requestType"> &
   Omit<GoalAdjustmentRequest, "requestType">;
-
+/**
+ * Transforms a generic combined request object into a specific campaign request type.
+ *
+ * @param {CombinedRequestType} val - The combined request object to transform.
+ * @returns {Promise<CampaignRequest>} The transformed, specific campaign request object.
+ * @throws {AppError} If an invalid campaign request type is encountered.
+ */
 export async function transformCampaignRequest(
   val: CombinedRequestType
 ): Promise<CampaignRequest> {
@@ -116,6 +129,13 @@ export async function transformCampaignRequest(
   return transformedRequest;
 }
 
+/**
+ * Validates if a transition from an old campaign status to a new campaign status is allowed.
+ *
+ * @param {CampaignStatus} oldStatus - The current status of the campaign.
+ * @param {CampaignStatus} newStatus - The desired new status for the campaign.
+ * @returns {{ isValid: boolean; message?: string }} An object indicating if the transition is valid, and an optional message if it's not.
+ */
 export function validateStatusTransitions(
   oldStatus: CampaignStatus,
   newStatus: CampaignStatus
@@ -181,7 +201,15 @@ export function validateStatusTransitions(
   return { isValid: true };
 }
 
-// Returns the txnRef on success
+/**
+ * Transfers the total net donations for a completed campaign to the recipient's bank account via Chapa.
+ * It also marks the campaign's donations as transferred in the database.
+ *
+ * @param {UUID} campaignId - The UUID of the campaign for which to transfer donations.
+ * @returns {Promise<string | undefined>} The transaction reference (txnRef) from Chapa upon successful transfer initiation, or undefined if there are no donations to transfer.
+ * @throws {AppError} If the campaign is not found, if there's an error during transfer initiation with Chapa,
+ * or if updating the donation transfer status in the database fails.
+ */
 export async function transferCampaignDonations(
   campaignId: UUID
 ): Promise<string | undefined> {

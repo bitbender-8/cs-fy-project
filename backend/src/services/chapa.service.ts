@@ -3,15 +3,27 @@ import { config } from "../config.js";
 import { UUID } from "crypto";
 import { AppError } from "../errors/error.types.js";
 
+/**
+ * @typedef {object} ChapaResponse
+ * @description Represents a generic response structure from the Chapa API.
+ * For detailed and up-to-date information on this type and its properties,
+ * please refer to the official Chapa API documentation.
+ */
 export type ChapaResponse = {
   message: string;
-  status: "success" | "failed";
+  status: "success" | "failed" | "pending";
   data?:
     | ChapaPaymentVerifyData
     | ChapaTransferVerifyData
     | ChapaTransferInitiateData;
 };
 
+/**
+ * @typedef {object} ChapaPaymentVerifyData
+ * @description Represents the data structure for a verified Chapa payment transaction.
+ * For detailed and up-to-date information on this type and its properties,
+ * please refer to the official Chapa API documentation.
+ */
 export type ChapaPaymentVerifyData = {
   first_name: string;
   last_name: string;
@@ -31,8 +43,20 @@ export type ChapaPaymentVerifyData = {
   updated_at: string;
 };
 
+/**
+ * @typedef {string} ChapaTransferInitiateData
+ * @description Represents the data structure for an initiated Chapa transfer, which is typically the transaction reference string.
+ * For detailed and up-to-date information on this type,
+ * please refer to the official Chapa API documentation.
+ */
 export type ChapaTransferInitiateData = string;
 
+/**
+ * @typedef {object} ChapaTransferVerifyData
+ * @description Represents the data structure for a verified Chapa transfer.
+ * For detailed and up-to-date information on this type and its properties,
+ * please refer to the official Chapa API documentation.
+ */
 export type ChapaTransferVerifyData = {
   account_name: string;
   account_number: string;
@@ -54,6 +78,13 @@ export type ChapaTransferVerifyData = {
   updated_at: string;
 };
 
+/**
+ * Verifies a Chapa payment transaction.
+ * @async
+ * @param {string} txnRef - The transaction reference (`tx_ref`) to verify.
+ * @returns {Promise<ChapaResponse>} A promise that resolves with the Chapa API response.
+ * @throws {AppError} If the API request fails or returns an error status.
+ */
 export async function verifyChapaPayment(
   txnRef: string
 ): Promise<ChapaResponse> {
@@ -160,6 +191,19 @@ export async function verifyChapaPayment(
   }
 }
 
+/**
+ * Initiates a transfer to a bank account via Chapa.
+ * @async
+ * @param {object} params - The parameters for initiating the transfer.
+ * @param {string} params.destinationAccountNo - The recipient's bank account number.
+ * @param {number} params.chapaBankCode - The Chapa bank code for the recipient's bank.
+ * @param {string} params.amount - The amount to transfer (as a string, e.g., "100.00").
+ * @param {string} [params.reference] - Optional unique reference for the transfer.
+ * @param {"ETB" | "USD"} [params.currency="ETB"] - Optional currency for the transfer, defaults to "ETB".
+ * @param {string} [params.accountName] - Optional name of the recipient account.
+ * @returns {Promise<ChapaResponse>} A promise that resolves with the Chapa API response, containing the transaction reference if successful.
+ * @throws {AppError} If the API request fails or returns an error status.
+ */
 export async function initiateChapaTransfer(params: {
   destinationAccountNo: string;
   chapaBankCode: number;
@@ -301,6 +345,13 @@ export async function initiateChapaTransfer(params: {
   }
 }
 
+/**
+ * Verifies a Chapa transfer transaction.
+ * @async
+ * @param {string} txnRef - The transaction reference (`tx_ref` or the reference returned by `initiateChapaTransfer`) to verify.
+ * @returns {Promise<ChapaResponse>} A promise that resolves with the Chapa API response.
+ * @throws {AppError} If the API request fails or returns an error status.
+ */
 export async function verifyChapaTransfer(
   txnRef: string
 ): Promise<ChapaResponse> {
