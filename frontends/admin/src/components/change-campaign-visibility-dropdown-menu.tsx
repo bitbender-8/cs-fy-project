@@ -30,21 +30,21 @@ type ChangeCampaignVisibilityDropdownMenuProps = {
 // 1) A map of all the allowed transitions
 const STATUS_TRANSITIONS: Record<string, string[]> = {
   Pending_Review: ["Verified", "Denied"],
-  Verified:       ["Live",     "Denied"],
-  Live:           ["Paused",   "Completed"],
-  Paused:         ["Live",     "Completed"],
-  Completed:      [],
-  Denied:         [],
+  Verified: ["Live", "Denied"],
+  Live: ["Paused", "Completed"],
+  Paused: ["Live", "Completed"],
+  Completed: [],
+  Denied: [],
 };
 
 // (optional) A nice human‐readable label for each enum key
 const STATUS_LABELS: Record<string, string> = {
   Pending_Review: "Pending Review",
-  Verified:       "Verified",
-  Denied:         "Denied",
-  Live:           "Live",
-  Paused:         "Paused",
-  Completed:      "Completed",
+  Verified: "Verified",
+  Denied: "Denied",
+  Live: "Live",
+  Paused: "Paused",
+  Completed: "Completed",
 };
 
 export default function ChangeCampaignVisibilityDropdownMenu({
@@ -75,7 +75,9 @@ export default function ChangeCampaignVisibilityDropdownMenu({
 
     // … your PUT logic stays the same …
     try {
-      const { accessToken } = await fetch("/api/get-token").then((r) => r.json());
+      const { accessToken } = await fetch("/api/get-token").then((r) =>
+        r.json(),
+      );
       const res = await fetch(`http://localhost:4000/campaigns/${campaignId}`, {
         method: "PUT",
         headers: {
@@ -136,7 +138,8 @@ export default function ChangeCampaignVisibilityDropdownMenu({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Are you sure you want to change the campaign status for:<br />
+              Are you sure you want to change the campaign status for:
+              <br />
               <br />
               <span className="font-bold text-xl underline">{title}</span>
             </DialogTitle>

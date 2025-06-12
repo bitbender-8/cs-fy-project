@@ -19,7 +19,7 @@ export default async function DonationsPage() {
               firstName: true,
               lastName: true,
             },
-          }
+          },
         },
       },
     },
@@ -28,7 +28,7 @@ export default async function DonationsPage() {
     },
   });
 
-  const donations = donationsData.map(donation => ({
+  const donations = donationsData.map((donation) => ({
     ...donation,
     recipientFullName: `${donation.Campaign.Recipient.firstName} ${donation.Campaign.Recipient.lastName}`,
   }));

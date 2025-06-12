@@ -11,7 +11,9 @@ type CampaignUpdateFormProps = {
   campaignId: string;
 };
 
-export default function CampaignUpdateForm({ campaignId }: CampaignUpdateFormProps) {
+export default function CampaignUpdateForm({
+  campaignId,
+}: CampaignUpdateFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleFormSubmit = async (formData: FormData) => {
@@ -24,14 +26,20 @@ export default function CampaignUpdateForm({ campaignId }: CampaignUpdateFormPro
       const result = await submitCampaignUpdate(formData);
 
       if (result.success) {
-        toast.success(result.message || "Update posted successfully!", { id: toastId });
+        toast.success(result.message || "Update posted successfully!", {
+          id: toastId,
+        });
         console.log("Update posted successfully:", result);
         formRef.current?.reset(); // Reset the form fields
       } else {
-        toast.error(result.message || "Failed to post update.", { id: toastId });
+        toast.error(result.message || "Failed to post update.", {
+          id: toastId,
+        });
       }
     } catch (error) {
-      toast.error("An unexpected error occurred while submitting the update.", { id: toastId });
+      toast.error("An unexpected error occurred while submitting the update.", {
+        id: toastId,
+      });
       console.error("Form submission error:", error);
     }
   };
