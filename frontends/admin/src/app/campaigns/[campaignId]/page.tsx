@@ -45,27 +45,19 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         CampaignDocuments: true,
         CampaignPost: true,
         EndDateExtensionRequest: {
-          where: {
-            resolutionType: null,
-          },
+          // No 'where' clause, fetch all
         },
         GoalAdjustmentRequest: {
-          where: {
-            resolutionType: null,
-          },
+          // No 'where' clause, fetch all
         },
         PostUpdateRequest: {
           include: {
             CampaignPost: true,
           },
-          where: {
-            resolutionType: null,
-          },
+          // No 'where' clause, fetch all
         },
         StatusChangeRequest: {
-          where: {
-            resolutionType: null,
-          },
+          // No 'where' clause, fetch all
         },
       },
     });
@@ -102,6 +94,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     StatusChangeRequest,
   } = campaign;
 
+  console.log("Campaign Data:", PostUpdateRequest);
+
   let amountRaised = 0;
   CampaignDonation.forEach((donation) => {
     amountRaised += Number(donation.grossAmount);
@@ -113,7 +107,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   const progressValue = (amountRaised / Number(fundraisingGoal)) * 100;
 
   // Gather all requests, annotate with type, and sort by requestDate descending
-  const allRequests = [
+  const combinedAllRequests = [
     ...EndDateExtensionRequest.map((req) => ({
       ...req,
       type: "endDateExtension" as const,
@@ -139,6 +133,13 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   ].sort(
     (a, b) =>
       new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
+  );
+
+  const pendingRequests = combinedAllRequests.filter(
+    (req) => req.resolutionType === null
+  );
+  const resolvedRequests = combinedAllRequests.filter(
+    (req) => req.resolutionType !== null
   );
 
   // const sampleAllRequests = [
@@ -261,8 +262,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
       <div className="flex flex-col gap-5">
         <h2 className="text-primary">Requested Updates</h2>
-        {allRequests.length > 0 ? (
-          allRequests.map((req) => (
+        {pendingRequests.length > 0 ? (
+          pendingRequests.map((req) => (
             <div
               key={req.id}
               className="bg-white shadow-lg rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-shadow duration-300 ease-in-out"
@@ -380,6 +381,85 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
             </p>
           </div>
         )}
+      </div>
+      <hr />
+
+      <div className="flex flex-col gap-5">
+        <h2 className="text-primary">Previous Requests</h2>
+      {resolvedRequests.length > 0 ? (
+        resolvedRequests.map((req) => (
+          <div
+            key={req.id}
+            className="bg-white shadow-md rounded-xl p-6 border border-gray-200"
+          >
+            {/* Header section: title, dates, justification, and status badge */}
+            <div className="flex justify-between items-start">
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-gray-700">{req.header}</h3>
+                <p className="text-xs text-gray-500">
+                  Requested on: {new Date(req.requestDate).toLocaleDateString()}
+                </p>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700">Justification:</h4>
+                  <p className="text-gray-600 text-sm bg-gray-50 p-3 rounded-md border">
+                    {req.justification}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status badge at top-right */}
+              <div>
+                <span
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
+                    req.resolutionType === 'Accepted'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {req.resolutionType}
+                </span>
+              </div>
+            </div>
+
+            {/* For postUpdate requests show post content and rejection reason side by side */}
+            {req.type === 'postUpdate' && req.CampaignPost && (
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Post Content Column */}
+                <div>
+                  <h4 className="text-md font-semibold text-gray-700 mb-1">Post Content:</h4>
+                  <div className="text-gray-600 text-sm leading-relaxed bg-gray-50 p-3 rounded-md border prose prose-sm max-w-none">
+                    <p>{req.CampaignPost.content}</p>
+                  </div>
+                </div>
+
+
+              </div>
+            )}
+          </div>
+        ))
+      ) : (
+        <div className="text-center py-10">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No Previous Requests</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            There are no resolved requests for this campaign.
+          </p>
+        </div>
+      )}
+
       </div>
       <hr />
 
