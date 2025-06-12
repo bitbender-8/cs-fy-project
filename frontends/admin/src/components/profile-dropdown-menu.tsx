@@ -18,7 +18,7 @@ export default function ProfileDropdownMenu() {
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <User />
-            <span>Manage Account</span>
+            <a href="/profile">Manage Account</a>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <LogOutIcon />

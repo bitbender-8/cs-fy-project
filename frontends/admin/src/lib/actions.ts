@@ -6,10 +6,16 @@ import { randomUUID } from "crypto";
 import { auth0 } from "./auth0";
 
 export async function submitCampaignUpdate(formData: FormData) {
-  const updateContent = formData.get("updateContent") as string;
+  const postContent = formData.get("postContent") as string;
+  const postTitle = formData.get("postTitle") as string;
 
   const campaignId = formData.get("campaignId") as string;
-  if (!updateContent) return;
+  if (!campaignId || !postTitle || !postContent) {
+    return {
+      success: false,
+      message: "Missing required fields: title, content, or campaign ID.",
+    };
+  }
 
   try {
     const campaign = await prisma.campaign.findFirst({
@@ -21,8 +27,8 @@ export async function submitCampaignUpdate(formData: FormData) {
     const campaignPost = await prisma.campaignPost.create({
       data: {
         id: randomUUID(),
-        title: "Update for: " + campaign.title,
-        content: updateContent,
+        title: postTitle,
+        content: postContent,
         campaignId: campaign.id,
         publicPostDate: new Date(),
       },
@@ -38,11 +44,15 @@ export async function submitCampaignUpdate(formData: FormData) {
         },
       },
     });
+    revalidatePath(`/campaigns/${campaignId}`);
+    return { success: true, message: "Campaign update posted successfully." };
   } catch (error) {
     console.error(error);
-    throw new Error("Error posting campaign update.");
+    return {
+      success: false,
+      message: "Failed to post campaign update. Please try again.",
+    };
   }
-  revalidatePath(`/campaigns/${campaignId}`);
 }
 interface Notification {
   id: string;
@@ -76,7 +86,7 @@ export async function getUnreadNotificationsAction(): Promise<{
 }
 
 export async function markNotificationsAsReadAction(
-  notificationIds: string[],
+  notificationIds: string[]
 ): Promise<{ success: boolean; message?: string }> {
   if (!notificationIds || notificationIds.length === 0) {
     return { success: true, message: "No notifications to mark as read." }; // Not an error, just nothing to do
@@ -146,7 +156,7 @@ export async function updateSupervisorProfile(formData: FormData) {
       data: dataToUpdate,
     });
     // Revalidate the profile path to ensure fresh data is shown
-    revalidatePath("/profile"); // Next.js 13+ App Router feature
+    // revalidatePath("/profile"); // Next.js 13+ App Router feature
     return { success: true, supervisor: updatedSupervisor };
   } catch (error) {
     console.error("Failed to update profile:", error);

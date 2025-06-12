@@ -7,12 +7,13 @@ import {
   BadgeDollarSign,
 } from "lucide-react";
 
+import Image from "next/image";
+
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -45,7 +46,7 @@ const itemsTop = [
 const itemsBottom = [
   {
     title: "Settings",
-    url: "/settings",
+    url: "/profile",
     icon: Settings,
   },
   {
@@ -58,17 +59,18 @@ const itemsBottom = [
 export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader></SidebarHeader>
+      <SidebarHeader>
+        <Image
+          src="/tesfafund-main-logo.png"
+          alt="TesfaFund Logo"
+          width={120}
+          height={120}
+          className=""
+        />
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="h-full">
-          <SidebarGroupLabel>
-            <div className="w-9 h-9 bg-amber-600 mr-5"></div>
-            <h1 className="text-[20px] font-extrabold">
-              <span className="text-primary">Tesfa</span>Fund
-            </h1>
-          </SidebarGroupLabel>
-
-          <SidebarGroupContent className="mt-7 h-full">
+          <SidebarGroupContent className="h-full">
             <SidebarMenu className="h-full justify-between">
               <div>
                 {itemsTop.map((item) => (
