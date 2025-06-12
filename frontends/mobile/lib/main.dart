@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/home.dart';
-import 'package:mobile/models/campaign.dart';
 import 'package:mobile/services/campaign_post_service.dart';
 import 'package:mobile/services/campaign_request_service.dart';
 import 'package:mobile/services/campaign_service.dart';

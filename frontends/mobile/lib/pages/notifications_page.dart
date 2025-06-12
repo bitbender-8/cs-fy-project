@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/custom_appbar.dart';
 import 'package:mobile/components/notification_card.dart';
-import 'package:mobile/pages/login_required_page.dart';
+import 'package:mobile/components/login_required.dart';
 import 'package:mobile/services/providers.dart';
 import 'package:provider/provider.dart';
 
@@ -24,8 +24,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       listen: false,
     );
 
-    // Schedule the fetch only once when the widget first becomes active and dependencies are resolved.
-    // This runs after the first frame is rendered, avoiding setState during build.
+    // Schedule the fetch only once when the widget first becomes active and dependencies are resolved. This runs after the first frame is rendered, avoiding setState during build.
     if (!_isInitialFetchScheduled && userProvider.isLoggedIn) {
       // Set to true immediately to prevent re-scheduling
       _isInitialFetchScheduled = true;
@@ -37,10 +36,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         }
       });
     } else if (!userProvider.isLoggedIn && _isInitialFetchScheduled) {
-      // If the user logs out, reset the flag so data can be fetched again on next login
-      // This also ensures we don't try to fetch if not logged in.
+      // If the user logs out, reset the flag so data can be fetched again on next login. This also ensures we don't try to fetch if not logged in.
       _isInitialFetchScheduled = false;
-      // Clear the notification list in the provider when logging out.
       notificationProvider.resetState();
     }
   }
@@ -56,7 +53,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     Widget bodyContent;
 
     if (!userProvider.isLoggedIn) {
-      bodyContent = const LoginRequiredPage();
+      bodyContent = const LoginRequired();
     } else {
       switch (notificationProvider.status) {
         case NotificationStatus.idle:

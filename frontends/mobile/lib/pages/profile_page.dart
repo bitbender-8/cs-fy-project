@@ -700,7 +700,8 @@ class _ProfilePageState extends State<ProfilePage>
               setState(() {
                 _initialRecipient = updatedRecipientResponse.data!.copyWith();
                 _editableRecipient = updatedRecipientResponse.data!.copyWith();
-                _initializeControllers(); // Re-initialize all controllers with new data
+                // Re-initialize all controllers with new data
+                _initializeControllers();
               });
             }
 
@@ -710,8 +711,7 @@ class _ProfilePageState extends State<ProfilePage>
               _editableRecipient.socialMediaHandles?.length ?? 0,
               (_) => null,
             ));
-            _formKey.currentState
-                ?.validate(); // Re-validate to clear any previous errors
+            _formKey.currentState?.validate();
           }
         }
       },

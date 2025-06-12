@@ -68,7 +68,14 @@ const recipientCreateSchema = RecipientSchema.omit({
   socialMediaHandles: true,
   profilePictureUrl: true,
 }).extend({
-  socialMediaHandles: z.array(validUrl()).optional(),
+  socialMediaHandles: z
+    .array(
+      SocialMediaHandleSchema.extend({
+        id: validUuid().optional(),
+        recipientId: validUuid().optional(),
+      })
+    )
+    .optional(),
 });
 
 const profilePictureDir = config.PUBLIC_UPLOAD_DIR;
@@ -90,7 +97,9 @@ recipientRouter.post(
       email: auth0User.email,
       auth0UserId: auth0User.userId,
       socialMediaHandles: recipientData.socialMediaHandles?.map((value) => {
-        return { socialMediaHandle: value } as SocialMediaHandle;
+        return {
+          socialMediaHandle: value.socialMediaHandle,
+        } as SocialMediaHandle;
       }),
       profilePictureUrl: req.file ? `${req.file.filename}` : undefined,
     };
