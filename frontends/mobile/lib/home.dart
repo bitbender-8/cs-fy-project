@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/custom_appbar.dart';
-import 'package:mobile/pages/login_required_page.dart';
+import 'package:mobile/components/login_required.dart';
 import 'package:mobile/pages/profile_page.dart';
 import 'package:mobile/pages/campaigns_page.dart';
 import 'package:mobile/pages/campaign_requests_page.dart';
@@ -31,23 +31,23 @@ class _HomeState extends State<Home> {
         title: '       My\nCampaigns',
         pageWidget: userProvider.isLoggedIn
             ? const CampaignsPage(isPublicList: false)
-            : const LoginRequiredPage(),
+            : const LoginRequired(),
         icon: Icons.folder,
       ),
       NavBarPage(
         title: 'Campaign\n requests',
         pageWidget: userProvider.isLoggedIn
             ? const CampaignRequestsPage()
-            : const LoginRequiredPage(),
+            : const LoginRequired(),
         icon: Icons.list_alt,
       ),
       NavBarPage(
         title: 'Profile\n',
         pageWidget: userProvider.isLoggedIn
             ? (userProvider.user != null
-                ? const ProfilePage()
+                ? ProfilePage(initialRecipient: userProvider.user!)
                 : const Center(child: CircularProgressIndicator()))
-            : const LoginRequiredPage(),
+            : const LoginRequired(),
         icon: Icons.account_circle_rounded,
       ),
     ];

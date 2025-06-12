@@ -213,8 +213,12 @@ class _SignupPageState extends State<SignupPage>
                   _selectDate(context);
                   clearServerError('dateOfBirth');
                 },
-                validator: (value) {
-                  final clientError = validDate(value, isPast: true);
+                validator: (_) {
+                  final clientError =
+                      validDate(_dobController.text, isPast: true) ??
+                          checkIfAtLeastYearsOld(
+                            DateTime.parse(_dobController.text),
+                          );
                   if (clientError != null) return clientError;
                   return getServerError('dateOfBirth');
                 },
@@ -334,7 +338,7 @@ class _SignupPageState extends State<SignupPage>
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : StyledElevatedButton(
-                      onPressed: _handleFormSubmission,
+                      onPressed: _submitForm,
                       label: 'Create Account',
                     ),
             ],
@@ -371,7 +375,7 @@ class _SignupPageState extends State<SignupPage>
     }
   }
 
-  Future<void> _handleFormSubmission() async {
+  Future<void> _submitForm() async {
     clearAllServerErrors();
 
     bool socialValid = true;
@@ -431,21 +435,20 @@ class _SignupPageState extends State<SignupPage>
       accessToken,
     );
 
-    // Signup submitted with invalid recipient object
-    // Fill in -> Auth0 Success -> Server fails validation -> (Auth0 session must be removed, Auth0 orphan must be deleted)
-    // Signup submitted with duplicate auth0 user (duplicate email)
-    //
-
     if (!mounted) return;
     final success = await handleServiceResponse(
       context,
       result,
       onSuccess: () {
-        userProvider.setRecipient(result.data!);
+        userProvider.logout();
+
         if (mounted) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/',
+            (Route<dynamic> route) => false,
+          );
         }
-        showInfoSnackBar(context, 'Sign up successful!');
+        showInfoSnackBar(context, 'Sign up successful. Please log in.');
       },
       onValidationErrors: (fieldErrors) {
         setState(() => setServerErrors(fieldErrors));
@@ -466,8 +469,7 @@ class _SignupPageState extends State<SignupPage>
           UserProvider.debugPrintUserProviderState(userProvider);
         }
       }
-      userProvider.setCredentials(null);
-      userProvider.setRecipient(null);
+      userProvider.logout();
     }
 
     UserProvider.debugPrintUserProviderState(userProvider);

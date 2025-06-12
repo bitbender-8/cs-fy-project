@@ -33,6 +33,8 @@ import {
 } from "../models/filters/campaign-request-filters.js";
 import { validCampaignRequestDecision } from "../utils/zod-helpers.js";
 import { validateStatusTransitions } from "../services/campaign.service.js";
+import { insertNotification } from "../repositories/notification.repo.js";
+import { UUID } from "crypto";
 
 const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
   GoalAdjustmentRequestSchema.omit(
@@ -81,6 +83,18 @@ const createCampaignRequestSchema = z.discriminatedUnion("requestType", [
 
 export const campaignRequestRouter: Router = Router();
 
+/**
+ * @route POST /campaign-requests?campaignId={campaignId}
+ * @description Creates a new campaign request. This route is intended for recipients.
+ * The `campaignId` for which the request is being made must be provided as a query parameter.
+ * The request body should contain the details of the campaign request, discriminated by `requestType`.
+ *
+ * @param {string} req.query.campaignId - The UUID of the campaign this request pertains to.
+ * @param {Request} req - Express request object. Expects campaign request data in `req.body`.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 201 - The created campaign request object.
+ * @returns {Response} 403 - If the user is not a recipient or does not own the campaign.
+ */
 campaignRequestRouter.post(
   "/",
   requireAuth,
@@ -142,6 +156,17 @@ campaignRequestRouter.post(
   }
 );
 
+/**
+ * @route GET /campaign-requests
+ * @description Retrieves a paginated list of campaign requests based on filter criteria.
+ * Recipients can only see requests they own.
+ * Supervisors can see all campaign requests.
+ *
+ * @param {Request} req - Express request object, expects query parameters for filtering (see `CampaignRequestFilterSchema`).
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - A paginated list of campaign requests.
+ * @returns {Response} 403 - If the user role is not authorized to view any requests.
+ */
 campaignRequestRouter.get(
   "/",
   requireAuth,
@@ -180,7 +205,19 @@ campaignRequestRouter.get(
   }
 );
 
-// FIXME: Is this necessary? If not, remove it.
+/**
+ * @route GET /campaign-requests/:id
+ * @description Retrieves a single campaign request by its ID.
+ * Recipients can only retrieve requests they own.
+ * Supervisors can retrieve any campaign request.
+ *
+ * @param {string} req.params.id - The UUID of the campaign request to retrieve.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - The campaign request object.
+ * @returns {Response} 403 - If the user is not authorized to view this request.
+ * @returns {Response} 404 - If the campaign request is not found.
+ */
 campaignRequestRouter.get(
   "/:id",
   requireAuth,
@@ -233,11 +270,25 @@ campaignRequestRouter.get(
   }
 );
 
+/**
+ * @route PUT /campaign-requests/:id/decision/:decision
+ * @description Allows a supervisor to approve or deny a campaign request.
+ * This action resolves the campaign request and applies the requested changes to the underlying campaign if approved.
+ * A notification is sent to the recipient upon resolution.
+ *
+ * @param {string} req.params.id - The UUID of the campaign request to resolve.
+ * @param {string} req.params.decision - The decision, either "Approved" or "Denied".
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the request was successfully resolved.
+ * @returns {Response} 400 - If the decision is invalid, the request type is unknown, or status transition is invalid.
+ * @returns {Response} 403 - If the user is not a supervisor.
+ * @returns {Response} 404 - If the campaign request or associated campaign is not found, or if the request is already resolved.
+ */
 campaignRequestRouter.put(
   "/:id/decision/:decision",
   requireAuth,
   async (req: Request, res: Response): Promise<void> => {
-    // TODO: Add notification creation after successful resolution
     if (getUserRole(req.auth) !== "Supervisor") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
@@ -249,15 +300,15 @@ campaignRequestRouter.put(
     }
 
     // Validate decision
-    const decision = validCampaignRequestDecision().safeParse(
+    const decisionValidation = validCampaignRequestDecision().safeParse(
       req.params.decision
     );
 
-    if (!decision.success) {
+    if (!decisionValidation.success) {
       const problemDetails: ProblemDetails = {
         title: "Validation Failure",
         status: 400,
-        detail: decision.error.issues[0].message,
+        detail: decisionValidation.error.issues[0].message,
       };
       res.status(problemDetails.status).json(problemDetails);
       return;
@@ -288,7 +339,8 @@ campaignRequestRouter.put(
       return;
     }
 
-    const campaign = (await getCampaigns({ id: campaignRequest.id })).items[0];
+    const campaign = (await getCampaigns({ id: campaignRequest.campaignId }))
+      .items[0];
 
     // Apply changes from campaignRequest to underlying campaign
     switch (campaignRequest.requestType) {
@@ -367,10 +419,36 @@ campaignRequestRouter.put(
 
     // Resolve campaign request
     await resolveCampaignRequest(campaignRequestId);
+
+    // Add notification for the recipient
+    const decisionText =
+      decisionValidation.data === "Accepted" ? "approved" : "denied";
+    await insertNotification({
+      subject: `Your campaign request has been ${decisionText}`,
+      body: `Your "${campaignRequest.requestType}" request for the campaign "${campaign.title}" has been ${decisionText}.`,
+      userId: campaignRequest.ownerRecipientId as UUID,
+      userType: "Recipient",
+    });
+
     res.status(204).send();
   }
 );
 
+/**
+ * @route DELETE /campaign-requests/:id
+ * @description Deletes a campaign request.
+ * Recipients can only delete their own unresolved campaign requests.
+ * Supervisors can delete any unresolved campaign request.
+ * If the request type is "Post Update", the associated campaign post is also deleted.
+ *
+ * @param {string} req.params.id - The UUID of the campaign request to delete.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the campaign request was successfully deleted.
+ * @returns {Response} 400 - If the user attempts to modify a resolved campaign request.
+ * @returns {Response} 403 - If the user does not have permission to delete this request.
+ * @returns {Response} 404 - If the campaign request is not found.
+ */
 campaignRequestRouter.delete(
   "/:id",
   requireAuth,

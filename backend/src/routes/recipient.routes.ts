@@ -37,7 +37,7 @@ import {
 import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
-import { validUrl, validUuid } from "../utils/zod-helpers.js";
+import { validUuid } from "../utils/zod-helpers.js";
 import { config } from "../config.js";
 import { deleteFiles } from "../services/fie.service.js";
 import path from "path";
@@ -68,10 +68,30 @@ const recipientCreateSchema = RecipientSchema.omit({
   socialMediaHandles: true,
   profilePictureUrl: true,
 }).extend({
-  socialMediaHandles: z.array(validUrl()).optional(),
+  socialMediaHandles: z
+    .array(
+      SocialMediaHandleSchema.extend({
+        id: validUuid().optional(),
+        recipientId: validUuid().optional(),
+      })
+    )
+    .optional(),
 });
 
 const profilePictureDir = config.PUBLIC_UPLOAD_DIR;
+
+/**
+ * @route POST /recipients
+ * @description Creates a new recipient profile.
+ * The user must be authenticated. Their Auth0 user will be assigned the "Recipient" role.
+ * A profile picture can be uploaded.
+ *
+ * @param {Request} req - Express request object. Expects recipient data in `req.body` (conforming to `recipientCreateSchema`) and an optional `profilePicture` in `req.file`.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 201 - The created recipient object with a Location header.
+ * @returns {Response} 400 - If request body validation or file upload validation fails.
+ * @returns {Response} 401 - If the user is not authenticated.
+ */
 recipientRouter.post(
   "/",
   requireAuth,
@@ -90,7 +110,9 @@ recipientRouter.post(
       email: auth0User.email,
       auth0UserId: auth0User.userId,
       socialMediaHandles: recipientData.socialMediaHandles?.map((value) => {
-        return { socialMediaHandle: value } as SocialMediaHandle;
+        return {
+          socialMediaHandle: value.socialMediaHandle,
+        } as SocialMediaHandle;
       }),
       profilePictureUrl: req.file ? `${req.file.filename}` : undefined,
     };
@@ -108,6 +130,21 @@ recipientRouter.post(
   }
 );
 
+/**
+ * @route PUT /recipients/:id
+ * @description Updates an existing recipient profile.
+ * Recipients can only update their own profiles.
+ * A new profile picture can be uploaded, replacing the old one. If `profilePictureUrl` is set to `null` in the body, the existing picture will be removed.
+ *
+ * @param {string} req.params.id - The UUID of the recipient to update.
+ * @param {Request} req - Express request object. Expects recipient update data in `req.body` (conforming to `recipientUpdateSchema`) and an optional `profilePicture` in `req.file`.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the recipient was successfully updated.
+ * @returns {Response} 400 - If request body validation or file upload validation fails.
+ * @returns {Response} 401 - If the user is not authenticated.
+ * @returns {Response} 403 - If the user is not a recipient or does not own the profile being updated.
+ * @returns {Response} 404 - If the recipient with the given ID is not found.
+ */
 recipientRouter.put(
   "/:id",
   requireAuth,
@@ -164,7 +201,7 @@ recipientRouter.put(
 
     await updateRecipient(recipientId, recipientUpdateData);
 
-    if (oldProfilePictureUrl) {
+    if (oldProfilePictureUrl && !oldProfilePictureUrl.startsWith("http")) {
       await deleteFiles([
         path.join(config.PUBLIC_UPLOAD_DIR, oldProfilePictureUrl),
       ]);
@@ -175,6 +212,18 @@ recipientRouter.put(
   }
 );
 
+/**
+ * @route GET /recipients
+ * @description Retrieves a paginated list of recipients based on filter criteria.
+ * Access to sensitive recipient information is restricted:
+ * - Supervisors see all data for all recipients.
+ * - Authenticated recipients see all data for their own profile if `auth0UserId` filter matches their ID.
+ * - Otherwise, only public recipient data is returned.
+ * @param {Request} req - Express request object, expects query parameters for filtering (conforming to `UserFilterSchema`).
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - A paginated list of recipients (full or redacted based on permissions).
+ * @returns {Response} 400 - If query parameter validation fails.
+ */
 recipientRouter.get(
   "/",
   optionalAuth,
@@ -230,6 +279,20 @@ recipientRouter.get(
   }
 );
 
+/**
+ * @route GET /recipients/:id
+ * @description Retrieves a single recipient by their ID.
+ * Access to sensitive recipient information is restricted:
+ * - Supervisors see all data for the recipient.
+ * - Authenticated recipients see all data if the requested ID matches their own profile.
+ * - Otherwise, only public recipient data is returned.
+ *
+ * @param {string} req.params.id - The UUID of the recipient to retrieve.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 200 - The recipient object (full or redacted based on permissions).
+ * @returns {Response} 404 - If the recipient with the given ID is not found.
+ */
 recipientRouter.get(
   "/:id",
   optionalAuth,
@@ -294,6 +357,20 @@ recipientRouter.get(
   }
 );
 
+/**
+ * @route DELETE /recipients/:id
+ * @description Deletes a recipient profile and their associated Auth0 user.
+ * - Supervisors can delete any recipient.
+ * - Recipients can only delete their own profiles.
+ *
+ * @param {string} req.params.id - The UUID of the recipient to delete.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the recipient was successfully deleted.
+ * @returns {Response} 401 - If the user is not authenticated.
+ * @returns {Response} 403 - If the user does not have permission to delete this recipient.
+ * @returns {Response} 404 - If the recipient with the given ID is not found.
+ */
 recipientRouter.delete(
   "/:id",
   requireAuth,
@@ -351,8 +428,18 @@ recipientRouter.delete(
   }
 );
 
-// TODO (bitbender-8): Add route to openapi.yml
-// To be more robust, you would use an Auth0 action instead relying on calls from the
+/**
+ * @route DELETE /recipients/auth0/:auth0UserId
+ * @description Deletes an Auth0 user account.
+ * Users can only delete their own Auth0 account. This is typically used to allow users to delete their account entirely.
+ *
+ * @param {string} req.params.auth0UserId - The Auth0 User ID of the account to delete.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @returns {Response} 204 - If the Auth0 user was successfully deleted.
+ * @returns {Response} 401 - If the user is not authenticated.
+ * @returns {Response} 403 - If the authenticated user tries to delete an Auth0 account other than their own.
+ */
 recipientRouter.delete(
   "/auth0/:auth0UserId",
   requireAuth,

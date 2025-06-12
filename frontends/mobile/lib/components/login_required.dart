@@ -9,14 +9,15 @@ import 'package:mobile/components/styled_elevated_button.dart';
 import 'package:mobile/pages/signup_page.dart';
 import 'package:mobile/services/providers.dart';
 
-class LoginRequiredPage extends StatefulWidget {
-  const LoginRequiredPage({super.key});
+class LoginRequired extends StatefulWidget {
+  final bool loginOnly;
+  const LoginRequired({super.key, this.loginOnly = false});
 
   @override
-  State<LoginRequiredPage> createState() => _LoginRequiredPageState();
+  State<LoginRequired> createState() => _LoginRequiredState();
 }
 
-class _LoginRequiredPageState extends State<LoginRequiredPage> {
+class _LoginRequiredState extends State<LoginRequired> {
   bool _isLoading = false;
 
   @override
@@ -60,12 +61,14 @@ class _LoginRequiredPageState extends State<LoginRequiredPage> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Expanded(
-                            child: StyledElevatedButton(
-                              onPressed: () async => await _navigateToSignUp(),
-                              label: 'Sign Up',
+                          if (!widget.loginOnly)
+                            Expanded(
+                              child: StyledElevatedButton(
+                                onPressed: () async =>
+                                    await _navigateToSignUp(),
+                                label: 'Sign Up',
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],

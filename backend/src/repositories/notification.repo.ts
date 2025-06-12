@@ -1,13 +1,14 @@
-import { UUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
 import { config } from "../config.js";
 import { NotificationFilter } from "../models/filters/notification-filters.js";
 import { Notification } from "../models/notification.model.js";
 import { PaginatedList } from "../utils/utils.js";
 import { query } from "../db.js";
 import { AppError } from "../errors/error.types.js";
+import pg from "pg";
 
 export async function getNotifications(
-  filterParams: NotificationFilter & { id?: UUID; userId?: UUID },
+  filterParams: NotificationFilter & { id?: UUID; userId?: UUID }
 ): Promise<PaginatedList<Notification>> {
   const pageNo = filterParams.page || 1;
   const limit = filterParams.limit ?? config.PAGE_SIZE;
@@ -41,7 +42,7 @@ export async function getNotifications(
 
   if (filterParams.userId) {
     whereClauses.push(
-      `("supervisorId" = $${paramIndex} OR "recipientId" = $${paramIndex})`,
+      `("supervisorId" = $${paramIndex} OR "recipientId" = $${paramIndex})`
     );
     values.push(filterParams.userId);
     paramIndex++;
@@ -76,7 +77,7 @@ export async function getNotifications(
   `;
   const countResult = await query(
     countQueryString,
-    values.slice(0, values.length - 2),
+    values.slice(0, values.length - 2)
   );
 
   const totalCount = parseInt(countResult.rows[0].count, 10);
@@ -108,8 +109,75 @@ export async function getNotifications(
   };
 }
 
+export async function insertNotification(
+  notificationData: Omit<Notification, "id" | "createdAt" | "isRead">
+): Promise<Notification> {
+  const queryString = `
+    INSERT INTO "Notification" (
+      "id",
+      "subject",
+      "body",
+      "isRead",
+      "createdAt",
+      "recipientId",
+      "supervisorId"
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7
+    ) RETURNING "id", "subject", "body", "isRead", "createdAt", "recipientId", "supervisorId";
+  `;
+
+  const { userId, userType } = notificationData;
+  const values = [
+    randomUUID(),
+    notificationData.subject,
+    notificationData.body,
+    false,
+    new Date(),
+    userType === "Recipient" ? notificationData.userId : null,
+    userType === "Supervisor" ? notificationData.userId : null,
+  ];
+
+  try {
+    const result = await query(queryString, values);
+
+    if (!result || result.rows.length === 0) {
+      throw new AppError(
+        "Internal Server Error",
+        500,
+        "Failed to insert notification."
+      );
+    }
+
+    const insertedRow = result.rows[0] as {
+      recipientId: UUID | null;
+      supervisorId: UUID | null;
+    } & Omit<Notification, "userId" | "userType">;
+
+    return {
+      id: insertedRow.id,
+      subject: insertedRow.subject,
+      body: insertedRow.body,
+      isRead: insertedRow.isRead,
+      createdAt: insertedRow.createdAt,
+      userId: insertedRow.recipientId ?? insertedRow.supervisorId!,
+      userType: insertedRow.recipientId ? "Recipient" : "Supervisor",
+    };
+  } catch (error) {
+    if (error instanceof pg.DatabaseError && error.code === "23503") {
+      // Foreign key violation
+      throw new AppError(
+        "Validation Failure",
+        400,
+        `User with ID ${userId} does not exist or does not match userType ${userType}.`,
+        { cause: error }
+      );
+    }
+    throw error;
+  }
+}
+
 export async function markNotificationAsRead(
-  notificationId: UUID,
+  notificationId: UUID
 ): Promise<Notification> {
   const result = await query<Notification>(
     `
@@ -118,7 +186,7 @@ export async function markNotificationAsRead(
     WHERE "id" = $1
     RETURNING *
     `,
-    [notificationId],
+    [notificationId]
   );
 
   if (!result || result.rows.length === 0) {
@@ -131,7 +199,7 @@ export async function markNotificationAsRead(
 }
 
 export async function deleteNotification(
-  notificationId: UUID,
+  notificationId: UUID
 ): Promise<boolean> {
   const result = await query(`DELETE FROM "Notification" WHERE "id" = $1`, [
     notificationId,

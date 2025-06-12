@@ -11,6 +11,10 @@ import 'package:mobile/utils/utils.dart';
 import 'package:mobile/utils/validators.dart';
 import 'package:provider/provider.dart';
 
+// Assuming all necessary imports and the definition of FormErrorHelpers
+// and your models (Recipient, SocialMediaHandle, ServerValidationException)
+// are correctly handled and valid in your project.
+
 class ProfilePage extends StatefulWidget {
   final Recipient initialRecipient;
 
@@ -22,12 +26,20 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     with FormErrorHelpers<ProfilePage> {
-  late final Recipient _initialRecipient;
+  late Recipient _initialRecipient;
   final _formKey = GlobalKey<FormState>();
 
+  // Define TextEditingControllers for all editable fields
+  final _firstNameController = TextEditingController();
+  final _middleNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _phoneNoController = TextEditingController();
   final _dateOfBirthController = TextEditingController();
   final _newSocialHandleController = TextEditingController();
-  final List<String?> _socialHandleErrors = [];
+
+  final List<String?> _socialHandleErrors =
+      []; // This will hold client-side errors
   late Recipient _editableRecipient;
   File? _profilePicture;
 
@@ -39,13 +51,11 @@ class _ProfilePageState extends State<ProfilePage>
     super.initState();
 
     _initialRecipient = widget.initialRecipient.copyWith();
-    _fetchRecipient();
+    _fetchRecipient(); // Initial fetch on load
     _editableRecipient = _initialRecipient.copyWith();
 
-    if (_editableRecipient.dateOfBirth != null) {
-      _dateOfBirthController.text =
-          formatDate(_editableRecipient.dateOfBirth!.toLocal(), isShort: false);
-    }
+    // Initialize controllers with _editableRecipient's current values
+    _initializeControllers();
 
     _socialHandleErrors.addAll(List.generate(
       _editableRecipient.socialMediaHandles?.length ?? 0,
@@ -53,11 +63,36 @@ class _ProfilePageState extends State<ProfilePage>
     ));
   }
 
+  // New helper to initialize all controllers
+  void _initializeControllers() {
+    _firstNameController.text = _editableRecipient.firstName ?? '';
+    _middleNameController.text = _editableRecipient.middleName ?? '';
+    _lastNameController.text = _editableRecipient.lastName ?? '';
+    _bioController.text = _editableRecipient.bio ?? '';
+    _phoneNoController.text = _editableRecipient.phoneNo ?? '';
+    _setDateOfBirthControllerText(); // This handles _dateOfBirthController
+  }
+
   @override
   void dispose() {
+    // Dispose all controllers
+    _firstNameController.dispose();
+    _middleNameController.dispose();
+    _lastNameController.dispose();
+    _bioController.dispose();
+    _phoneNoController.dispose();
     _dateOfBirthController.dispose();
     _newSocialHandleController.dispose();
     super.dispose();
+  }
+
+  void _setDateOfBirthControllerText() {
+    if (_editableRecipient.dateOfBirth != null) {
+      _dateOfBirthController.text =
+          formatDate(_editableRecipient.dateOfBirth!.toLocal(), isShort: false);
+    } else {
+      _dateOfBirthController.clear();
+    }
   }
 
   @override
@@ -66,7 +101,8 @@ class _ProfilePageState extends State<ProfilePage>
       body: Stack(
         children: [
           _buildForm(),
-          if (_isEditing && _isLoading) _buildLoadingOverlay(),
+          if (_isLoading)
+            _buildLoadingOverlay(), // Show loading overlay regardless of edit mode
         ],
       ),
       showFab: !_isEditing,
@@ -80,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage>
   Widget _buildLoadingOverlay() {
     return Positioned.fill(
       child: Container(
-        color: Colors.black.withValues(alpha: 0.5),
+        color: Colors.black.withOpacity(0.5), // Use withOpacity for clarity
         child: const Center(child: CircularProgressIndicator()),
       ),
     );
@@ -90,29 +126,35 @@ class _ProfilePageState extends State<ProfilePage>
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: SingleChildScrollView(
+      child: RefreshIndicator(
+        // RefreshIndicator directly wraps the SingleChildScrollView
+        onRefresh: () async {
+          await _fetchRecipient();
+          // After fetching, _editableRecipient and controllers are updated.
+          // No need for _resetFields() here as we want to display the fresh data.
+          // We also need to re-validate the form if there are server errors for social media handles
+          _formKey.currentState?.validate();
+        },
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await _fetchRecipient();
-              print("df");
-              _resetFields();
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildProfileAvatarSection(),
-                const SizedBox(height: 24.0),
-                _buildPersonalInformationSection(),
-                const SizedBox(height: 24.0),
-                _buildContactSection(),
-                const SizedBox(height: 24.0),
-                _buildSocialMediaSection(),
-                const SizedBox(height: 32.0),
-                if (_isEditing) _buildActionButtons(),
-              ],
-            ),
-          )),
+          physics:
+              const AlwaysScrollableScrollPhysics(), // Important for RefreshIndicator to always work
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildProfileAvatarSection(),
+              const SizedBox(height: 24.0),
+              _buildPersonalInformationSection(),
+              const SizedBox(height: 24.0),
+              _buildContactSection(),
+              const SizedBox(height: 24.0),
+              _buildSocialMediaSection(),
+              const SizedBox(height: 32.0),
+              if (_isEditing) _buildActionButtons(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -154,7 +196,7 @@ class _ProfilePageState extends State<ProfilePage>
       children: [
         _buildSectionHeader('Personal Information'),
         TextFormField(
-          initialValue: _editableRecipient.firstName,
+          controller: _firstNameController, // Use controller
           readOnly: !_isEditing,
           decoration: const InputDecoration(
             labelText: 'First Name',
@@ -162,15 +204,10 @@ class _ProfilePageState extends State<ProfilePage>
             prefixIcon: Icon(Icons.person_outline),
           ),
           validator: (value) => validNonEmptyString(value, max: 50),
-          onSaved: (val) => setState(() {
-            _editableRecipient = _editableRecipient.copyWith(
-              firstName: val ?? '',
-            );
-          }),
         ),
         const SizedBox(height: 16.0),
         TextFormField(
-          initialValue: _editableRecipient.middleName,
+          controller: _middleNameController, // Use controller
           readOnly: !_isEditing,
           decoration: const InputDecoration(
             labelText: 'Middle Name',
@@ -178,15 +215,10 @@ class _ProfilePageState extends State<ProfilePage>
             prefixIcon: Icon(Icons.person_outline),
           ),
           validator: (value) => validNonEmptyString(value, max: 50),
-          onSaved: (val) => setState(() {
-            _editableRecipient = _editableRecipient.copyWith(
-              middleName: val ?? '',
-            );
-          }),
         ),
         const SizedBox(height: 16.0),
         TextFormField(
-          initialValue: _editableRecipient.lastName,
+          controller: _lastNameController, // Use controller
           readOnly: !_isEditing,
           decoration: const InputDecoration(
             labelText: 'Last Name',
@@ -194,11 +226,6 @@ class _ProfilePageState extends State<ProfilePage>
             prefixIcon: Icon(Icons.person_outline),
           ),
           validator: (value) => validNonEmptyString(value, max: 50),
-          onSaved: (val) => setState(() {
-            _editableRecipient = _editableRecipient.copyWith(
-              lastName: val ?? '',
-            );
-          }),
         ),
         const SizedBox(height: 16.0),
         TextFormField(
@@ -225,7 +252,7 @@ class _ProfilePageState extends State<ProfilePage>
         ),
         const SizedBox(height: 16.0),
         TextFormField(
-          initialValue: _editableRecipient.bio,
+          controller: _bioController, // Use controller
           readOnly: !_isEditing,
           decoration: InputDecoration(
             labelText: 'Bio',
@@ -238,11 +265,6 @@ class _ProfilePageState extends State<ProfilePage>
           maxLines: 5,
           minLines: 3,
           validator: (val) => validNonEmptyString(val, max: 500),
-          onSaved: (val) => setState(() {
-            _editableRecipient = _editableRecipient.copyWith(
-              bio: val ?? '',
-            );
-          }),
         ),
       ],
     );
@@ -254,7 +276,7 @@ class _ProfilePageState extends State<ProfilePage>
       children: [
         _buildSectionHeader('Contact Information'),
         TextFormField(
-          initialValue: _editableRecipient.phoneNo ?? '',
+          controller: _phoneNoController, // Use controller
           readOnly: !_isEditing,
           decoration: InputDecoration(
             labelText: 'Phone Number',
@@ -264,15 +286,11 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           keyboardType: TextInputType.phone,
           validator: (val) => validPhoneNo(val),
-          onSaved: (val) => setState(() {
-            _editableRecipient = _editableRecipient.copyWith(
-              phoneNo: val ?? '',
-            );
-          }),
         ),
         const SizedBox(height: 16.0),
         TextFormField(
-          initialValue: _editableRecipient.email ?? '',
+          initialValue: _editableRecipient.email ??
+              '', // Email is still read-only, no controller needed
           readOnly: true,
           decoration: const InputDecoration(
             labelText: 'Email',
@@ -331,15 +349,34 @@ class _ProfilePageState extends State<ProfilePage>
             runSpacing: 8.0,
             children: List.generate(
                 _editableRecipient.socialMediaHandles?.length ?? 0, (i) {
+              // Get server error for this specific social media handle
+              final String? serverError =
+                  getServerError('socialMediaHandles.$i.socialMediaHandle');
+              // Combine client-side and server-side errors
+              final String? displayError =
+                  _socialHandleErrors[i] ?? serverError;
+
               return Chip(
                 label: Text(
                   _editableRecipient.socialMediaHandles![i].socialMediaHandle,
                 ),
-                labelStyle: TextStyle(color: colorScheme.onSecondaryContainer),
-                backgroundColor: colorScheme.secondaryContainer,
+                labelStyle: TextStyle(
+                  color: displayError != null
+                      ? colorScheme.onErrorContainer
+                      : colorScheme
+                          .onSecondaryContainer, // Text color for error
+                ),
+                backgroundColor: displayError != null
+                    ? colorScheme.errorContainer
+                    : colorScheme
+                        .secondaryContainer, // Background color for error
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  side: BorderSide(color: colorScheme.outlineVariant),
+                  side: BorderSide(
+                      color: displayError != null
+                          ? colorScheme.error
+                          : colorScheme
+                              .outlineVariant), // Border color for error
                 ),
                 onDeleted: _isEditing
                     ? () {
@@ -348,6 +385,9 @@ class _ProfilePageState extends State<ProfilePage>
                           if (i < _socialHandleErrors.length) {
                             _socialHandleErrors.removeAt(i);
                           }
+                          // Also remove server error for this handle if it exists
+                          clearServerError(
+                              'socialMediaHandles.$i.socialMediaHandle');
                         });
                       }
                     : null,
@@ -355,7 +395,10 @@ class _ProfilePageState extends State<ProfilePage>
                     ? Icon(
                         Icons.close,
                         size: 18,
-                        color: colorScheme.onSecondaryContainer,
+                        color: displayError != null
+                            ? colorScheme.onErrorContainer
+                            : colorScheme
+                                .onSecondaryContainer, // Icon color for error
                       )
                     : null,
               );
@@ -375,6 +418,15 @@ class _ProfilePageState extends State<ProfilePage>
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
+            ),
+          ),
+        // Display generic social media handle error if any
+        if (getServerError('socialMediaHandles') != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+            child: Text(
+              getServerError('socialMediaHandles')!,
+              style: TextStyle(color: colorScheme.error, fontSize: 12),
             ),
           ),
       ],
@@ -399,7 +451,6 @@ class _ProfilePageState extends State<ProfilePage>
               side: BorderSide(color: colorScheme.error),
               padding: buttonPadding,
               shape: RoundedRectangleBorder(
-                // Added shape
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -483,8 +534,8 @@ class _ProfilePageState extends State<ProfilePage>
                   child: const Text('Add'),
                   onPressed: () {
                     final String input = _newSocialHandleController.text.trim();
-                    final String? error = validNonEmptyString(input, max: 100);
-
+                    final String? error =
+                        validUrl(input); // Validate as URL here
                     if (error == null) {
                       Navigator.of(context).pop(input);
                     } else {
@@ -507,7 +558,16 @@ class _ProfilePageState extends State<ProfilePage>
       final String? currentRecipientId = userProvider.user?.id;
 
       if (currentRecipientId != null) {
-        _addSocialHandle(newHandle, currentRecipientId);
+        // Add to editableRecipient directly. Will be saved on form submission.
+        setState(() {
+          _editableRecipient.socialMediaHandles ??= [];
+          _editableRecipient.socialMediaHandles!.add(
+            SocialMediaHandle(
+                socialMediaHandle: newHandle, recipientId: currentRecipientId),
+          );
+          _socialHandleErrors
+              .add(null); // Add null for new handle's error state
+        });
       } else {
         if (context.mounted) {
           showErrorSnackBar(
@@ -517,16 +577,6 @@ class _ProfilePageState extends State<ProfilePage>
         }
       }
     }
-  }
-
-  void _addSocialHandle(String handle, String recipientId) {
-    setState(() {
-      _editableRecipient.socialMediaHandles ??= [];
-      _editableRecipient.socialMediaHandles!.add(
-        SocialMediaHandle(socialMediaHandle: handle, recipientId: recipientId),
-      );
-      _socialHandleErrors.add(null); // Add null for new handle's error state
-    });
   }
 
   Future<void> _selectDateOfBirth(BuildContext context) async {
@@ -553,19 +603,46 @@ class _ProfilePageState extends State<ProfilePage>
       clearAllServerErrors();
     });
 
-    final isFormValid = _formKey.currentState!.validate();
+    final form = _formKey.currentState;
+    if (form == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
+    // Collect updated recipient data directly from controllers
+    Recipient updatedRecipient = _editableRecipient.copyWith(
+      firstName: _firstNameController.text,
+      middleName: _middleNameController.text,
+      lastName: _lastNameController.text,
+      bio: _bioController.text,
+      phoneNo: _phoneNoController.text,
+      // Date of birth is already updated via _selectDateOfBirth into _editableRecipient
+      // Social media handles are updated directly into _editableRecipient's list
+    );
+
+    // Client-side validation for social media handles
     bool allHandlesValid = true;
+    // Ensure _socialHandleErrors has enough capacity for all handles
+    if (_socialHandleErrors.length <
+        (updatedRecipient.socialMediaHandles?.length ?? 0)) {
+      _socialHandleErrors.addAll(List.generate(
+        (updatedRecipient.socialMediaHandles?.length ?? 0) -
+            _socialHandleErrors.length,
+        (_) => null,
+      ));
+    }
     for (int i = 0;
-        i < (_editableRecipient.socialMediaHandles?.length ?? 0);
+        i < (updatedRecipient.socialMediaHandles?.length ?? 0);
         i++) {
-      final handle =
-          _editableRecipient.socialMediaHandles![i].socialMediaHandle;
-
-      final error = validUrl(handle);
+      final handle = updatedRecipient.socialMediaHandles![i].socialMediaHandle;
+      final error = validUrl(handle); // Use validUrl for social media handles
       _socialHandleErrors[i] = error;
       if (error != null) allHandlesValid = false;
     }
+
+    // Trigger validation for all fields using their validators
+    final isFormValid =
+        _formKey.currentState!.validate(); // This runs all validators
 
     if (!isFormValid || !allHandlesValid) {
       setState(() => _isLoading = false);
@@ -591,7 +668,7 @@ class _ProfilePageState extends State<ProfilePage>
       listen: false,
     );
     final result = await recipientService.updateRecipient(
-      _editableRecipient,
+      updatedRecipient, // Use the collected updatedRecipient
       _profilePicture,
       accessToken,
     );
@@ -607,16 +684,26 @@ class _ProfilePageState extends State<ProfilePage>
             _isEditing = false;
             _profilePicture = null;
           });
-          // Update the user provider's recipient after successful save
+          // Update the user provider's recipient and the _editableRecipient
+          // We fetch again to ensure all fields are up-to-date, including profile picture URL if changed server-side
           if (result.data == true) {
+            // Assuming result.data indicates successful update
             final String recipientId = userProvider.user!.id as String;
-            final updatedRecipient = await recipientService.getRecipientById(
+            final updatedRecipientResponse =
+                await recipientService.getRecipientById(
               recipientId,
               accessToken,
             );
 
-            userProvider.setRecipient(updatedRecipient.data);
-            _editableRecipient = updatedRecipient.data!.copyWith();
+            if (updatedRecipientResponse.data != null) {
+              userProvider.setRecipient(updatedRecipientResponse.data);
+              setState(() {
+                _initialRecipient = updatedRecipientResponse.data!.copyWith();
+                _editableRecipient = updatedRecipientResponse.data!.copyWith();
+                // Re-initialize all controllers with new data
+                _initializeControllers();
+              });
+            }
 
             clearAllServerErrors();
             _socialHandleErrors.clear();
@@ -633,10 +720,35 @@ class _ProfilePageState extends State<ProfilePage>
 
         // Trigger form validation to show errors
         _formKey.currentState?.validate();
+        // Manually update social handle errors for display if they come from server
+        _updateSocialHandleErrorsFromServer(errors);
       },
     );
 
     setState(() => _isLoading = false);
+  }
+
+  void _updateSocialHandleErrorsFromServer(Map<String, List<String>> errors) {
+    setState(() {
+      _socialHandleErrors.clear();
+      _socialHandleErrors.addAll(List.generate(
+        _editableRecipient.socialMediaHandles?.length ?? 0,
+        (_) => null,
+      ));
+
+      errors.forEach((key, value) {
+        // Check for social media handle errors like 'socialMediaHandles.0.socialMediaHandle'
+        final RegExp socialHandleErrorRegex =
+            RegExp(r'socialMediaHandles\.(\d+)\.socialMediaHandle');
+        final match = socialHandleErrorRegex.firstMatch(key);
+        if (match != null) {
+          final int index = int.parse(match.group(1)!);
+          if (index < _socialHandleErrors.length) {
+            _socialHandleErrors[index] = value.isNotEmpty ? value.first : null;
+          }
+        }
+      });
+    });
   }
 
   void _toggleEditMode() {
@@ -645,6 +757,7 @@ class _ProfilePageState extends State<ProfilePage>
       if (!_isEditing) {
         // Reset to initial state when exiting edit mode
         _editableRecipient = _initialRecipient.copyWith();
+        _initializeControllers();
         _profilePicture = null;
 
         clearAllServerErrors();
@@ -654,9 +767,9 @@ class _ProfilePageState extends State<ProfilePage>
           (_) => null,
         ));
       }
-      _formKey.currentState?.validate();
-      // Ensure loading is off when toggling edit mode
-      _isLoading = false;
+      _formKey.currentState
+          ?.validate(); // Validate to clear/show current errors based on mode
+      _isLoading = false; // Ensure loading is off when toggling edit mode
     });
   }
 
@@ -666,7 +779,9 @@ class _ProfilePageState extends State<ProfilePage>
     if (_profilePicture != null) {
       return FileImage(_profilePicture!);
     } else {
-      return pictureUrl != null ? NetworkImage(pictureUrl) : null;
+      return pictureUrl != null && pictureUrl.isNotEmpty
+          ? NetworkImage(pictureUrl)
+          : null;
     }
   }
 
@@ -683,6 +798,7 @@ class _ProfilePageState extends State<ProfilePage>
   void _resetFields() {
     setState(() {
       _editableRecipient = _initialRecipient.copyWith();
+      _initializeControllers();
       _profilePicture = null;
       clearAllServerErrors();
 
@@ -693,7 +809,7 @@ class _ProfilePageState extends State<ProfilePage>
         (_) => null,
       ));
 
-      // Reset the form fields to their initial values and clear their validation messages
+      // Calling _formKey.currentState?.reset() here will clear the visual state of the fields and their validation messages.
       _formKey.currentState?.reset();
     });
   }
@@ -711,7 +827,10 @@ class _ProfilePageState extends State<ProfilePage>
     }
 
     if (!mounted) return;
-    if (userProvider.user == null) return;
+    if (userProvider.user == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     final result = await Provider.of<RecipientService>(
       context,
@@ -723,8 +842,18 @@ class _ProfilePageState extends State<ProfilePage>
 
     if (!mounted) return;
     await handleServiceResponse(context, result, onSuccess: () {
-      if (result.data == null) return;
-      setState(() => _initialRecipient = result.data as Recipient);
+      if (result.data != null) {
+        setState(() {
+          _initialRecipient = result.data!.copyWith();
+          _editableRecipient = result.data!.copyWith();
+          _initializeControllers();
+          _socialHandleErrors.clear();
+          _socialHandleErrors.addAll(List.generate(
+            _editableRecipient.socialMediaHandles?.length ?? 0,
+            (_) => null,
+          ));
+        });
+      }
     });
 
     setState(() => _isLoading = false);
