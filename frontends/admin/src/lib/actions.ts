@@ -86,7 +86,7 @@ export async function getUnreadNotificationsAction(): Promise<{
 }
 
 export async function markNotificationsAsReadAction(
-  notificationIds: string[]
+  notificationIds: string[],
 ): Promise<{ success: boolean; message?: string }> {
   if (!notificationIds || notificationIds.length === 0) {
     return { success: true, message: "No notifications to mark as read." }; // Not an error, just nothing to do

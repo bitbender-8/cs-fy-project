@@ -54,8 +54,8 @@ export default function ProfileForm({
       if (result.success) {
         setIsEditing(false);
         // Optionally, show a success message (e.g., using a toast library)
-        toast('Profile updated successfully!', {
-          position: 'top-right',
+        toast("Profile updated successfully!", {
+          position: "top-right",
         });
         router.refresh(); // Refresh server components
       } else {
