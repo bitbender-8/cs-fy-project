@@ -3,6 +3,8 @@ CREATE TABLE
     "Recipient" (
         -- Unique identifier for each recipient.
         "id" UUID PRIMARY KEY,
+        -- The auth0 user id
+        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
         -- Recipient's first name.
         "firstName" VARCHAR(50) NOT NULL,
         -- Recipient's middle name (father's name).
@@ -11,15 +13,10 @@ CREATE TABLE
         "lastName" VARCHAR(50) NOT NULL,
         -- Recipient's date of birth.
         "dateOfBirth" DATE NOT NULL,
-        /* Added a unique constraint on the recipient's email. */
-        -- Recipient's email address. This is not required.
-        "email" VARCHAR(100) NULL UNIQUE,
-        /* FIXME(bitbender-8): Made phone nullable for mvp. Will have to get it from auth0, after customizing the signup page. */
+        -- Recipient's email address. This is required.
+        "email" TEXT NOT NULL UNIQUE,
         -- Recipient's phone number.
-        "phoneNo" VARCHAR(20) NULL UNIQUE,
-        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
-        -- The auth0 user id
-        "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
+        "phoneNo" VARCHAR(20) NOT NULL UNIQUE,
         -- A short biography or description of the recipient.
         "bio" TEXT,
         -- URL to the recipient's profile picture.
@@ -29,7 +26,6 @@ CREATE TABLE
 -- Links recipients to their social media accounts.
 CREATE TABLE
     "RecipientSocialMediaHandle" (
-        /* DOC-UPDATE: Rename 'handleId' in relational schema to id. */
         "id" UUID PRIMARY KEY,
         -- Unique identifier for each social media handle.
         "recipientId" UUID NOT NULL,
@@ -44,7 +40,6 @@ CREATE TABLE
     "Supervisor" (
         -- Unique identifier for each supervisor.
         "id" UUID PRIMARY KEY,
-        /* DOC-UPDATE: Removed columns: loginAttempts, accountLockDate, passwordHash; Added column auth0UserId */
         -- The auth0 user id
         "auth0UserId" VARCHAR(255) NOT NULL UNIQUE,
         -- Supervisor's first name.
@@ -72,7 +67,6 @@ CREATE TABLE
         "body" TEXT,
         -- Indicates whether the notification has been read.
         "isRead" BOOLEAN NOT NULL,
-        /* DOC-UPDATE Changed timestamp column to createdAt bc it causes errors when used in prepared statements (it might be reserved). */
         -- Timestamp when the notification was issued with time zone.
         "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Foreign key referencing the Recipient table.
@@ -133,11 +127,10 @@ CREATE TABLE
         "launchDate" TIMESTAMPTZ NULL,
         -- End date of the campaign with time zone.
         "endDate" TIMESTAMPTZ NULL,
-        /* DOC-UPDATE Determines whether the campaign is publicly available. Removes the need to rely on launchDate implicitly. */
+        -- Determines whether the campaigns is publicly available or not.
         "isPublic" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Recipient table (campaign owner).
         "ownerRecipientId" UUID NOT NULL REFERENCES "Recipient" ("id") ON UPDATE CASCADE ON DELETE CASCADE
-        /* DOC-UPDATE: Remove managing supervisor id. All recipients are managed by a single supervisor for now. */
         -- Foreign key referencing the Supervisor table (managing supervisor).
         -- "managingSupervisorId" UUID NOT NULL REFERENCES "Supervisor" ("id")
     );
@@ -145,10 +138,8 @@ CREATE TABLE
 -- Stores URLs of original campaign documents.
 CREATE TABLE
     "CampaignDocuments" (
-        /* DOC-UPDATE Changed the name of the column 'documentUrl' to 'url' */
         -- URL of the document.
         "documentUrl" TEXT PRIMARY KEY,
-        /* DOC-UPDATE Removed the table 'RedactedCampaignDocuments' in favor of this column. */
         -- URL of the redacted document.
         "redactedDocumentUrl" TEXT NULL,
         -- Foreign key referencing the Campaign table.
@@ -164,12 +155,10 @@ CREATE TABLE
         "grossAmount" BIGINT NOT NULL,
         -- Fee charged for the donation service.
         "serviceFee" BIGINT NOT NULL,
-        /* DOC-UPDATE Changed timestamp column to createdAt bc it causes errors when used in prepared statements (it might be reserved). */
         -- Timestamp of the donation transaction with time zone.
         "createdAt" TIMESTAMPTZ NOT NULL,
         -- Transaction reference number returned from the pqyment provider.
         "transactionRef" VARCHAR(255) NOT NULL UNIQUE,
-        /* DOC-UPDATE: This is a new property. */
         -- Has the donation amount specified here been transferred to the campaign's account
         "isTransferred" BOOLEAN NOT NULL DEFAULT FALSE,
         -- Foreign key referencing the Campaign table.
@@ -191,10 +180,6 @@ CREATE TABLE
         "campaignId" UUID NOT NULL REFERENCES "Campaign" ("id") ON UPDATE CASCADE ON DELETE CASCADE
     );
 
-/** 
-TODO: (bitbender-8): Propagate to data models in code.
-DOC-UPDATE: Update Relational schema and class diagrams.
- */
 CREATE TYPE "ResolutionType" AS ENUM('Accepted', 'Rejected');
 
 -- Stores requests to update a campaign post.
@@ -208,7 +193,7 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the post update.
         "justification" TEXT NOT NULL,
-        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        -- The date when the request was accepted or denied.
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Specifies whether the campaign request is accepted or rejected.
         "resolutionType" "ResolutionType" NULL DEFAULT NULL,
@@ -229,7 +214,7 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the extension request.
         "justification" TEXT NOT NULL,
-        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        -- The date when the request was accepted or denied.
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Specifies whether the campaign request is accepted or rejected.
         "resolutionType" "ResolutionType" NULL DEFAULT NULL,
@@ -250,7 +235,7 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the goal adjustment.
         "justification" TEXT NOT NULL,
-        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        -- The date when the request was accepted or denied.
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Specifies whether the campaign request is accepted or rejected.
         "resolutionType" "ResolutionType" NULL DEFAULT NULL,
@@ -271,7 +256,7 @@ CREATE TABLE
         "requestDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         -- Justification for the status change.
         "justification" TEXT NOT NULL,
-        /* DOC-UPDATE: Changed isResolved in favor of storing the date. Update Relational schema and class diagrams. */
+        -- The date when the request was accepted or denied.
         "resolutionDate" TIMESTAMPTZ NULL DEFAULT NULL,
         -- Specifies whether the campaign request is accepted or rejected.
         "resolutionType" "ResolutionType" NULL DEFAULT NULL,

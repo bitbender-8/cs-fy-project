@@ -15,7 +15,6 @@ import {
 
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
-// DOC-UPDATE: Made changes to the way accounts are stored
 export type PaymentInfo = z.infer<typeof PaymentInfoSchema>;
 export const PaymentInfoSchema = z.object({
   chapaBankCode: validBankCode(),
@@ -31,7 +30,7 @@ export const CampaignDocumentSchema = z.object({
   redactedDocumentUrl: validUrl().optional(),
 });
 
-// FIXME Add more specific validation logic. Like min and max length of campaign, things like submissionDate < verificationDate.
+// DEFER(FIXME) Add more specific validation logic. Like min and max length of campaign, things like submissionDate < verificationDate.
 export type Campaign = z.infer<typeof CampaignSchema>;
 export const CampaignSchema = z.object({
   id: validUuid(),
@@ -61,7 +60,6 @@ export const CampaignDonationSchema = z.object({
   serviceFee: validMoneyAmount(),
   createdAt: validDate(true),
   transactionRef: validNonEmptyString(MIN_STRING_LENGTH, 255),
-  // DOC-UPDATE: Added isTransferred parameter
   isTransferred: validBoolean(),
   campaignId: validUuid(),
 });

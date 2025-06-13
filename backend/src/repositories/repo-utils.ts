@@ -7,7 +7,6 @@ export interface UpdateResult {
   values: unknown[];
 }
 
-// CONSIDER: Updating all insert and update functions to use this.
 /**
  * Constructs the SET clause and parameter values for a SQL UPDATE query.
  *
