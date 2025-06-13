@@ -27,17 +27,40 @@ type ChangeCampaignVisibilityDropdownMenuProps = {
   title: string;
 };
 
+// 1) A map of all the allowed transitions
+const STATUS_TRANSITIONS: Record<string, string[]> = {
+  Pending_Review: ["Verified", "Denied"],
+  Verified: ["Live", "Denied"],
+  Live: ["Paused", "Completed"],
+  Paused: ["Live", "Completed"],
+  Completed: [],
+  Denied: [],
+};
+
+// (optional) A nice human‐readable label for each enum key
+const STATUS_LABELS: Record<string, string> = {
+  Pending_Review: "Pending Review",
+  Verified: "Verified",
+  Denied: "Denied",
+  Live: "Live",
+  Paused: "Paused",
+  Completed: "Completed",
+};
+
 export default function ChangeCampaignVisibilityDropdownMenu({
   status,
   campaignId,
   title,
 }: ChangeCampaignVisibilityDropdownMenuProps) {
+  // position is the “current” status on screen
   const [position, setPosition] = useState(status);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
-  // Add a state flag to control the dropdown’s visibility:
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
+
+  // look up only the valid “next” statuses
+  const allowedStatuses = STATUS_TRANSITIONS[position] || [];
 
   const handleChange = (newStatus: string) => {
     setPendingStatus(newStatus);
@@ -50,12 +73,11 @@ export default function ChangeCampaignVisibilityDropdownMenu({
     setPosition(pendingStatus);
     setDialogOpen(false);
 
-    const resAccessToken = await fetch("/api/get-token");
-    const { accessToken } = await resAccessToken.json();
-
-    console.log("Access Token:", accessToken);
-
+    // … your PUT logic stays the same …
     try {
+      const { accessToken } = await fetch("/api/get-token").then((r) =>
+        r.json(),
+      );
       const res = await fetch(`http://localhost:4000/campaigns/${campaignId}`, {
         method: "PUT",
         headers: {
@@ -64,11 +86,9 @@ export default function ChangeCampaignVisibilityDropdownMenu({
         },
         body: JSON.stringify({ status: pendingStatus }),
       });
-
       if (!res.ok) throw new Error(await res.text());
-
       toast("Status Updated", {
-        description: `Campaign status changed to "${pendingStatus.replace("_", " ")}".`,
+        description: `Campaign status changed to "${STATUS_LABELS[pendingStatus]}".`,
       });
       router.refresh();
     } catch (err: unknown) {
@@ -85,36 +105,43 @@ export default function ChangeCampaignVisibilityDropdownMenu({
   return (
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="default">{position.toUpperCase()}</Button>
+        <DropdownMenuTrigger
+          asChild
+          // if there’s nowhere to go, disable the whole thing
+          disabled={allowedStatuses.length === 0}
+        >
+          <Button variant="default">
+            {STATUS_LABELS[position] || position}
+          </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>Campaign Visibility Status</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup value={position} onValueChange={handleChange}>
-            <DropdownMenuRadioItem value="Pending_Review">
-              Pending Review
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="Live">Live</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="Paused">Paused</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="Verified">
-              Verified
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="Denied">Denied</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="Completed">
-              Completed
-            </DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
+
+        {allowedStatuses.length > 0 && (
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Change Campaign Status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuRadioGroup
+              value={position}
+              onValueChange={handleChange}
+            >
+              {allowedStatuses.map((s) => (
+                <DropdownMenuRadioItem key={s} value={s}>
+                  {STATUS_LABELS[s]}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Are you sure you want to change the campaign status for: <br />
+              Are you sure you want to change the campaign status for:
               <br />
-              <p className="font-bold text-xl underline">{title}</p>
+              <br />
+              <span className="font-bold text-xl underline">{title}</span>
             </DialogTitle>
           </DialogHeader>
           <DialogFooter>

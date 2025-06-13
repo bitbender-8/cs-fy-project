@@ -12,7 +12,6 @@ import { notificationRouter } from "./routes/notification.routes.js";
 import { campaignPostRouter } from "./routes/campaign-post.routes.js";
 import { ProblemDetails } from "./errors/error.types.js";
 import { fileRouter } from "./routes/file.routes.js";
-import cors from "cors";
 
 const app: Application = express();
 

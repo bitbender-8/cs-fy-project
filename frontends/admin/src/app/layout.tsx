@@ -33,9 +33,18 @@ export default function RootLayout({
             <hr className="border-t-1 border-[#E5E5E5] w-full" />
             <div className="pl-1 pr-4 py-7">{children}</div>
           </main>
-         
         </SidebarProvider>
-         <Toaster position="top-right"/>
+        <Toaster
+          position="top-right"
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: "#000",
+              color: "#fff",
+              border: "1px solid #222",
+            },
+          }}
+        />
       </body>
     </html>
   );
