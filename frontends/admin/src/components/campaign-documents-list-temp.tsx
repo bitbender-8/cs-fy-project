@@ -1,37 +1,72 @@
-import { FileTextIcon } from "lucide-react";
+// components/CampaignDocumentsList.tsx
+"use client";
 
-type CampaignDocumentsList = {
+import { FileTextIcon } from "lucide-react";
+import { useCallback } from "react";
+
+type CampaignDocumentsListProps = {
   campaignDocuments: {
     documentUrl: string;
     redactedDocumentUrl: string | null;
-    campaignId: string;
   }[];
 };
 
-export default function CampaignDocumentsListTemp({
+export default function CampaignDocumentsList({
   campaignDocuments,
-}: CampaignDocumentsList) {
+}: CampaignDocumentsListProps) {
+  const downloadDocument = useCallback(async (fullUrl: string) => {
+    // extract just the filename portion
+    const filename = fullUrl;
+    if (!fullUrl) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/files/campaign-documents/${filename}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+
+      console.log("Fetching file:", fullUrl);
+
+      if (!res.ok) {
+        console.error("Failed to fetch file:", await res.text());
+        return;
+      }
+
+      // turn it into a blob
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // create a temporary link to trigger download
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename!;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Error downloading document:", err);
+    }
+  }, []);
+
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-      {campaignDocuments.map((doc, index) => (
-        <a
-          key={index}
-          href={doc.documentUrl} // Consider using redactedDocumentUrl if available and appropriate
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group block" // Added group for hover effects
+      {campaignDocuments.map((doc, i) => (
+        <div
+          key={i}
+          onClick={() => downloadDocument(doc.documentUrl)}
+          className="group flex flex-col items-center justify-center gap-3 bg-slate-50 p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 hover:shadow-md transition transform hover:-translate-y-1"
         >
-          <div className="flex flex-col items-center justify-center text-center gap-3 bg-slate-50 p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1 h-full">
-            <FileTextIcon className="h-10 w-10 text-primary group-hover:text-primary-dark transition-colors" />
-            <div className="flex flex-col">
-              <h3 className="font-medium text-sm text-slate-700 group-hover:text-slate-900">
-                {/* You could use a document name here if available, e.g., doc.documentName || `Document ${index + 1}` */}
-                Document {index + 1}
-              </h3>
-              <p className="text-xs text-slate-500">Click to view</p>
-            </div>
-          </div>
-        </a>
+          <FileTextIcon className="h-10 w-10 text-primary group-hover:text-primary-dark" />
+          <h3 className="font-medium text-sm text-slate-700 group-hover:text-slate-900">
+            Document {i + 1}
+          </h3>
+          <p className="text-xs text-slate-500">Click to download</p>
+        </div>
       ))}
     </section>
   );
