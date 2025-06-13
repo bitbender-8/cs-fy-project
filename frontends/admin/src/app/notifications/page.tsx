@@ -16,6 +16,9 @@ export default async function NotificationsPage() {
     orderBy: {
       createdAt: "desc",
     },
+    where: {
+      recipientId: null, // Assuming you want to fetch notifications for supervisors only
+    },
   });
 
   return (
