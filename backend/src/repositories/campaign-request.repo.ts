@@ -42,6 +42,8 @@ export async function insertCampaignRequest(
       new Date(),
       null,
     ];
+    // Used for post update request
+    let insertedCampaignPost = null;
 
     switch (campaignRequest.requestType) {
       case "Goal Adjustment":
@@ -82,23 +84,23 @@ export async function insertCampaignRequest(
           ).newStatus
         );
         break;
-      case "Post Update":
+      case "Post Update": {
+        insertedCampaignPost = await insertCampaignPost(
+          campaignId,
+          (
+            campaignRequest as Omit<
+              PostUpdateRequest,
+              LockedCampaignRequestFields
+            >
+          ).newPost
+        );
         tableName = '"PostUpdateRequest"';
         columns += '"newPostId"';
-        values.push(
-          (
-            await insertCampaignPost(
-              campaignId,
-              (
-                campaignRequest as Omit<
-                  PostUpdateRequest,
-                  LockedCampaignRequestFields
-                >
-              ).newPost
-            )
-          ).id
-        );
+
+        values.push(insertedCampaignPost.id);
+
         break;
+      }
       default:
         throw new AppError(
           "Validation Failure",
@@ -125,7 +127,6 @@ export async function insertCampaignRequest(
       JOIN "Campaign" c ON inserted."campaignId" = c."id";
     `;
 
-    console.log(queryString);
     const result = await query(queryString, values);
 
     if (!result || result.rows.length === 0) {
@@ -134,7 +135,17 @@ export async function insertCampaignRequest(
       });
     }
 
-    return result.rows[0] as CampaignRequest;
+    if (campaignRequest.requestType === "Post Update") {
+      return {
+        ...excludeProperties<
+          PostUpdateRequest & { newPostId: string },
+          "newPostId"
+        >(result.rows[0], ["newPostId"]),
+        newPost: insertedCampaignPost,
+      } as PostUpdateRequest;
+    } else {
+      return result.rows[0] as CampaignRequest;
+    }
   } catch (error) {
     if (!(error instanceof pg.DatabaseError)) {
       throw error;

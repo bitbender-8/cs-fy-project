@@ -38,7 +38,6 @@ import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
 import {
-  transferCampaignDonations,
   validateStatusTransitions,
 } from "../services/campaign.service.js";
 import { validUrl } from "../utils/zod-helpers.js";
@@ -264,9 +263,9 @@ campaignRouter.put(
       }
 
       // If the new status is "Completed", complete the donation transfer
-      if (newStatus === "Completed") {
-        await transferCampaignDonations(campaignId);
-      }
+      // if (newStatus === "Completed") {
+      //   await transferCampaignDonations(campaignId);
+      // }
     }
 
     await updateCampaign(

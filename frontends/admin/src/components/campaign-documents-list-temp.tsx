@@ -21,7 +21,7 @@ export default function CampaignDocumentsList({
 
     try {
       const res = await fetch(
-        `http://localhost:3000/files/campaign-documents/${filename}`,
+        `http://localhost:4000/files/campaign-documents/${filename}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
