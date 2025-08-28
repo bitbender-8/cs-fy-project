@@ -13,7 +13,6 @@ import {
   validCampaignResolution,
 } from "../utils/zod-helpers.js";
 
-// TODO(bitbender-8): Update the class diagram, add the requestType property as an enum, and the ownerRecipientId as a UUID. No change needed for the er diagram and relational schema.
 export type CampaignRequestType = (typeof CAMPAIGN_REQUEST_TYPES)[number];
 export type ResolutionType = (typeof REQUEST_RESOLUTION_TYPES)[number];
 

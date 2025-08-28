@@ -11,8 +11,6 @@ import { ProblemDetails } from "../errors/error.types.js";
  */
 export function validateRequestBody(schema: ZodSchema) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // REMOVE
-    console.log(req.body);
     try {
       if (!req.body || Object.keys(req.body).length === 0) {
         const problemDetails: ProblemDetails = {

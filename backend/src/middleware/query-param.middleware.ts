@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { z, ZodError, ZodSchema } from "zod";
 import { ProblemDetails } from "../errors/error.types.js";
 
-// TODO(bitbender-8): Update the other routes (completed before Apr 10) to use this middleware.
+// DEFER(TODO): Update the other routes (completed before Apr 10) to use this middleware.
 /**
  * Middleware function to validate query parameters against a Zod schema.
  *

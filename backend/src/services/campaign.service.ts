@@ -255,7 +255,7 @@ export async function transferCampaignDonations(
   const txnRef = transferInitResponse.data as string;
 
   // Attempt transfer verification once, let errors propagate
-  // FIXME: COMMENTED OUT CAUSE I COULDN'T GET TRANSFER VERIFICATION TO WORK. (Even if I did everything in the docs.)
+  // DEFER(FIXME): COMMENTED OUT CAUSE I COULDN'T GET TRANSFER VERIFICATION TO WORK. (Even if I did everything in the docs.)
   // const transferVerifyResponse = await verifyChapaTransfer(txnRef);
 
   // if (transferVerifyResponse.status !== "success") {

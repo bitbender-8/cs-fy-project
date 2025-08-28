@@ -35,7 +35,6 @@ export const UserSchema = z.object({
   middleName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   lastName: validNonEmptyString(MIN_STRING_LENGTH, 50),
   dateOfBirth: validDate(true),
-  // FIXME: This is temporary, just until we add phone signups. Phone being optional that is. Review how compliant you are to your signup method promises.
   phoneNo: validPhoneNo().optional(),
   email: z.string().email(),
 });

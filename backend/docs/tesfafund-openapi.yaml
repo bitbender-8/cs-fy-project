@@ -24,8 +24,8 @@ tags:
   - name: Campaign Posts
     description: Posts that provide updates on a campaign's progress.
 paths:
-  # TODO: Add sortBy and sortOrder to routes with list returns.
-  # TODO: Add a 503 response for all endpoitns that need to access the authentication server.
+  # DEFER(TODO): Add sortBy and sortOrder to routes with list returns.
+  # DEFER(TODO): Add a 503 response for all endpoitns that need to access the authentication server.
 
   # For all methods, no access unless:
   # # (Role == Supervisor, Owner: Yes) => Full access
@@ -114,7 +114,7 @@ paths:
         - bearerHttpAuth: []
   # Permissions differ by method
   /recipients:
-    # TODO: Possible differences with implementation, needs to be updated
+    # DEFER(TODO): Possible differences with implementation, needs to be updated
     # (Role: Anon | Recipient | Supervisor, Owner: N/A) => Full access
     # DONE
     post:
@@ -859,7 +859,6 @@ paths:
       security:
         - bearerHttpAuth: []
 
-  # TODO: Add the donation route with /campaigns/{campaignId}/donate
   # Permissions differ by method
   /campaign-requests:
     # DONE
@@ -1378,7 +1377,7 @@ paths:
         - bearerHttpAuth: []
 components:
   schemas:
-    # TODO: Update schemas with latest changes.
+    # DEFER(TODO): Update schemas with latest changes.
     PaginatedList:
       type: object
       properties:
@@ -1687,4 +1686,4 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Bearer token using a JWT
-# TODO (bitbender-8): Make sure that the component schema matches your data models
+# DEFER(TODO): Make sure that the component schema matches your data models

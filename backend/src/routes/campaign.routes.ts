@@ -38,7 +38,6 @@ import { validateFileUpload } from "../middleware/file-upload.middleware.js";
 import { validateRequestBody } from "../middleware/request-body.middleware.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.middleware.js";
 import {
-  transferCampaignDonations,
   validateStatusTransitions,
 } from "../services/campaign.service.js";
 import { validUrl } from "../utils/zod-helpers.js";
@@ -191,7 +190,7 @@ campaignRouter.put(
         });
       }
     } else if (documentIds && documentIds.length !== 0) {
-      // TODO (bitbender-8): Update openapi-docs - If a file is not provided but a documentId is, that means that the redactedDocumentUrl at that path will be deleted.
+      // DEFER(TODO): Update openapi-docs - If a file is not provided but a documentId is, that means that the redactedDocumentUrl at that path will be deleted.
       updatedCampaignData.documents = [];
       for (let i = 0; i < documentIds.length; i++) {
         updatedCampaignData.documents.push({
@@ -264,9 +263,9 @@ campaignRouter.put(
       }
 
       // If the new status is "Completed", complete the donation transfer
-      if (newStatus === "Completed") {
-        await transferCampaignDonations(campaignId);
-      }
+      // if (newStatus === "Completed") {
+      //   await transferCampaignDonations(campaignId);
+      // }
     }
 
     await updateCampaign(
@@ -313,7 +312,6 @@ campaignRouter.post(
   validateFileUpload("documents", "Both", config.PRIVATE_UPLOAD_DIR),
   validateRequestBody(createCampaignSchema),
   async (req: Request, res: Response): Promise<void> => {
-    // TODO(bitbender-8): Add a check for whether the campaign has a status of "Pending Review"
     if (getUserRole(req.auth) !== "Recipient") {
       const problemDetails: ProblemDetails = {
         title: "Permission Denied",
